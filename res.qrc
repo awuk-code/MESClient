@@ -1,0 +1,21 @@
+<RCC>
+    <qresource prefix="/">
+        <file>etc/config.json</file>
+        <file>res/login/logo.svg</file>
+        <file>res/login/pwd1.svg</file>
+        <file>res/login/pwd2.svg</file>
+        <file>res/login/u1.svg</file>
+        <file>res/login/u2.svg</file>
+        <file>res/common/user.svg</file>
+        <file>res/common/close.svg</file>
+        <file>res/common/max1.svg</file>
+        <file>res/common/max2.svg</file>
+        <file>res/common/min.svg</file>
+        <file>res/menu/process2.svg</file>
+        <file>res/menu/repair1.svg</file>
+        <file>res/menu/repair2.svg</file>
+        <file>res/menu/process1.svg</file>
+        <file>res/menu/task1.svg</file>
+        <file>res/menu/task2.svg</file>
+    </qresource>
+</RCC>
