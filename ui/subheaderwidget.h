@@ -1,0 +1,30 @@
+#ifndef SUBHEADERWIDGET_H
+#define SUBHEADERWIDGET_H
+
+#include <QWidget>
+#include <QLabel>
+#include <QDate>
+#include <QDateTime>
+#include <QPushButton>
+#include <QTimer>
+
+class SubHeaderWidget : public QWidget
+{
+    Q_OBJECT
+public:
+    explicit SubHeaderWidget(QWidget *parent = nullptr);
+
+signals:
+private:
+    void initUI();
+    void updateTime();
+    void initConnect();
+private:
+    QLabel *m_path{nullptr};
+    QLabel *m_onlineTime{nullptr};
+    QPushButton* m_onlineTimeBtn{nullptr};
+    QLabel* m_currentTime{nullptr};
+    QTimer *timer{nullptr};
+};
+
+#endif // SUBHEADERWIDGET_H

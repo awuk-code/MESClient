@@ -4,9 +4,10 @@
 
 #include <QWidget>
 #include <QStackedWidget>
+#include "headerwidget.h"
+#include "subheaderwidget.h"
+#include "sidebarwidget.h"
 
-class HeaderWidget;
-class SideBarWidget;
 class MainWindow : public QWidget
 {
     Q_OBJECT
@@ -16,13 +17,15 @@ public:
 private:
     void initUI();
     void initConnect();
+    void closeEvent(QCloseEvent* event)override;
 
 private slots:
-    void onPageChanged(int index);
+    void onPageChanged(int index/*, QString &title*/);
 
 private:
     HeaderWidget* m_header{nullptr};
     SideBarWidget* m_sidebar{nullptr};
+    SubHeaderWidget* m_subHeader{nullptr};
     QStackedWidget* m_stack{nullptr};
 };
 

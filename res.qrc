@@ -17,5 +17,10 @@
         <file>res/menu/process1.svg</file>
         <file>res/menu/task1.svg</file>
         <file>res/menu/task2.svg</file>
+        <file>res/style/style.qss</file>
+        <file>res/menu/exit.svg</file>
+        <file>res/menu/menu.svg</file>
+        <file>res/menu/set.svg</file>
+        <file>res/common/time.svg</file>
     </qresource>
 </RCC>

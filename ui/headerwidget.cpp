@@ -1,15 +1,12 @@
 #include "headerwidget.h"
+#include "configmanager.h"
+#include "MDebug.h"
 
 HeaderWidget::HeaderWidget(QWidget *parent)
     : QWidget{parent}
 {
     setObjectName("HeaderWidget");
-    setStyleSheet(R"(
-    #HeaderWidget {
-        background: white;
-        border-bottom: 1px solid #e8e8e8;
-    }
-)");
+    setAttribute(Qt::WA_StyledBackground, true);
     initUI();
     initConnect();
 }
@@ -26,13 +23,10 @@ void HeaderWidget::mouseMoveEvent(QMouseEvent *event)
         window()->move(event->globalPos() - m_dragPos);
 }
 
-void HeaderWidget::mouseReleaseEvent(QMouseEvent *event)
-{
-
-}
 
 void HeaderWidget::initUI()
 {
+    setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
     m_userIcon = new QLabel(this);
 
     m_userIcon->setFixedSize(32, 32);

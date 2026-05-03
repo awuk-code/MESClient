@@ -5,6 +5,7 @@
 
 MLoginWedget::MLoginWedget(QWidget *parent): QDialog(parent)
 {
+    setObjectName("MLoginWidget");
     setFixedSize(410,380);
     setWindowFlags(Qt::FramelessWindowHint);
     setWindowFlag(Qt::WindowContextHelpButtonHint, false);
@@ -54,18 +55,8 @@ void MLoginWedget::InitLoginUI()
     m_closeBtn = new QPushButton(this);
     m_closeBtn->setIcon(QIcon(":/res/common/close.svg"));
     m_closeBtn->setFixedSize(30,30);
-    m_closeBtn->setStyleSheet(R"(
-    QPushButton {
-        background-color: none;
-        color: #008;
-        border: none;
-        font-size: 18px;
-    }
-    QPushButton:hover {
-        background-color: none;
-        color: #008;
-    }
-)");
+    m_closeBtn->setObjectName("CloseBtn");
+
     m_closeBtn->setParent(this);
     m_closeBtn->move(width() - 40, 10);
 
@@ -75,7 +66,7 @@ void MLoginWedget::InitLoginUI()
 
     m_title = new QLabel(QStringLiteral("生产系统"), this);
     m_title->setAlignment(Qt::AlignCenter);
-    m_title->setStyleSheet("font-size:20px; font-weight:bold;");
+
 
     mainLayout->addWidget(m_icon);
     mainLayout->addWidget(m_title);
@@ -119,10 +110,10 @@ void MLoginWedget::InitLoginUI()
 
     m_loginBtn = new QPushButton("登录", this);
     m_loginBtn->setFixedHeight(36);
+    m_loginBtn->setObjectName("LoginBtn");
     mainLayout->addWidget(m_loginBtn);
 
     mainLayout->setContentsMargins(40, 20, 40, 20);
-
     setStyleSheet(R"(
         QLineEdit {
             border: 1px solid #ccc;

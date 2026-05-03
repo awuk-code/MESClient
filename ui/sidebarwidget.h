@@ -3,10 +3,12 @@
 
 #include <QWidget>
 #include <QPushButton>
+#include <QToolButton>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QButtonGroup>
 #include <QLabel>
+#include <QStyle>
 
 class SideBarWidget : public QWidget
 {
@@ -19,13 +21,20 @@ signals:
 
 private:
     void initUI();
-    QWidget* createMenuItem(const QString& icon, const QString &iconName, const QString &hoverText, int id);
-
+    void initConnect();
+    QWidget* createMenuItem(const QString &icon_normal,
+                            const QString &icon_checked,
+                            const QString &text,
+                            const QString &hoverText,
+                            int id);
 
     QButtonGroup* m_group{nullptr};
-    QPushButton* m_produceBtn{nullptr};
-    QPushButton* m_processBtn{nullptr};
-    QPushButton* m_repairBtn{nullptr};
+
+    // QPushButton* m_menuBtn{nullptr};
+    // QPushButton* m_setBtn{nullptr};
+    // QPushButton* m_exitBtn{nullptr};
+
+    int maxMenuCnt = 20;
 };
 
 #endif // SIDEBARWIDGET_H

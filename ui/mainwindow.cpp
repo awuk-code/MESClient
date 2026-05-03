@@ -1,27 +1,29 @@
 #include "mainwindow.h"
-#include "HeaderWidget.h"
-#include "SidebarWidget.h"
+#include "configmanager.h"
+#include "MDebug.h"
+
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QStackedWidget>
 #include <QLabel>
+
 MainWindow::MainWindow(QWidget *parent)
     : QWidget{parent}
 {
+    setObjectName("MainWindow");
     setWindowFlags(Qt::FramelessWindowHint);
     resize(1200, 800);
     initUI();
     initConnect();
-
 }
 
 void MainWindow::initUI()
 {
     m_header = new HeaderWidget(this);
     m_sidebar = new SideBarWidget(this);
+    m_subHeader = new SubHeaderWidget(this);
+    m_subHeader->setFixedHeight(40);
     m_stack = new QStackedWidget(this);
-
-
 
     m_stack->addWidget(new QLabel(QStringLiteral("任务界面1")));
     m_stack->addWidget(new QLabel(QStringLiteral("任务界面2")));
@@ -29,13 +31,19 @@ void MainWindow::initUI()
     m_stack->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     // ===== 下半部分（左 Sidebar + 右 Central）=====
+    QWidget* rightWidget = new QWidget(this);
+    QVBoxLayout* rightLayout = new QVBoxLayout(rightWidget);
+    rightLayout->setContentsMargins(0,0,0,0);
+    rightLayout->setSpacing(0);
+    rightLayout->addWidget(m_subHeader);
+    rightLayout->addWidget(m_stack);
+
     QWidget* bottomWidget = new QWidget(this);
     QHBoxLayout* bottomLayout = new QHBoxLayout(bottomWidget);
     bottomLayout->setContentsMargins(0, 0, 0, 0);
     bottomLayout->setSpacing(0);
-
     bottomLayout->addWidget(m_sidebar);
-    bottomLayout->addWidget(m_stack);
+    bottomLayout->addWidget(rightWidget);
 
     // Sidebar 固定，Central 自适应
     bottomLayout->setStretch(0, 0);
@@ -52,7 +60,7 @@ void MainWindow::initUI()
     // Header 固定高度
     m_header->setFixedHeight(50);
     // Sidebar 固定宽度
-    m_sidebar->setFixedWidth(120);
+    //m_sidebar->setFixedWidth(80);
 
     setLayout(mainLayout);
 }
@@ -63,7 +71,18 @@ void MainWindow::initConnect()
             this, &MainWindow::onPageChanged);
 }
 
-void MainWindow::onPageChanged(int index)
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    ConfigManager::instance().saveConfig();
+    // 接受关闭事件
+    funcDebug() <<"关闭窗口写入时间";
+    event->accept();
+}
+
+void MainWindow::onPageChanged(int index/*, QString &title*/)
 {
     m_stack->setCurrentIndex(index);
+
+
+
 }

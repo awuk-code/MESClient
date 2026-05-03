@@ -1,0 +1,56 @@
+/* 全局变量风格定义 */
+QPushButton {
+    background-color: transparent;
+    border: none;
+
+}
+QToolButton {
+    border:none; 
+    background:transparent;
+}
+
+QToolTip {
+    border: 1px solid #dcdcdc; /* 设置一个浅色边框 */
+    background-color: transparent;  /* 设置背景透明 */
+    color: #f10202;            /* 设置文字颜色 */
+    font-size: 12px;
+    padding: 2px;
+}
+/* 顶部标题栏样式 */
+#HeaderWidget {
+    background-color: #808;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+/* 侧边栏样式 */
+#SideBarWidget {
+    background-color: #e0e6ed;
+    border-right: 1px solid #e8edf1;
+}
+#SubHeaderWidget {
+    background-color: #ffffff; /* 白色背景 */
+    border-bottom: 1px solid #e8e8e8; /* 浅灰色底边框 */
+}
+
+#SubHeaderWidget QLabel {
+    color: #666666;
+    font-size: 13px;
+}
+/* 侧边栏菜单按钮 */
+#menuBtn {
+    background-color: transparent;
+    border: none;
+    color: black; /* 字体颜色 */
+    font-size: 12px; /* 字体大小 */
+    font-weight: bold; /* 字体粗细 */
+   /* padding:0px;  */
+    /* margin:0px;  */
+    qproperty-toolButtonStyle: ToolButtonTextUnderIcon;
+    qproperty-iconSize: 24px 24px; /* 图标大小 */
+}
+
+#menuBtn:checked {
+    background-color: #1890ff;
+    color: red; /* 字体颜色 */
+}
+ 

@@ -1,71 +1,119 @@
 #include "sidebarwidget.h"
-
+#include "MDebug.h"
+#include "configmanager.h"
 SideBarWidget::SideBarWidget(QWidget *parent)
     : QWidget{parent}
 {
+    setAttribute(Qt::WA_StyledBackground, true);
     setObjectName("SideBarWidget");
     initUI();
+    initConnect();
 }
 
 void SideBarWidget::initUI()
 {
-
-    setFixedWidth(110);
+    setMinimumWidth(30);
+    setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
     QVBoxLayout* layout = new QVBoxLayout(this);
-    layout->setContentsMargins(0, 10, 0, 10);
-    layout->setSpacing(10);
+    layout->setContentsMargins(5, 10, 5, 10);
+    layout->setSpacing(0);
     layout->setAlignment(Qt::AlignTop);
 
     m_group = new QButtonGroup(this);
-    layout->addWidget(createMenuItem(":res/menu/task1.svg", QStringLiteral("生产任务"), QStringLiteral("生产任务"), 0));
-    layout->addWidget(createMenuItem(":res/menu/process1.svg", QStringLiteral("工序站点"), QStringLiteral("工序站点"), 1));
-    layout->addWidget(createMenuItem(":res/menu/repair1.svg", QStringLiteral("维修站"), QStringLiteral("维修站"), 2));
+    m_group->setExclusive(true);
+    // m_menuBtn = new QPushButton(this);
+    // m_menuBtn->setToolTip(QStringLiteral("菜单"));
+    // m_menuBtn->setIcon(QIcon(":/res/menu/menu.svg"));
+    // m_menuBtn->setIconSize(QSize(24,24));
+
+    // m_setBtn = new QPushButton(this);
+    // m_setBtn->setToolTip(QStringLiteral("设置"));
+    // m_setBtn->setIcon(QIcon(":res/menu/set.svg"));
+    // m_setBtn->setIconSize(QSize(24,24));
+
+    // m_exitBtn = new QPushButton(this);
+    // m_exitBtn->setToolTip(QStringLiteral("退出"));
+    // m_exitBtn->setIcon(QIcon(":res/menu/exit.svg"));
+    // m_exitBtn->setIconSize(QSize(24,24));
+    // layout->addWidget(m_menuBtn);
+
+    layout->addWidget(createMenuItem(":/res/menu/menu.svg", ":/res/menu/menu.svg", QStringLiteral("menu"), QStringLiteral("hover"), 0));
+    layout->addSpacing(0);
+
+    layout->addWidget(createMenuItem(":/res/menu/task1.svg", ":/res/menu/task2.svg", QStringLiteral("生产任务"), QStringLiteral("生产任务hover"), 1));
+    layout->addSpacing(15);
+    layout->addWidget(createMenuItem(":/res/menu/process1.svg", ":/res/menu/process2.svg", QStringLiteral("工序站点"), QStringLiteral("工序站点hover"), 2));
+    layout->addSpacing(15);
+    layout->addWidget(createMenuItem(":/res/menu/repair1.svg", ":/res/menu/repair2.svg", QStringLiteral("维修站"), QStringLiteral("维修站hover"), 3));
+
     layout->addStretch();
-    setStyleSheet(R"(
-    #SideBarWidget {
-        background-color: #001529;
-        border-right: 2px solid #1890ff; /* 蓝色更明显，你可以改颜色 */
-        border-top: none;
-        border-left: none;
-        border-bottom: none;
-    }
-    #menuBtn {
-        background-color: transparent;
-        border: none;
-    }
-)");
-    connect(m_group, &QButtonGroup::buttonClicked, this, [this](QAbstractButton* btn){
-        emit sigPageChanged(m_group->id(btn));
+
+    layout->addWidget(createMenuItem(":/res/menu/set.svg", ":/res/menu/set.svg", QStringLiteral("设置"), QStringLiteral("设置"), 19));
+    layout->addSpacing(5);
+    layout->addWidget(createMenuItem(":/res/menu/exit.svg", ":/res/menu/exit.svg", QStringLiteral("exit"), QStringLiteral("exit"), 20));
+
+
+    // layout->addWidget(m_setBtn);
+    // layout->addSpacing(5);
+    // layout->addWidget(m_exitBtn);
+
+}
+
+void SideBarWidget::initConnect()
+{
+    connect(m_group, &QButtonGroup::buttonClicked, this, [this](QAbstractButton* clickedBtn){
+        int id =m_group->id(clickedBtn);
+
+        if(id != 0 && id <= maxMenuCnt-2)
+            emit sigPageChanged(id);
+
+        if(maxMenuCnt==id){
+             ConfigManager::instance().saveConfig();
+            if(window())
+                window()->close();
+        }
+        funcDebug() <<"点击菜单："<<m_group->id(clickedBtn);
+
+        for(QAbstractButton* btn : m_group->buttons()){
+            QString path = (btn == clickedBtn) ? ("icon_checked") : ("icon_normal");
+            btn->setIcon(QIcon(btn->property(path.toStdString().c_str()).toString()));
+        }
     });
 }
 
-QWidget *SideBarWidget::createMenuItem(const QString &icon, const QString &iconName, const QString &hoverText, int id)
+QWidget *SideBarWidget::createMenuItem(const QString &icon_normal, const QString &icon_checked, const QString &text, const QString &hoverText, int id)
 {
-    QPushButton* btn = new QPushButton(this);
-    btn->setCheckable(true);
+    funcDebug() <<"current Btn id = "<<id;
+    QToolButton* btn = new QToolButton(this);
     btn->setObjectName("menuBtn");
-    btn->setFixedSize(100, 80);
+    btn->setCheckable(true);
     btn->setToolTip(hoverText);
-   // btn->setStyleSheet("border:none; background:transparent;");
 
-    if (id == 0) btn->setChecked(true);
+    btn->setProperty("icon_normal", icon_normal);
+    btn->setProperty("icon_checked", icon_checked);
+    btn->setProperty("menuID", id);
+
+    if(id==0 || id > maxMenuCnt-2){
+        btn->setToolButtonStyle(Qt::ToolButtonIconOnly);
+        btn->setFixedSize(60, 40);
+    }else{
+        btn->setText(text);
+        btn->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+        btn->setFixedSize(60,60);
+    }
+
+    btn->setIconSize(QSize(24,24));
+
+    if (id == 1){
+        btn->setIcon(QIcon(icon_checked));
+        btn->setChecked(true);
+    }   else{
+        btn->setIcon(QIcon(icon_normal));
+    }
+    btn->setStyleSheet("border:none; background:transparent;");
 
     m_group->addButton(btn, id);
 
-    // ===== 内部布局 =====
-    QVBoxLayout* layout = new QVBoxLayout(btn);
-    layout->setContentsMargins(0,8,0,8);
-    layout->setSpacing(5);
-    layout->setAlignment(Qt::AlignCenter);
-
-    QLabel* iconLabel = new QLabel(btn);
-    iconLabel->setPixmap(QIcon(icon).pixmap(18,18));
-    iconLabel->setAlignment(Qt::AlignCenter);
-
-    QLabel* textLabel = new QLabel(iconName, btn);
-
-    layout->addWidget(iconLabel);
-    layout->addWidget(textLabel);
 
     return btn;
 }
