@@ -11,6 +11,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QWidget{parent}
 {
     setObjectName("MainWindow");
+    setMouseTracking(true);
     setWindowFlags(Qt::FramelessWindowHint);
     resize(1200, 800);
     initUI();
@@ -21,6 +22,7 @@ void MainWindow::initUI()
 {
     m_header = new HeaderWidget(this);
     m_sidebar = new SideBarWidget(this);
+
     m_subHeader = new SubHeaderWidget(this);
     m_subHeader->setFixedHeight(40);
     m_stack = new QStackedWidget(this);
@@ -63,6 +65,12 @@ void MainWindow::initUI()
     //m_sidebar->setFixedWidth(80);
 
     setLayout(mainLayout);
+
+    m_sizeBtn = new QPushButton("/",this);
+    m_sizeBtn->setFixedSize(16,16);
+    m_sizeBtn->setCursor(Qt::SizeFDiagCursor);
+    m_sizeBtn->setStyleSheet("QPushButton{ background: transparent; border:none; }");
+    m_sizeBtn->installEventFilter(this);
 }
 
 void MainWindow::initConnect()
@@ -74,15 +82,56 @@ void MainWindow::initConnect()
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     ConfigManager::instance().saveConfig();
-    // 接受关闭事件
     funcDebug() <<"关闭窗口写入时间";
     event->accept();
 }
 
+void MainWindow::resizeEvent(QResizeEvent *event)
+{
+    QWidget::resizeEvent(event);
+    m_sizeBtn->move(this->width() - m_sizeBtn->width(),
+                    this->height() - m_sizeBtn->height());
+}
+
+bool MainWindow::eventFilter(QObject *obj, QEvent *event)
+{
+    if(obj == m_sizeBtn){
+        QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+        switch (event->type()) {
+        case QEvent::MouseButtonPress:
+            if(mouseEvent->button() == Qt::LeftButton){
+                m_isResizing = true;
+                m_dragPos = mouseEvent->globalPos();
+                return true;
+            }
+            break;
+        case QEvent::MouseMove:
+            if (m_isResizing) {
+                QPoint delta = mouseEvent->globalPos() - m_dragPos;
+
+                int newWidth = this->width() + delta.x();
+                int newHeight = this->height() + delta.y();
+
+                if (newWidth >= minimumWidth() && newHeight >= minimumHeight()) {
+                    this->resize(newWidth, newHeight);
+                    m_dragPos = mouseEvent->globalPos(); // 更新参考点
+                }
+                return true;
+            }
+            break;
+        case QEvent::MouseButtonRelease:
+            m_isResizing = false;
+            return true;
+
+        default:
+            break;
+        }
+    }
+    return QWidget::eventFilter(obj, event);
+}
+
 void MainWindow::onPageChanged(int index/*, QString &title*/)
 {
-    m_stack->setCurrentIndex(index);
-
-
-
+    funcDebug()<<"收到页面切换信号index= "<<index;
+    m_stack->setCurrentIndex(index-1);
 }

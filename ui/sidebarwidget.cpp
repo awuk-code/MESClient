@@ -12,7 +12,7 @@ SideBarWidget::SideBarWidget(QWidget *parent)
 
 void SideBarWidget::initUI()
 {
-    setMinimumWidth(30);
+    setMinimumWidth(35);
     setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
     QVBoxLayout* layout = new QVBoxLayout(this);
     layout->setContentsMargins(5, 10, 5, 10);
@@ -64,9 +64,10 @@ void SideBarWidget::initConnect()
     connect(m_group, &QButtonGroup::buttonClicked, this, [this](QAbstractButton* clickedBtn){
         int id =m_group->id(clickedBtn);
 
-        if(id != 0 && id <= maxMenuCnt-2)
+        if(id != 0 && id <= maxMenuCnt-2){
+            funcDebug() <<"id===="<<id;
             emit sigPageChanged(id);
-
+        }
         if(maxMenuCnt==id){
              ConfigManager::instance().saveConfig();
             if(window())

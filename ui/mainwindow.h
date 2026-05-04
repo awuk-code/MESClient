@@ -4,9 +4,12 @@
 
 #include <QWidget>
 #include <QStackedWidget>
+#include <QMouseEvent>
+
 #include "headerwidget.h"
 #include "subheaderwidget.h"
 #include "sidebarwidget.h"
+
 
 class MainWindow : public QWidget
 {
@@ -14,19 +17,27 @@ class MainWindow : public QWidget
 public:
     explicit MainWindow(QWidget *parent = nullptr);
 
+protected:
+    void closeEvent(QCloseEvent* event)override;
+    void resizeEvent(QResizeEvent* event)override;
+    bool eventFilter(QObject* obj, QEvent* event)override;
 private:
     void initUI();
     void initConnect();
-    void closeEvent(QCloseEvent* event)override;
+
 
 private slots:
     void onPageChanged(int index/*, QString &title*/);
 
 private:
+    QPoint m_dragPos;           // 记录鼠标按下时的位置
+    bool m_isResizing = false;  // 是否正在拉伸
+
     HeaderWidget* m_header{nullptr};
     SideBarWidget* m_sidebar{nullptr};
     SubHeaderWidget* m_subHeader{nullptr};
     QStackedWidget* m_stack{nullptr};
+    QPushButton* m_sizeBtn{nullptr};
 };
 
 #endif // MAINWINDOW_H

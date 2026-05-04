@@ -34,6 +34,7 @@ void HeaderWidget::initUI()
 
     m_userIcon->setPixmap(QIcon(":/res/common/user.svg").pixmap(20, 20));
     m_userInfo = new QLabel("xxx121381238 ",this);
+    m_userInfo->setToolTip(QStringLiteral("用户信息"));
     m_title = new QLabel(QStringLiteral("生产执行系统"), this);
 
     m_btnMin = new QPushButton(this);
