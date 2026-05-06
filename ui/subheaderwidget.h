@@ -6,6 +6,7 @@
 #include <QDate>
 #include <QDateTime>
 #include <QPushButton>
+#include <QComboBox>
 #include <QTimer>
 
 class SubHeaderWidget : public QWidget
@@ -21,6 +22,7 @@ private:
     void initConnect();
 private:
     QLabel *m_path{nullptr};
+    QComboBox *m_loginTime{nullptr};
     QLabel *m_onlineTime{nullptr};
     QPushButton* m_onlineTimeBtn{nullptr};
     QLabel* m_currentTime{nullptr};

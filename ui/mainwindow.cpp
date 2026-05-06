@@ -27,7 +27,10 @@ void MainWindow::initUI()
     m_subHeader->setFixedHeight(40);
     m_stack = new QStackedWidget(this);
 
-    m_stack->addWidget(new QLabel(QStringLiteral("任务界面1")));
+    m_pageProduction = new ProductionTaskPage(this);
+
+
+    m_stack->addWidget(m_pageProduction); //id = 0
     m_stack->addWidget(new QLabel(QStringLiteral("任务界面2")));
     m_stack->addWidget(new QLabel(QStringLiteral("任务界面3")));
     m_stack->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);

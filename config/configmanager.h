@@ -6,6 +6,7 @@
 #include <QDateTime>
 #include <QFile>
 #include <QJsonDocument>
+#include <QTimer>
 
 class ConfigManager
 {

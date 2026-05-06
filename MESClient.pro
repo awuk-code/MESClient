@@ -11,6 +11,7 @@ include(login/login.pri)
 include(config/config.pri)
 include(commFunc/common.pri)
 include(ui/ui.pri)
+include(core/core.pri)
 
 INCLUDEPATH +=      \
     $$PWD/app       \
@@ -18,11 +19,12 @@ INCLUDEPATH +=      \
     $$PWD/config    \
     $$PWD/commFunc  \
     $$PWD/ui        \
+    $$PWD/core      \
 
 RESOURCES += \
     res.qrc
 
-DISTFILES += $$files(*/*.pri) \
+DISTFILES += $$files(*/*.pri)
 
 
 
@@ -30,6 +32,8 @@ DISTFILES += $$files(*/*.pri) \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+
 
 
 

@@ -9,7 +9,7 @@
 #include "headerwidget.h"
 #include "subheaderwidget.h"
 #include "sidebarwidget.h"
-
+#include "productiontaskpage.h"
 
 class MainWindow : public QWidget
 {
@@ -37,6 +37,11 @@ private:
     SideBarWidget* m_sidebar{nullptr};
     SubHeaderWidget* m_subHeader{nullptr};
     QStackedWidget* m_stack{nullptr};
+
+    ProductionTaskPage* m_pageProduction{nullptr};
+
+
+
     QPushButton* m_sizeBtn{nullptr};
 };
 
