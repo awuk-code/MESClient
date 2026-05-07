@@ -14,9 +14,17 @@ QAbstractItemModel* ProductionTaskPage::createModel()
     return new ProductionTaskModel(this);
 }
 
-QStringList ProductionTaskPage::tabNames() const
+
+
+QVector<TabConfig> ProductionTaskPage::tabs() const
 {
-    return {"未开工","已开工","已完成"};
+    return
+        {
+            {"未开工", 0},
+            {"已开工", 1},
+            {"已完成", 2},
+            {"已完成", 2}
+        };
 }
 
 FieldFilterProxyModel* ProductionTaskPage::createProxy(int tabIndex)
@@ -32,4 +40,9 @@ FieldFilterProxyModel* ProductionTaskPage::createProxy(int tabIndex)
 QString ProductionTaskPage::pageTitle() const
 {
     return "生产任务列表";
+}
+
+QString ProductionTaskPage::searchInfo() const
+{
+    return "请输入表单号";
 }

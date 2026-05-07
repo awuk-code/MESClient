@@ -9,9 +9,11 @@ public:
     explicit ProductionTaskPage(QWidget *parent = nullptr);
 protected:
     QAbstractItemModel* createModel() override;
-    QStringList tabNames() const override;
+
+    QVector<TabConfig> tabs() const override;
     FieldFilterProxyModel* createProxy(int tabIndex) override;
     QString pageTitle() const override;
+    QString searchInfo()const override;
 };
 
 #endif // PRODUCTIONTASKPAGE_H

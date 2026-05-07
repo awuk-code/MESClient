@@ -1,50 +1,80 @@
 #include "productiontaskmodel.h"
+#include "operationdelegate.h"
+
+#include <QDebug>
 
 ProductionTaskModel::ProductionTaskModel(QObject *parent)
-    : QAbstractTableModel{parent}
+    : BaseTableModel(parent)
 {
-    m_list = {
-        {1,"A001","Line1",100,0},
-        {2,"A002","Line1",200,1},
-        {3,"A003","Line2",150,2},
-        {4,"A004","Line2",300,0}
-    };
-}
+    // ===== 1. 创建 delegate =====
+    OperationDelegate* opDelegate =
+        new OperationDelegate(this);
 
-int ProductionTaskModel::rowCount(const QModelIndex &) const { return m_list.size(); }
-int ProductionTaskModel::columnCount(const QModelIndex &) const { return 5; }
+    // ===== 2. 绑定信号 =====
+    connect(opDelegate,
+            &OperationDelegate::sigPrintClicked,
+            this,
+            [](int row)
+            {
+                qDebug() << "打印 row =" << row;
+            });
 
-QVariant ProductionTaskModel::data(const QModelIndex &i, int role) const
-{
-    if (!i.isValid()) return {};
+    connect(opDelegate,
+            &OperationDelegate::sigStartClicked,
+            this,
+            [](int row)
+            {
+                qDebug() << "开工 row =" << row;
+            });
 
-    const auto& item = m_list[i.row()];
-
-    if (role == Qt::DisplayRole)
-    {
-        switch(i.column())
+    // ===== 3. 列配置 =====
+    m_columns =
         {
-        case 0: return item.id;
-        case 1: return item.product;
-        case 2: return item.line;
-        case 3: return item.count;
-        case 4:
-            return item.status==0?"未开工":item.status==1?"已开工":"已完成";
-        }
-    }
-    // ===== 状态原始值（给过滤用）=====
-    if (role == Qt::UserRole && i.column() == 4)
-    {
-        return item.status;
-    }
+            {"选择", "", 50, true, Qt::AlignCenter, ColumnType::CheckBox},
 
-    return {};
+            {"序号", "", 70, true, Qt::AlignCenter, ColumnType::RowNumber},
+
+            {"任务单号", "taskNo", 180},
+
+            {"产品编码", "productCode", 150},
+
+            {"产品名称", "productName", 200},
+
+            {"计划数量", "planCount", 100},
+
+            {"状态", "status", 100},
+
+            {
+                "操作",
+                "action",
+                180,
+                true,
+                Qt::AlignCenter,
+                ColumnType::Operation,
+                opDelegate
+            }
+        };
+
+    // ===== 4. 模拟数据 =====
+    QVector<QVariantMap> rows;
+
+    rows.append({
+        {"taskNo", "MO20250401001"},
+        {"productCode", "P10001"},
+        {"productName", "减速器"},
+        {"planCount", 100},
+        {"status", "未开工"},
+        {"action", ""}
+    });
+
+    rows.append({
+        {"taskNo", "MO20250401002"},
+        {"productCode", "P10002"},
+        {"productName", "电机"},
+        {"planCount", 200},
+        {"status", "已开工"},
+        {"action", ""}
+    });
+
+    setRows(rows);
 }
-
-QVariant ProductionTaskModel::headerData(int s, Qt::Orientation o, int role) const
-{
-    if (o!=Qt::Horizontal || role!=Qt::DisplayRole) return {};
-    return QStringList{"ID","产品","产线","数量","状态"}[s];
-}
-
-const QVector<TaskItem>& ProductionTaskModel::list() const { return m_list; }
