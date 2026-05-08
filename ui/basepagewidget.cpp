@@ -101,7 +101,6 @@ void BasePageWidget::initUI()
 
 void BasePageWidget::initTabs()
 {
-
     QVector<TabConfig> tabs = this->tabs();
 
     if (tabs.isEmpty())
@@ -127,25 +126,33 @@ void BasePageWidget::initTabs()
         {
             const auto& columns = baseModel->columns();
 
+            auto header = table->horizontalHeader();    //--------
             for (int col = 0; col < columns.size(); ++col)
             {
                 const auto& cfg = columns[col];
 
-                // 列宽
-                table->setColumnWidth(col, cfg.width);
+                //----设置列模式
+                header->setSectionResizeMode(col, cfg.resizeMode);
+                // ===== Fixed列设置宽度 =====
+                if (cfg.resizeMode == QHeaderView::Fixed)
+                {
+                    table->setColumnWidth(col, cfg.width);
+                }
+
 
                 // delegate
                 if (cfg.delegate)
                 {
                     table->setItemDelegateForColumn(col, cfg.delegate);
                 }
+                // ===== 隐藏列 =====
+                table->setColumnHidden(
+                    col,
+                    !cfg.visible);
             }
         }
 
-        connect(table,
-                &QTableView::clicked,
-                this,
-                [=](const QModelIndex& index)
+        connect(table, &QTableView::clicked, this, [=](const QModelIndex& index)
                 {
                     if (!index.isValid())
                         return;
@@ -162,29 +169,23 @@ void BasePageWidget::initTabs()
                         }
                         else
                         {
-                            table->selectionModel()->select(
-                                index,
-                                QItemSelectionModel::Deselect |
-                                    QItemSelectionModel::Rows);
+                            table->selectionModel()->select( index,
+                                QItemSelectionModel::Deselect | QItemSelectionModel::Rows);
                         }
                     }
                 });
 
 
-// 整行选中（点击任意单元格时选中整行）
+        // 整行选中（点击任意单元格时选中整行）
         table->setSelectionBehavior(QAbstractItemView::SelectRows);
         // 单选模式（一次只能选中一行）
         table->setSelectionMode( QAbstractItemView::SingleSelection);//批量check--NoSelection，ExtendedSelection
         // 禁止编辑单元格
         // 表格变成纯展示模式
         table->setEditTriggers( QAbstractItemView::NoEditTriggers);
-// 开启斑马纹（隔行颜色）
+        // 开启斑马纹（隔行颜色）
         table->setAlternatingRowColors(true);
-// 显示表格网格线
-        // table->setShowGrid(true);
-        // 列宽自动适配内容
-         //table->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-// 最后一列自动拉伸填满剩余空间
+        // 最后一列自动拉伸填满剩余空间
         table->horizontalHeader()->setStretchLastSection(true);
         // 横向滚动按像素平滑滚动
         table->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
@@ -195,12 +196,12 @@ void BasePageWidget::initTabs()
         // 设置列最小宽度
         // 防止列太窄导致内容挤压
         table->horizontalHeader()->setMinimumSectionSize(60);
-// 表头文字居中
+        // 表头文字居中
         table->horizontalHeader()->setDefaultAlignment(Qt::AlignCenter);
 
         // 禁止自动换行
         table->setWordWrap(false);
-// 文本过长时显示省略号 ...
+        // 文本过长时显示省略号 ...
         table->setTextElideMode(Qt::ElideRight);
 
         m_stack->addWidget(table);

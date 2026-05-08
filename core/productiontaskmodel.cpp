@@ -42,35 +42,45 @@ void ProductionTaskModel::setColumnHeader()
             // 选择框
             {
                 "选择",
-                "",
+                "checked",
                 60,
                 true,
                 Qt::AlignCenter,
-                ColumnType::CheckBox
+                ColumnType::CheckBox,
+                QHeaderView::Fixed
             },
 
             // 序号
             {
                 "序号",
-                "",
+                "rowNumber",
                 70,
                 true,
                 Qt::AlignCenter,
-                ColumnType::RowNumber
+                ColumnType::RowNumber,
+                QHeaderView::Fixed
             },
 
             // 生产任务单号
             {
                 "生产任务单号",
                 "taskNo",
-                180
+                180,
+                true,
+                Qt::AlignCenter,
+                ColumnType::Normal,
+                QHeaderView::ResizeToContents
             },
 
             // 产品型号
             {
                 "产品型号",
                 "productModel",
-                150
+                180,
+                true,
+                Qt::AlignCenter,
+                ColumnType::Normal,
+                QHeaderView::ResizeToContents
             },
 
             // ERP编码
@@ -154,10 +164,11 @@ void ProductionTaskModel::setColumnHeader()
             {
                 "操作",
                 "action",
-                220,
+                180,
                 true,
                 Qt::AlignCenter,
                 ColumnType::Operation,
+                QHeaderView::Fixed,
                 opDelegate
             }
         };

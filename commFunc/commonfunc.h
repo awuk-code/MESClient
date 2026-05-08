@@ -3,7 +3,7 @@
 
 #include <QString>
 #include <QStyledItemDelegate>
-
+#include <QHeaderView>
 
 struct TabConfig
 {
@@ -31,7 +31,9 @@ struct ColumnConfig
 
     Qt::Alignment alignment = Qt::AlignCenter;
     ColumnType type = ColumnType::Normal;
-
+    // ⭐ 每列独立Resize模式
+    QHeaderView::ResizeMode resizeMode =
+        QHeaderView::ResizeToContents;
     QStyledItemDelegate* delegate = nullptr;
 };
 
