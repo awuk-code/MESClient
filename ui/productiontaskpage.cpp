@@ -22,8 +22,8 @@ QVector<TabConfig> ProductionTaskPage::tabs() const
         {
             {"未开工", 0},
             {"已开工", 1},
-            {"已完成", 2},
-            {"已完成", 2}
+            {"已完工", 2},
+            {"已完工", 2}
         };
 }
 

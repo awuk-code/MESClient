@@ -31,6 +31,7 @@ struct ColumnConfig
 
     Qt::Alignment alignment = Qt::AlignCenter;
     ColumnType type = ColumnType::Normal;
+
     QStyledItemDelegate* delegate = nullptr;
 };
 

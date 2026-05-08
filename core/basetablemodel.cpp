@@ -4,6 +4,16 @@ BaseTableModel::BaseTableModel(QObject *parent)
     : QAbstractTableModel{parent}
 {}
 
+QVariantMap BaseTableModel::rowData(int row) const
+{
+    if (row < 0 || row >= m_rows.size())
+    {
+        return {};
+    }
+
+    return m_rows[row];
+}
+
 void BaseTableModel::setRows(const QVector<QVariantMap> &rows)
 {
     beginResetModel();
@@ -32,47 +42,50 @@ QVariant BaseTableModel::data(
 {
     if (!index.isValid())
         return {};
-    if (index.row() >= m_rows.size())
-        return {};
 
-    if (index.column() >= m_columns.size())
-        return {};
-    const auto& row = m_rows[index.row()];
-    // const auto& col = m_columns[index.column()];
     const auto& col = m_columns[index.column()];
 
-    //checkbox
-    if (role == Qt::CheckStateRole)
+    // ===== 对齐 =====
+
+    if (role == Qt::TextAlignmentRole)
     {
-        if (col.type == ColumnType::CheckBox)
-        {
-            return m_checkedRows.contains(index.row())
-            ? Qt::Checked
-            : Qt::Unchecked;
-        }
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+        return QVariant::fromValue(col.alignment);
+#else
+        return col.alignment;
+#endif
     }
-    // 显示数据
+
+    // ===== checkbox =====
+
+    if (col.type == ColumnType::CheckBox)
+    {
+        if (role == Qt::CheckStateRole)
+        {
+            bool checked =
+                m_checkedRows.contains(index.row());
+
+            return checked
+                       ? Qt::Checked
+                       : Qt::Unchecked;
+        }
+
+        return {};
+    }
+
+    // ===== 显示数据 =====
+
     if (role == Qt::DisplayRole)
     {
-        // 序号列
-        if (col.type == ColumnType::RowNumber)
-        {
-            return index.row() + 1;
-        }
+        // ===== 普通数据 =====
+
+        const auto& row = m_rows[index.row()];
 
         return row.value(col.field);
     }
 
-    // 对齐
-    if (role == Qt::TextAlignmentRole)
-    {
-        // return col.alignment;  //qt6
-        return QVariant::fromValue(col.alignment);
-    }
-
     return {};
 }
-
 QVariant BaseTableModel::headerData(
     int section,
     Qt::Orientation orientation,

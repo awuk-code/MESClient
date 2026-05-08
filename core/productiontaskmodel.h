@@ -3,11 +3,18 @@
 
 #include <QAbstractTableModel>
 #include "basetablemodel.h"
+#include "operationdelegate.h"
 
 class ProductionTaskModel : public BaseTableModel
 {
 public:
     explicit ProductionTaskModel(QObject *parent = nullptr);
+
+    void initConnect();
+    void setColumnHeader();
+    void setColumnData();
+
+    OperationDelegate* opDelegate{nullptr};
 };
 
 #endif // PRODUCTIONTASKMODEL_H

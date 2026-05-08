@@ -2,6 +2,7 @@
 #define FIELDFILTERPROXYMODEL_H
 
 #include <QSortFilterProxyModel>
+#include "commonfunc.h"
 
 class FieldFilterProxyModel : public QSortFilterProxyModel
 {
@@ -13,8 +14,10 @@ public:
     void setKeyword(const QString& keyword);
     void setStatus(int status);           // 可选
 
+    QVariant data(const QModelIndex &index,
+        int role = Qt::DisplayRole) const override;
 protected:
-    bool filterAcceptsRow(int row, const QModelIndex &parent) const override;
+    bool filterAcceptsRow(int srcRow, const QModelIndex &srcParent) const override;
 
 private:
     int m_filterColumn = 0;

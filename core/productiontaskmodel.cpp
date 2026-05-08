@@ -7,9 +7,14 @@ ProductionTaskModel::ProductionTaskModel(QObject *parent)
     : BaseTableModel(parent)
 {
     // ===== 1. 创建 delegate =====
-    OperationDelegate* opDelegate =
-        new OperationDelegate(this);
+    opDelegate =  new OperationDelegate(this);
+    initConnect();
+    setColumnHeader();
+    setColumnData();
+}
 
+void ProductionTaskModel::initConnect()
+{
     // ===== 2. 绑定信号 =====
     connect(opDelegate,
             &OperationDelegate::sigPrintClicked,
@@ -27,52 +32,220 @@ ProductionTaskModel::ProductionTaskModel(QObject *parent)
                 qDebug() << "开工 row =" << row;
             });
 
+}
+
+void ProductionTaskModel::setColumnHeader()
+{
     // ===== 3. 列配置 =====
     m_columns =
         {
-            {"选择", "", 50, true, Qt::AlignCenter, ColumnType::CheckBox},
+            // 选择框
+            {
+                "选择",
+                "",
+                60,
+                true,
+                Qt::AlignCenter,
+                ColumnType::CheckBox
+            },
 
-            {"序号", "", 70, true, Qt::AlignCenter, ColumnType::RowNumber},
+            // 序号
+            {
+                "序号",
+                "",
+                70,
+                true,
+                Qt::AlignCenter,
+                ColumnType::RowNumber
+            },
 
-            {"任务单号", "taskNo", 180},
+            // 生产任务单号
+            {
+                "生产任务单号",
+                "taskNo",
+                180
+            },
 
-            {"产品编码", "productCode", 150},
+            // 产品型号
+            {
+                "产品型号",
+                "productModel",
+                150
+            },
 
-            {"产品名称", "productName", 200},
+            // ERP编码
+            {
+                "产品ERP编码",
+                "erpCode",
+                180
+            },
 
-            {"计划数量", "planCount", 100},
+            // 产品名称
+            {
+                "产品名称",
+                "productName",
+                180
+            },
 
-            {"状态", "status", 100},
+            // 产品类型
+            {
+                "产品类型",
+                "productType",
+                120
+            },
 
+            // 生产线编号
+            {
+                "生产线编号",
+                "lineNo",
+                150
+            },
+
+            // 工单数量
+            {
+                "工单数量",
+                "workCount",
+                120
+            },
+
+            // 是否分配
+            {
+                "是否分配",
+                "isAssigned",
+                120
+            },
+
+            // info任务单号
+            {
+                "info任务单号",
+                "infoTaskNo",
+                180
+            },
+
+            // 工艺路线
+            {
+                "生产工艺路线",
+                "routeName",
+                180
+            },
+
+            // 开始时间
+            {
+                "计划开始时间",
+                "startTime",
+                180
+            },
+
+            // 完成时间
+            {
+                "计划完成时间",
+                "finishTime",
+                180
+            },
+
+            // 优先级
+            {
+                "优先级",
+                "priority",
+                100
+            },
+
+            // 操作列
             {
                 "操作",
                 "action",
-                180,
+                220,
                 true,
                 Qt::AlignCenter,
                 ColumnType::Operation,
                 opDelegate
             }
         };
+}
 
+void ProductionTaskModel::setColumnData()
+{
     // ===== 4. 模拟数据 =====
     QVector<QVariantMap> rows;
 
     rows.append({
         {"taskNo", "MO20250401001"},
-        {"productCode", "P10001"},
+        {"productModel", "XH-200"},
+        {"erpCode", "ERP-001"},
         {"productName", "减速器"},
-        {"planCount", 100},
+        {"productType", "成品"},
+        {"lineNo", "LINE-01"},
+        {"workCount", 100},
+        {"isAssigned", "已分配"},
+        {"infoTaskNo", "INFO-0001"},
+        {"routeName", "装配工艺路线"},
+        {"startTime", "2026-05-08 08:00"},
+        {"finishTime", "2026-05-10 18:00"},
+        {"priority", "高"},
+
+        // ⭐ 不显示，但过滤需要
         {"status", "未开工"},
+
         {"action", ""}
     });
 
     rows.append({
         {"taskNo", "MO20250401002"},
-        {"productCode", "P10002"},
+        {"productModel", "XH-300"},
+        {"erpCode", "ERP-002"},
         {"productName", "电机"},
-        {"planCount", 200},
+        {"productType", "半成品"},
+        {"lineNo", "LINE-02"},
+        {"workCount", 200},
+        {"isAssigned", "未分配"},
+        {"infoTaskNo", "INFO-0002"},
+        {"routeName", "测试工艺路线"},
+        {"startTime", "2026-05-09 08:00"},
+        {"finishTime", "2026-05-11 18:00"},
+        {"priority", "中"},
+
         {"status", "已开工"},
+
+        {"action", ""}
+    });
+
+    rows.append({
+        {"taskNo", "MO20250401002"},
+        {"productModel", "XH-300"},
+        {"erpCode", "ERP-002"},
+        {"productName", "电机"},
+        {"productType", "半成品"},
+        {"lineNo", "LINE-02"},
+        {"workCount", 200},
+        {"isAssigned", "未分配"},
+        {"infoTaskNo", "INFO-0002"},
+        {"routeName", "测试工艺路线"},
+        {"startTime", "2026-05-09 08:00"},
+        {"finishTime", "2026-05-11 18:00"},
+        {"priority", "中"},
+
+        {"status", "已完工"},
+
+        {"action", ""}
+    });
+    rows.append({
+        {"taskNo", "MO20250401001"},
+        {"productModel", "XH-200"},
+        {"erpCode", "ERP-001"},
+        {"productName", "减速器"},
+        {"productType", "成品"},
+        {"lineNo", "LINE-01"},
+        {"workCount", 100},
+        {"isAssigned", "已分配"},
+        {"infoTaskNo", "INFO-0001"},
+        {"routeName", "装配工艺路线"},
+        {"startTime", "2026-05-08 08:00"},
+        {"finishTime", "2026-05-10 18:00"},
+        {"priority", "高"},
+
+        // ⭐ 不显示，但过滤需要
+        {"status", "已开工"},
+
         {"action", ""}
     });
 

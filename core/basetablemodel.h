@@ -13,6 +13,8 @@ class BaseTableModel : public QAbstractTableModel
 public:
     explicit BaseTableModel(QObject *parent = nullptr);
 
+    QVariantMap rowData(int row) const;
+
     // 设置数据
     void setRows(const QVector<QVariantMap>& rows);
 

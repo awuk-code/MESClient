@@ -142,10 +142,6 @@ void BasePageWidget::initTabs()
             }
         }
 
-
-
-
-        table->setSelectionBehavior(QAbstractItemView::SelectRows);
         connect(table,
                 &QTableView::clicked,
                 this,
@@ -173,20 +169,39 @@ void BasePageWidget::initTabs()
                         }
                     }
                 });
-        table->setSelectionMode(
-            QAbstractItemView::SingleSelection);
 
-        table->setEditTriggers(
-            QAbstractItemView::NoEditTriggers);
 
+// 整行选中（点击任意单元格时选中整行）
+        table->setSelectionBehavior(QAbstractItemView::SelectRows);
+        // 单选模式（一次只能选中一行）
+        table->setSelectionMode( QAbstractItemView::SingleSelection);//批量check--NoSelection，ExtendedSelection
+        // 禁止编辑单元格
+        // 表格变成纯展示模式
+        table->setEditTriggers( QAbstractItemView::NoEditTriggers);
+// 开启斑马纹（隔行颜色）
         table->setAlternatingRowColors(true);
-
-        table->setShowGrid(false);
-        table->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
-        table->horizontalHeader()->setStretchLastSection(false);
+// 显示表格网格线
+        // table->setShowGrid(true);
+        // 列宽自动适配内容
+         //table->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+// 最后一列自动拉伸填满剩余空间
+        table->horizontalHeader()->setStretchLastSection(true);
+        // 横向滚动按像素平滑滚动
         table->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
+        // 根据需要显示横向滚动条
         table->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+        // 隐藏左侧垂直表头（默认行号）
         table->verticalHeader()->hide();
+        // 设置列最小宽度
+        // 防止列太窄导致内容挤压
+        table->horizontalHeader()->setMinimumSectionSize(60);
+// 表头文字居中
+        table->horizontalHeader()->setDefaultAlignment(Qt::AlignCenter);
+
+        // 禁止自动换行
+        table->setWordWrap(false);
+// 文本过长时显示省略号 ...
+        table->setTextElideMode(Qt::ElideRight);
 
         m_stack->addWidget(table);
         m_tables.append(table);
