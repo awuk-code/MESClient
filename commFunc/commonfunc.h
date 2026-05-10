@@ -15,6 +15,13 @@ struct TabConfig
     int status;      // 对应状态值
 };
 
+///表头字段类型
+enum class FilterType
+{
+    Date,       ///日期
+    Priority    ///优先级
+};
+
 enum class ColumnType
 {
     Normal,

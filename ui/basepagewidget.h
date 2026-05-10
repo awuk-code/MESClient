@@ -17,7 +17,6 @@
 
 #include "fieldfilterproxymodel.h"
 #include "commonfunc.h"
-#include "basetablemodel.h"
 
 class BasePageWidget : public QWidget
 {

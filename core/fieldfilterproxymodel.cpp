@@ -102,8 +102,30 @@ bool FieldFilterProxyModel::filterAcceptsRow(int srcRow, const QModelIndex &srcP
     // ===== 关键字过滤 =====
     if (!m_keyword.isEmpty())
     {
-        QString text = row.value("taskNo").toString();
-        if(!text.contains(m_keyword, Qt::CaseInsensitive)){
+        QStringList searchFields =
+            {
+            /////////拓展搜索区域
+                "taskNo",
+                "productModel",
+                "erpCode",
+                "productName"
+            };
+
+        bool matched = false;
+
+        for (const QString& field : searchFields)
+        {
+            QString value = row.value(field).toString();
+
+            if (value.contains(m_keyword, Qt::CaseInsensitive))
+            {
+                matched = true;
+                break;
+            }
+        }
+
+        if (!matched)
+        {
             return false;
         }
     }

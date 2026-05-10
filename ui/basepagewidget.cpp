@@ -1,6 +1,8 @@
 #include "basepagewidget.h"
+#include "customheaderview.h"
 #include "fieldfilterproxymodel.h"
 #include "basetablemodel.h"
+#include "headeroverlaywidget.h"
 
 BasePageWidget::BasePageWidget(QWidget *parent)
     : QWidget{parent}
@@ -104,28 +106,63 @@ void BasePageWidget::initTabs()
     QVector<TabConfig> tabs = this->tabs();
 
     if (tabs.isEmpty())
-    {
         m_tabBar->hide();
-    }
+
     for (int i = 0; i < tabs.size(); ++i)
     {
         // Tab按钮
         m_tabBar->addTab(tabs[i].title);
-
+        //创建表格
         QTableView* table = new QTableView;
-
+        //创建代理模型
         auto proxy = createProxy(tabs[i].status);
         if (!proxy || !m_model) continue;
 
         proxy->setSourceModel(m_model);
         table->setModel(proxy);
 
+        //设置自定义表头
+        auto customHeader = new CustomHeaderView(Qt::Horizontal,table);
+        table->setHorizontalHeader(customHeader);
+
+        auto overlay = new HeaderOverlayWidget(customHeader, table);
+        overlay->setColumnFields({
+            {0, "startTime"},
+            {1, "finishTime"},
+            {2, "priority"}
+        });
+        overlay->resize(customHeader->viewport()->size());
+        overlay->show();
+        overlay->raise();
+
+        connect(customHeader, &QHeaderView::geometriesChanged,
+                this, [=]() {
+                    overlay->resize(customHeader->viewport()->size());
+                    overlay->update();
+                });
+
+        connect(customHeader, &QHeaderView::sectionResized,
+                this, [=]() {
+                    overlay->update();
+                });
+
+        connect(customHeader, &QHeaderView::sectionMoved,
+                this, [=]() {
+                    overlay->update();
+                });
+     ///设置搜索区域,可以移除原先的自定义表头customHeader，采用遮罩层方法
+        QSet<QString> filterFields = {"startTime", "finishTime", "priority"};
+        // customHeader->setFilterFields(filterFields);
+        overlay->setFilterFields(filterFields); // ✅ 加上这一句
+        // ==============================
+        // 5. 设置列配置
+        // ==============================
         auto baseModel = qobject_cast<BaseTableModel*>(m_model);
 
         if (baseModel)
         {
             const auto& columns = baseModel->columns();
-
+            qDebug() << __FUNCTION__ << "column count =" << columns.size();
             auto header = table->horizontalHeader();    //--------
             for (int col = 0; col < columns.size(); ++col)
             {
@@ -151,7 +188,9 @@ void BasePageWidget::initTabs()
                     !cfg.visible);
             }
         }
-
+        // ==============================
+        // 6. 点击复选框时选中/取消整行
+        // ==============================
         connect(table, &QTableView::clicked, this, [=](const QModelIndex& index)
                 {
                     if (!index.isValid())
@@ -170,16 +209,16 @@ void BasePageWidget::initTabs()
                         else
                         {
                             table->selectionModel()->select( index,
-                                QItemSelectionModel::Deselect | QItemSelectionModel::Rows);
+                                                            QItemSelectionModel::Deselect | QItemSelectionModel::Rows);
                         }
                     }
                 });
 
 
         // 整行选中（点击任意单元格时选中整行）
-        table->setSelectionBehavior(QAbstractItemView::SelectRows);
+        //  table->setSelectionBehavior(QAbstractItemView::SelectRows);
         // 单选模式（一次只能选中一行）
-        table->setSelectionMode( QAbstractItemView::SingleSelection);//批量check--NoSelection，ExtendedSelection
+        // table->setSelectionMode( QAbstractItemView::SingleSelection);//批量check--NoSelection，ExtendedSelection
         // 禁止编辑单元格
         // 表格变成纯展示模式
         table->setEditTriggers( QAbstractItemView::NoEditTriggers);
@@ -207,12 +246,17 @@ void BasePageWidget::initTabs()
         m_stack->addWidget(table);
         m_tables.append(table);
         m_proxies.append(proxy);
+        qDebug() << __FUNCTION__ << __FUNCTION__ <<"Header class:"
+                 << table->horizontalHeader()
+                        ->metaObject()
+                        ->className();
     }
     if (m_stack->count() > 0)
     {
         m_stack->setCurrentIndex(0);
         m_tabBar->setCurrentIndex(0);
     }
+
 }
 
 void BasePageWidget::initConnect()
@@ -235,7 +279,7 @@ void BasePageWidget::initConnect()
             {
                 QString text = m_searchEdit->text();
 
-                for (auto proxy : m_proxies)
+                for (auto proxy : std::as_const(m_proxies))
                 {
                     proxy->setKeyword(text);
                 }

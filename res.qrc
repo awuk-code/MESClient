@@ -24,5 +24,6 @@
         <file>res/common/time.svg</file>
         <file>res/common/search.svg</file>
         <file>res/common/rect.svg</file>
+        <file>res/common/filter.svg</file>
     </qresource>
 </RCC>

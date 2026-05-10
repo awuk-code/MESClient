@@ -49,8 +49,8 @@ void ProductionTaskModel::setColumnHeader()
                 Qt::AlignCenter,
                 ColumnType::CheckBox,
                 QHeaderView::Fixed,
-            //添加选择框代理
-            m_checkBoxDelegate
+                //添加选择框代理
+                m_checkBoxDelegate
             },
 
             // 序号
@@ -146,22 +146,35 @@ void ProductionTaskModel::setColumnHeader()
             {
                 "计划开始时间",
                 "startTime",
-                180
+                130,
+                true,
+                Qt::AlignCenter,
+                ColumnType::Normal,
+                QHeaderView::Fixed
             },
 
             // 完成时间
             {
                 "计划完成时间",
                 "finishTime",
-                180
+                130,
+                true,
+                Qt::AlignCenter,
+                ColumnType::Normal,
+                QHeaderView::Fixed
+
             },
 
             // 优先级
-            {
-                "优先级",
-                "priority",
-                100
-            },
+        {
+            "优先级",
+            "priority",
+            100,
+            true,
+            Qt::AlignCenter,
+            ColumnType::Normal,
+            QHeaderView::Fixed
+        },
 
             // 操作列
             {
