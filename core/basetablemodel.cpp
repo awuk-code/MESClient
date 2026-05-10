@@ -46,18 +46,12 @@ QVariant BaseTableModel::data(
     const auto& col = m_columns[index.column()];
 
     // ===== 对齐 =====
-
     if (role == Qt::TextAlignmentRole)
     {
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
         return QVariant::fromValue(col.alignment);
-#else
-        return col.alignment;
-#endif
     }
 
     // ===== checkbox =====
-
     if (col.type == ColumnType::CheckBox)
     {
         if (role == Qt::CheckStateRole)
@@ -74,7 +68,6 @@ QVariant BaseTableModel::data(
     }
 
     // ===== 显示数据 =====
-
     if (role == Qt::DisplayRole)
     {
         // ===== 普通数据 =====
@@ -83,6 +76,10 @@ QVariant BaseTableModel::data(
 
         return row.value(col.field);
     }
+/////////////////////////////////
+    if(role == Qt::UserRole)
+        return m_rows[index.row()];
+
 
     return {};
 }
@@ -147,6 +144,11 @@ bool BaseTableModel::setData(
 
         emit dataChanged(index, index);
 
+        return true;
+    }
+    if(role == Qt::UserRole){
+        m_rows[index.row()] = value.toMap();
+        emit dataChanged(index, index);
         return true;
     }
 

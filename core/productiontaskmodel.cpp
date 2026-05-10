@@ -1,5 +1,5 @@
 #include "productiontaskmodel.h"
-#include "operationdelegate.h"
+#include "../ui/operationdelegate.h"
 
 #include <QDebug>
 
@@ -7,6 +7,7 @@ ProductionTaskModel::ProductionTaskModel(QObject *parent)
     : BaseTableModel(parent)
 {
     // ===== 1. 创建 delegate =====
+    m_checkBoxDelegate = new CheckBoxDelegate(this);
     opDelegate =  new OperationDelegate(this);
     initConnect();
     setColumnHeader();
@@ -21,7 +22,7 @@ void ProductionTaskModel::initConnect()
             this,
             [](int row)
             {
-                qDebug() << "打印 row =" << row;
+                qDebug() << __FUNCTION__ <<"打印 row =" << row;
             });
 
     connect(opDelegate,
@@ -29,7 +30,7 @@ void ProductionTaskModel::initConnect()
             this,
             [](int row)
             {
-                qDebug() << "开工 row =" << row;
+                qDebug() << __FUNCTION__ << "开工 row =" << row;
             });
 
 }
@@ -43,18 +44,20 @@ void ProductionTaskModel::setColumnHeader()
             {
                 "选择",
                 "checked",
-                60,
+                50,
                 true,
                 Qt::AlignCenter,
                 ColumnType::CheckBox,
-                QHeaderView::Fixed
+                QHeaderView::Fixed,
+            //添加选择框代理
+            m_checkBoxDelegate
             },
 
             // 序号
             {
                 "序号",
                 "rowNumber",
-                70,
+                50,
                 true,
                 Qt::AlignCenter,
                 ColumnType::RowNumber,
@@ -183,7 +186,7 @@ void ProductionTaskModel::setColumnData()
         {"taskNo", "MO20250401001"},
         {"productModel", "XH-200"},
         {"erpCode", "ERP-001"},
-        {"productName", "减速器"},
+        {"productName", "1"},
         {"productType", "成品"},
         {"lineNo", "LINE-01"},
         {"workCount", 100},
@@ -197,15 +200,18 @@ void ProductionTaskModel::setColumnData()
         // ⭐ 不显示，但过滤需要
         {"status", "未开工"},
 
+        {FIELD_LABEL_PRINTED, false},
+        {FIELD_STARTED, false},
         {"action", ""}
+
     });
 
     rows.append({
         {"taskNo", "MO20250401002"},
         {"productModel", "XH-300"},
         {"erpCode", "ERP-002"},
-        {"productName", "电机"},
-        {"productType", "半成品"},
+        {"productName", "2"},
+        {"productType", "2"},
         {"lineNo", "LINE-02"},
         {"workCount", 200},
         {"isAssigned", "未分配"},
@@ -216,7 +222,8 @@ void ProductionTaskModel::setColumnData()
         {"priority", "中"},
 
         {"status", "已开工"},
-
+        {FIELD_LABEL_PRINTED, true},
+        {FIELD_STARTED, true},
         {"action", ""}
     });
 
@@ -224,8 +231,8 @@ void ProductionTaskModel::setColumnData()
         {"taskNo", "MO20250401002"},
         {"productModel", "XH-300"},
         {"erpCode", "ERP-002"},
-        {"productName", "电机"},
-        {"productType", "半成品"},
+        {"productName", "3"},
+        {"productType", "3"},
         {"lineNo", "LINE-02"},
         {"workCount", 200},
         {"isAssigned", "未分配"},
@@ -236,14 +243,15 @@ void ProductionTaskModel::setColumnData()
         {"priority", "中"},
 
         {"status", "已完工"},
-
+        {FIELD_LABEL_PRINTED, true},
+        {FIELD_STARTED, false},
         {"action", ""}
     });
     rows.append({
         {"taskNo", "MO20250401001"},
         {"productModel", "XH-200"},
         {"erpCode", "ERP-001"},
-        {"productName", "减速器"},
+        {"productName", "4"},
         {"productType", "成品"},
         {"lineNo", "LINE-01"},
         {"workCount", 100},
@@ -256,7 +264,8 @@ void ProductionTaskModel::setColumnData()
 
         // ⭐ 不显示，但过滤需要
         {"status", "已开工"},
-
+        {FIELD_LABEL_PRINTED, true},
+        {FIELD_STARTED, true},
         {"action", ""}
     });
 

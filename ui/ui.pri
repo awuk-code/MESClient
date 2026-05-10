@@ -2,8 +2,11 @@ INCLUDEPATH += $$PWD
 
 HEADERS +=  \
     $$PWD/basepagewidget.h \
+    $$PWD/checkboxdelegate.h \
+    $$PWD/customheaderview.h \
     $$PWD/headerwidget.h \
     $$PWD/mainwindow.h \
+    $$PWD/operationdelegate.h \
     $$PWD/productiontaskpage.h \
     $$PWD/sidebarwidget.h \
     $$PWD/subheaderwidget.h
@@ -11,8 +14,11 @@ HEADERS +=  \
 
 SOURCES +=      \
     $$PWD/basepagewidget.cpp \
+    $$PWD/checkboxdelegate.cpp \
+    $$PWD/customheaderview.cpp \
         $$PWD/headerwidget.cpp \
         $$PWD/mainwindow.cpp \
+    $$PWD/operationdelegate.cpp \
     $$PWD/productiontaskpage.cpp \
     $$PWD/sidebarwidget.cpp \
     $$PWD/subheaderwidget.cpp

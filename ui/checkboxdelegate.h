@@ -1,23 +1,22 @@
-#ifndef OPERATIONDELEGATE_H
-#define OPERATIONDELEGATE_H
+#ifndef CHECKBOXDELEGATE_H
+#define CHECKBOXDELEGATE_H
+/**
+ * 复选框列代理
+ *
+ * */
 
-#include <QPainter>
+#include <QStyledItemDelegate>
+#include <QApplication>
 #include <QMouseEvent>
+#include <QPainter>
+#include <QStyle>
 
-#include "baseitemdelegate.h"
-
-class OperationDelegate : public BaseItemDelegate
+class CheckBoxDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
 public:
-    explicit OperationDelegate(QObject *parent = nullptr);
+    explicit CheckBoxDelegate(QObject *parent = nullptr);
 
-signals:
-    void sigPrintClicked(int row);
-
-    void sigStartClicked(int row);
-
-public:
     void paint(QPainter *painter,
                const QStyleOptionViewItem &option,
                const QModelIndex &index) const override;
@@ -26,6 +25,8 @@ public:
                      QAbstractItemModel *model,
                      const QStyleOptionViewItem &option,
                      const QModelIndex &index) override;
+
+
 };
 
-#endif // OPERATIONDELEGATE_H
+#endif // CHECKBOXDELEGATE_H

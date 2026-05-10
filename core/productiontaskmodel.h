@@ -3,7 +3,8 @@
 
 #include <QAbstractTableModel>
 #include "basetablemodel.h"
-#include "operationdelegate.h"
+#include "../ui/checkboxdelegate.h"
+#include "../ui/operationdelegate.h"
 
 class ProductionTaskModel : public BaseTableModel
 {
@@ -14,6 +15,7 @@ public:
     void setColumnHeader();
     void setColumnData();
 
+    CheckBoxDelegate* m_checkBoxDelegate {nullptr};
     OperationDelegate* opDelegate{nullptr};
 };
 

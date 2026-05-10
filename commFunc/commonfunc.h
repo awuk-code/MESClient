@@ -5,6 +5,10 @@
 #include <QStyledItemDelegate>
 #include <QHeaderView>
 
+
+//标签打印和开工
+constexpr auto FIELD_LABEL_PRINTED = "labelPrinted";
+constexpr auto FIELD_STARTED = "started";
 struct TabConfig
 {
     QString title;   // Tab标题
@@ -19,6 +23,7 @@ enum class ColumnType
     Operation,
     Image
 };
+
 
 struct ColumnConfig
 {
