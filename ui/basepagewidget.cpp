@@ -1,5 +1,4 @@
 #include "basepagewidget.h"
-#include "customheaderview.h"
 #include "fieldfilterproxymodel.h"
 #include "basetablemodel.h"
 #include "headeroverlaywidget.h"
@@ -21,6 +20,8 @@ void BasePageWidget::setupPage()
     m_exportBtn->setVisible(enableExport());
 
 }
+
+
 
 void BasePageWidget::initUI()
 {
@@ -121,42 +122,45 @@ void BasePageWidget::initTabs()
         proxy->setSourceModel(m_model);
         table->setModel(proxy);
 
-        //设置自定义表头
-        auto customHeader = new CustomHeaderView(Qt::Horizontal,table);
-        table->setHorizontalHeader(customHeader);
+        auto header = new QHeaderView(Qt::Horizontal, table);
+        header->setDefaultAlignment(Qt::AlignCenter);
+        table->setHorizontalHeader(header);
 
-        auto overlay = new HeaderOverlayWidget(customHeader, table);
+        auto overlay = new HeaderOverlayWidget(header, table);
+
+        overlay->resize(header->viewport()->size());
+        overlay->show();
+        overlay->raise();
+
+        connect(header, &QHeaderView::geometriesChanged,
+                this, [=]() {
+                    overlay->resize(header->viewport()->size());
+                    overlay->update();
+                });
+
+        connect(header, &QHeaderView::sectionResized,
+                this, [=]() {
+                    overlay->update();
+                });
+
+        connect(header, &QHeaderView::sectionMoved,
+                this, [=]() {
+                    overlay->update();
+                });
+     ///设置搜索区域,可以移除原先的自定义表头header，采用遮罩层方法
+        QSet<QString> filterFields = {"startTime", "finishTime", "priority"};
+        // header->setFilterFields(filterFields);
+        overlay->setFilterFields(filterFields); // ✅ 加上这一句
+
         overlay->setColumnFields({
             {0, "startTime"},
             {1, "finishTime"},
             {2, "priority"}
         });
-        overlay->resize(customHeader->viewport()->size());
-        overlay->show();
-        overlay->raise();
 
-        connect(customHeader, &QHeaderView::geometriesChanged,
-                this, [=]() {
-                    overlay->resize(customHeader->viewport()->size());
-                    overlay->update();
-                });
-
-        connect(customHeader, &QHeaderView::sectionResized,
-                this, [=]() {
-                    overlay->update();
-                });
-
-        connect(customHeader, &QHeaderView::sectionMoved,
-                this, [=]() {
-                    overlay->update();
-                });
-     ///设置搜索区域,可以移除原先的自定义表头customHeader，采用遮罩层方法
-        QSet<QString> filterFields = {"startTime", "finishTime", "priority"};
-        // customHeader->setFilterFields(filterFields);
-        overlay->setFilterFields(filterFields); // ✅ 加上这一句
         // ==============================
         // 5. 设置列配置
-        // ==============================
+         // ===== 获取基础模型 =====
         auto baseModel = qobject_cast<BaseTableModel*>(m_model);
 
         if (baseModel)
@@ -225,7 +229,7 @@ void BasePageWidget::initTabs()
         // 开启斑马纹（隔行颜色）
         table->setAlternatingRowColors(true);
         // 最后一列自动拉伸填满剩余空间
-        table->horizontalHeader()->setStretchLastSection(true);
+        // table->horizontalHeader()->setStretchLastSection(true);
         // 横向滚动按像素平滑滚动
         table->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
         // 根据需要显示横向滚动条
@@ -242,6 +246,7 @@ void BasePageWidget::initTabs()
         table->setWordWrap(false);
         // 文本过长时显示省略号 ...
         table->setTextElideMode(Qt::ElideRight);
+
 
         m_stack->addWidget(table);
         m_tables.append(table);

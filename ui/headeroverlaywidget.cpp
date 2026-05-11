@@ -6,7 +6,7 @@
 HeaderOverlayWidget::HeaderOverlayWidget(QHeaderView *header, QWidget *parent)
     : QWidget{parent}, m_header(header)
 {
-    setAttribute(Qt::WA_TransparentForMouseEvents);
+  //  setAttribute(Qt::WA_TransparentForMouseEvents, false);
     setAttribute(Qt::WA_TranslucentBackground);
     setAttribute(Qt::WA_NoSystemBackground);
 
@@ -53,7 +53,8 @@ void HeaderOverlayWidget::showDatePopup(const QRect &iconRect)
     globalPos.setY(globalPos.y() + 5); // 微调
 
     QPoint pos = QCursor::pos();
-    popup->move(pos);
+   // popup->move(pos);
+    popup->move(globalPos);
     popup->show();
 }
 

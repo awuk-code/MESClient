@@ -14,6 +14,8 @@
 #include <QTableView>
 #include <QAbstractItemModel>
 #include <QHeaderView>
+#include <QStandardItemModel>
+#include <QResizeEvent>
 
 #include "fieldfilterproxymodel.h"
 #include "commonfunc.h"
@@ -26,6 +28,8 @@ public:
 
 public:
     void setupPage();
+
+
 
 protected:
     // 子类实现

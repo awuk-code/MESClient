@@ -3,7 +3,6 @@ INCLUDEPATH += $$PWD
 HEADERS +=  \
     $$PWD/basepagewidget.h \
     $$PWD/checkboxdelegate.h \
-    $$PWD/customheaderview.h \
     $$PWD/datefilterpopup.h \
     $$PWD/headeroverlaywidget.h \
     $$PWD/headerwidget.h \
@@ -17,7 +16,6 @@ HEADERS +=  \
 SOURCES +=      \
     $$PWD/basepagewidget.cpp \
     $$PWD/checkboxdelegate.cpp \
-    $$PWD/customheaderview.cpp \
     $$PWD/datefilterpopup.cpp \
     $$PWD/headeroverlaywidget.cpp \
         $$PWD/headerwidget.cpp \
