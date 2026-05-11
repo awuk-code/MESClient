@@ -8,7 +8,8 @@
 #include <QPushButton>
 #include "commonfunc.h"
 #include "datefilterpopup.h"
-
+#include <QMenu>
+#include <QAction>
 class HeaderOverlayWidget : public QWidget
 {
     Q_OBJECT
@@ -20,13 +21,15 @@ public:
     {
         m_columnFields = map;
     }
-    void showDatePopup(const QRect& iconRect);
+
 
 protected:
     void paintEvent(QPaintEvent *) override;
 protected:
     void mousePressEvent(QMouseEvent *event) override;
-
+private:
+    void showDatePopup(const QRect& iconRect);
+    void showPriorityPopup(const QRect &iconRect);
 private:
     QHeaderView *m_header = nullptr;
     QSet<QString> m_fields;

@@ -1,6 +1,7 @@
 #include "headeroverlaywidget.h"
 #include "basetablemodel.h"
 #include "qabstractproxymodel.h"
+#include "qmenu.h"
 #include "qpainter.h"
 
 HeaderOverlayWidget::HeaderOverlayWidget(QHeaderView *header, QWidget *parent)
@@ -125,10 +126,39 @@ void HeaderOverlayWidget::showDatePopup(const QRect &iconRect)
 
     globalPos.setY(globalPos.y() + 5); // 微调
 
-    QPoint pos = QCursor::pos();
+   // QPoint pos = QCursor::pos();
    // popup->move(pos);
     popup->move(globalPos);
     popup->show();
+}
+
+void HeaderOverlayWidget::showPriorityPopup(const QRect &iconRect)
+{
+    qDebug() << __FUNCTION__ << "show priority popup";
+
+    QMenu *menu = new QMenu(this);
+
+    QAction *highAction   = menu->addAction(QStringLiteral("高"));
+    QAction *mediumAction = menu->addAction(QStringLiteral("中"));
+    QAction *lowAction    = menu->addAction(QStringLiteral("低"));
+
+    // 连接菜单选择信号
+    connect(menu, &QMenu::triggered,
+            this, [=](QAction *action)
+            {
+                qDebug() << "selected priority:" << action->text();
+
+                // TODO:
+                // emit prioritySelected(action->text());
+                // 或通知 proxy 进行过滤
+            });
+
+    // 将图标区域坐标转换为全局坐标
+    QPoint globalPos = mapToGlobal(iconRect.bottomLeft());
+    globalPos.setY(globalPos.y() + 5);
+
+    // 在图标下方弹出菜单
+    menu->popup(globalPos);
 }
 
 
@@ -229,6 +259,11 @@ void HeaderOverlayWidget::mousePressEvent(QMouseEvent *event)
             return;
         }
 
+        if(field == "priority"){
+            qDebug() << "⭐ priority field clicked";
+            showPriorityPopup(iconRect);
+            return;
+        }
         qDebug() << "🔍 normal filter field clicked";
         return;
     }
