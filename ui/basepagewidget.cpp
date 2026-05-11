@@ -126,7 +126,7 @@ void BasePageWidget::initTabs()
         header->setDefaultAlignment(Qt::AlignCenter);
         table->setHorizontalHeader(header);
 
-        auto overlay = new HeaderOverlayWidget(header, table);
+        auto overlay = new HeaderOverlayWidget(header, header->viewport());
 
         overlay->resize(header->viewport()->size());
         overlay->show();
@@ -148,15 +148,13 @@ void BasePageWidget::initTabs()
                     overlay->update();
                 });
      ///设置搜索区域,可以移除原先的自定义表头header，采用遮罩层方法
-        QSet<QString> filterFields = {"startTime", "finishTime", "priority"};
-        // header->setFilterFields(filterFields);
-        overlay->setFilterFields(filterFields); // ✅ 加上这一句
+        QSet<QString> filterFields;
+        filterFields << "startTime"
+                     << "finishTime"
+                     << "priority";
+        overlay->setFilterFields(filterFields); // 用于筛选哪些需要自定义图标
 
-        overlay->setColumnFields({
-            {0, "startTime"},
-            {1, "finishTime"},
-            {2, "priority"}
-        });
+
 
         // ==============================
         // 5. 设置列配置

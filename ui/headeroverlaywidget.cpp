@@ -15,20 +15,93 @@ raise();
 
 void HeaderOverlayWidget::setFilterFields(const QSet<QString> &fields)
 {
+    // 1. 保存需要显示图标的字段集合
     m_fields = fields;
+
+    // 2. 清空旧的列映射
+    m_columnFields.clear();
+
+    // 3. 获取当前模型
+    QAbstractItemModel *model = m_header->model();
+    if (!model)
+    {
+        update();
+        return;
+    }
+
+    // 4. 找到 BaseTableModel
+    BaseTableModel *baseModel = qobject_cast<BaseTableModel*>(model);
+    // 5. 如果 Header 使用的是代理模型（FieldFilterProxyModel），
+    //    则继续从 sourceModel() 中获取 BaseTableModel
+    if (!baseModel)
+    {
+        QAbstractProxyModel *proxy =
+            qobject_cast<QAbstractProxyModel*>(model);
+
+        if (proxy)
+            baseModel =
+                qobject_cast<BaseTableModel*>(proxy->sourceModel());
+    }
+    // 6. 如果最终仍然没有拿到 BaseTableModel，
+    //    则无法获取 columns() 配置，直接退出
+    if (!baseModel)
+    {
+        update();
+        qDebug() << __FUNCTION__ <<"无法获取 columns() 配置，直接退出";
+        return;
+    }
+
+    // 7. 获取列配置列表
+    //    每个 ColumnConfig 中都包含：
+    //    - title
+    //    - field
+    //    - width
+    //    - visible
+    //    - resizeMode
+    const QVector<ColumnConfig> &columns = baseModel->columns();
+    // 8. 遍历所有列，找出需要显示筛选图标的字段
+    for (int i = 0; i < columns.size(); ++i)
+    {
+        const QString &field = columns[i].field;
+
+        if (m_fields.contains(field))
+        {
+            m_columnFields[i] = field;
+
+            qDebug() << "filter field:"
+                     << field
+                     << "column =" << i;
+        }
+    }
+
+    // . 触发重绘
     update();
 }
 
 QRect HeaderOverlayWidget::calcIconRect(int column) const
 {
-    int sectionPos = m_header->sectionPosition(column);
+    // 列被隐藏
+    if (m_header->isSectionHidden(column))
+        return QRect();
+
+    // 获取列在 viewport 中的位置
+    int sectionPos = m_header->sectionViewportPosition(column);
+
+    // 不可见时返回无效矩形
+    if (sectionPos < 0)
+        return QRect();
+
+    // 获取列宽
     int sectionWidth = m_header->sectionSize(column);
 
-    int iconSize = 14;
+    // 图标参数
+    const int iconSize = 14;
+    const int rightMargin = 6;
 
+    // 图标放在列右侧，垂直居中
     return QRect(
-        sectionPos + sectionWidth - iconSize - 6,
-        6,
+        sectionPos + sectionWidth - iconSize - rightMargin,
+        (height() - iconSize) / 2,
         iconSize,
         iconSize
         );
@@ -122,21 +195,45 @@ void HeaderOverlayWidget::paintEvent(QPaintEvent *)
 
 void HeaderOverlayWidget::mousePressEvent(QMouseEvent *event)
 {
-    for (auto it = m_iconRects.begin(); it != m_iconRects.end(); ++it)
+    qDebug() << __FUNCTION__
+             << "mouse clicked, pos =" << event->pos();
+
+    for (auto it = m_columnFields.begin(); it != m_columnFields.end(); ++it)
     {
         int column = it.key();
+        QString field = it.value();
 
-        if (!it.value().contains(event->pos()))
+        // 实时计算当前图标区域
+        QRect iconRect = calcIconRect(column);
+
+        qDebug() << "check column =" << column
+                 << ", field =" << field
+                 << ", iconRect =" << iconRect;
+
+        // 无效区域直接跳过
+        if (!iconRect.isValid() || iconRect.isEmpty())
             continue;
 
-        QString field = m_columnFields.value(column);
+        // 判断点击是否落在图标区域
+        if (!iconRect.contains(event->pos()))
+            continue;
+
+        qDebug() << "✅ icon clicked!"
+                 << "column =" << column
+                 << "field =" << field;
 
         if (field == "startTime" || field == "finishTime")
         {
-            showDatePopup(it.value());
+            qDebug() << "📅 date field clicked";
+            showDatePopup(iconRect);
             return;
         }
+
+        qDebug() << "🔍 normal filter field clicked";
+        return;
     }
+
+    qDebug() << "❌ click not inside any icon rect";
 
     QWidget::mousePressEvent(event);
 }
