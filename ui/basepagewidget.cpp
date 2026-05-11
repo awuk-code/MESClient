@@ -3,6 +3,8 @@
 #include "basetablemodel.h"
 #include "headeroverlaywidget.h"
 
+#include <QScrollBar>
+
 BasePageWidget::BasePageWidget(QWidget *parent)
     : QWidget{parent}
 {
@@ -128,14 +130,14 @@ void BasePageWidget::initTabs()
 
         auto overlay = new HeaderOverlayWidget(header, header->viewport());
 
-        overlay->resize(header->viewport()->size());
+        overlay->setGeometry(header->viewport()->rect());
         overlay->show();
         overlay->raise();
 
         connect(header, &QHeaderView::geometriesChanged,
                 this, [=]() {
-                    overlay->resize(header->viewport()->size());
-                    overlay->update();
+            overlay->setGeometry(header->viewport()->rect());
+            overlay->update();
                 });
 
         connect(header, &QHeaderView::sectionResized,
@@ -147,7 +149,14 @@ void BasePageWidget::initTabs()
                 this, [=]() {
                     overlay->update();
                 });
-     ///设置搜索区域,可以移除原先的自定义表头header，采用遮罩层方法
+        // ★ 新增：水平滚动时同步刷新 Overlay
+        connect(table->horizontalScrollBar(), &QScrollBar::valueChanged,
+                this, [=]()
+                {
+            overlay->setGeometry(header->viewport()->rect());
+            overlay->update();
+                });
+        ///设置搜索区域,可以移除原先的自定义表头header，采用遮罩层方法
         QSet<QString> filterFields;
         filterFields << "startTime"
                      << "finishTime"
@@ -158,7 +167,7 @@ void BasePageWidget::initTabs()
 
         // ==============================
         // 5. 设置列配置
-         // ===== 获取基础模型 =====
+        // ===== 获取基础模型 =====
         auto baseModel = qobject_cast<BaseTableModel*>(m_model);
 
         if (baseModel)
