@@ -40,6 +40,7 @@ private:
     QSet<QString> m_fields;
     QHash<int, QRect> m_iconRects;
     QHash<int, QString> m_columnFields;
+
     QString m_currentField; //记录当前点击字段
 
 };

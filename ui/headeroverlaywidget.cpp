@@ -139,6 +139,9 @@ void HeaderOverlayWidget::showPriorityPopup(const QRect &iconRect)
 
     QMenu *menu = new QMenu(this);
 
+
+    QAction *noneAction = menu->addAction(QStringLiteral("无"));
+    menu->addSeparator();
     QAction *highAction   = menu->addAction(QStringLiteral("高"));
     QAction *mediumAction = menu->addAction(QStringLiteral("中"));
     QAction *lowAction    = menu->addAction(QStringLiteral("低"));
@@ -150,7 +153,14 @@ void HeaderOverlayWidget::showPriorityPopup(const QRect &iconRect)
                 QString priority = action->text();
                 qDebug() << "selected priority:" << action->text();
 
-                emit filterSelected(m_currentField, priority);
+                if(priority == "无"){
+                    // 清除优先级过滤
+                    emit filterSelected(
+                        m_currentField,
+                        QVariant());
+                }else{
+                    emit filterSelected(m_currentField, priority);
+                }
             });
 
     // 将图标区域坐标转换为全局坐标

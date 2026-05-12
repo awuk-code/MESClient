@@ -13,7 +13,6 @@ public:
     explicit DateFilterPopup(QWidget *parent = nullptr);
 signals:
     void dateSelected(const QDate& date);
-
 private:
     QCalendarWidget* m_calendar;
 };

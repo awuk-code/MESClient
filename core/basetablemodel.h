@@ -14,15 +14,22 @@ public:
     explicit BaseTableModel(QObject *parent = nullptr);
 
     /**
-     * @brief rowData
-     * @note    获取当前行的数据 {"taskNum" : " ````",
-     *                           "status" : "····"，
-     *                           "starttime": "```",
-     *                           "finishtime": "```",
-     *                           "priority": "高" }
-     * @param row
-     * @return QVariantMap
-     */
+ * @brief 获取指定行的完整数据。
+ *
+ * 返回一个 QVariantMap：
+ * - key：字段名（如 "taskNo"、"status"、"priority"）
+ * - value：该字段对应的数据
+ *
+ * 使用示例：
+ * @code
+ * QVariantMap row = model->rowData(0);
+ * QString status = row.value("status").toString();
+ * QString priority = row.value("priority").toString();
+ * @endcode
+ *
+ * @param row 行号（从 0 开始）
+ * @return 指定行的数据映射
+ */
     QVariantMap rowData(int row) const;
 
     // 设置数据
