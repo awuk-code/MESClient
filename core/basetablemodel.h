@@ -13,6 +13,16 @@ class BaseTableModel : public QAbstractTableModel
 public:
     explicit BaseTableModel(QObject *parent = nullptr);
 
+    /**
+     * @brief rowData
+     * @note    获取当前行的数据 {"taskNum" : " ````",
+     *                           "status" : "····"，
+     *                           "starttime": "```",
+     *                           "finishtime": "```",
+     *                           "priority": "高" }
+     * @param row
+     * @return QVariantMap
+     */
     QVariantMap rowData(int row) const;
 
     // 设置数据

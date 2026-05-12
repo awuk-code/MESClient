@@ -30,11 +30,17 @@ protected:
 private:
     void showDatePopup(const QRect& iconRect);
     void showPriorityPopup(const QRect &iconRect);
+
+signals:
+    //表头过滤信号
+    void filterSelected(const QString &field, const QVariant &value);
+
 private:
     QHeaderView *m_header = nullptr;
     QSet<QString> m_fields;
-QHash<int, QRect> m_iconRects;
+    QHash<int, QRect> m_iconRects;
     QHash<int, QString> m_columnFields;
+    QString m_currentField; //记录当前点击字段
 
 };
 

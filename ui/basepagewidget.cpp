@@ -163,6 +163,22 @@ void BasePageWidget::initTabs()
                      << "priority";
         overlay->setFilterFields(filterFields); // 用于筛选哪些需要自定义图标
 
+        connect(overlay, &HeaderOverlayWidget::filterSelected, this, [=](const QString& field, const QVariant &value){
+            qDebug() << "Header filter selected:"
+                     << "field =" << field
+                     << "value =" << value;
+
+            // 当前 tab 对应的代理模型
+            auto filterProxy =
+                qobject_cast<FieldFilterProxyModel *>(proxy);
+
+            if (!filterProxy)
+                return;
+
+            // 设置字段过滤条件
+            // 内部会调用 invalidateFilter()
+            filterProxy->setFieldFilter(field, value);
+        });
 
 
         // ==============================

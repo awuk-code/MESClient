@@ -7,11 +7,11 @@
 HeaderOverlayWidget::HeaderOverlayWidget(QHeaderView *header, QWidget *parent)
     : QWidget{parent}, m_header(header)
 {
-  //  setAttribute(Qt::WA_TransparentForMouseEvents, false);
+    //  setAttribute(Qt::WA_TransparentForMouseEvents, false);
     setAttribute(Qt::WA_TranslucentBackground);
     setAttribute(Qt::WA_NoSystemBackground);
 
-raise();
+    raise();
 }
 
 void HeaderOverlayWidget::setFilterFields(const QSet<QString> &fields)
@@ -117,6 +117,7 @@ void HeaderOverlayWidget::showDatePopup(const QRect &iconRect)
             this, [=](const QDate& date) {
                 qDebug() << "selected date:" << date;
                 // TODO: 这里后面接 proxy filter
+                emit filterSelected(m_currentField, date);
             });
 
     popup->adjustSize();
@@ -126,8 +127,8 @@ void HeaderOverlayWidget::showDatePopup(const QRect &iconRect)
 
     globalPos.setY(globalPos.y() + 5); // 微调
 
-   // QPoint pos = QCursor::pos();
-   // popup->move(pos);
+    // QPoint pos = QCursor::pos();
+    // popup->move(pos);
     popup->move(globalPos);
     popup->show();
 }
@@ -146,11 +147,10 @@ void HeaderOverlayWidget::showPriorityPopup(const QRect &iconRect)
     connect(menu, &QMenu::triggered,
             this, [=](QAction *action)
             {
+                QString priority = action->text();
                 qDebug() << "selected priority:" << action->text();
 
-                // TODO:
-                // emit prioritySelected(action->text());
-                // 或通知 proxy 进行过滤
+                emit filterSelected(m_currentField, priority);
             });
 
     // 将图标区域坐标转换为全局坐标
@@ -255,12 +255,14 @@ void HeaderOverlayWidget::mousePressEvent(QMouseEvent *event)
         if (field == "startTime" || field == "finishTime")
         {
             qDebug() << "📅 date field clicked";
+            m_currentField = field;
             showDatePopup(iconRect);
             return;
         }
 
         if(field == "priority"){
             qDebug() << "⭐ priority field clicked";
+            m_currentField = field;
             showPriorityPopup(iconRect);
             return;
         }
