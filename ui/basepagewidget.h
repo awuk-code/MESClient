@@ -61,7 +61,7 @@ protected:
     virtual QAbstractItemModel* createModel() = 0;
 
     virtual TabConfigs  tabs() const=0;
-    virtual FieldFilterProxyModel* createProxy(int tabIndex)=0;
+    virtual FieldFilterProxyModel* createProxy(const QVariant& data)=0;
     virtual QString pageTitle()const=0;
     virtual QString searchInfo()const=0;
 

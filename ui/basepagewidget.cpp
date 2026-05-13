@@ -168,7 +168,8 @@ void BasePageWidget::initTabs()
         m_tabBar->addTab(tabs[i].title);
 
         // 2. Proxy
-        auto proxy = createProxy(tabs[i].data.toInt());
+        auto proxy = createProxy(tabs[i].data);
+       // auto proxy = createProxy(tabs[i].data.toInt());
         if (!proxy || !m_model)
             continue;
 

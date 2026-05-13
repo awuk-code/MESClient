@@ -11,7 +11,7 @@ protected:
     QAbstractItemModel* createModel() override;
 
     QVector<TabConfig> tabs() const override;
-    FieldFilterProxyModel* createProxy(int tabIndex) override;
+    FieldFilterProxyModel* createProxy(const QVariant& data) override;
     QString pageTitle() const override;
     QString searchInfo()const override;
 };
