@@ -23,6 +23,53 @@ void BasePageWidget::setupPage()
 
 }
 
+void BasePageWidget::resizeEvent(QResizeEvent *event)
+{
+    QWidget::resizeEvent(event);
+    updateTableResizeMode();
+}
+
+void BasePageWidget::updateTableResizeMode()
+{
+    //获取基础模型
+    auto baseModel = qobject_cast<BaseTableModel*>(m_model);
+    if(!baseModel) return;
+
+    const auto& columns = baseModel->columns();
+
+    //判段window最大化
+    bool windowIsMax = window()->isMaximized();
+    //遍历表格
+    for(QTableView* table : std::as_const(m_tables)){
+        if(!table) continue;
+
+        auto header = table->horizontalHeader();
+
+        for(int i=0; i< columns.size();++i){
+            const auto &cfg = columns[i];
+
+            if(!cfg.visible) continue;
+
+            if(windowIsMax){
+
+                if(cfg.resizeMode == QHeaderView::Fixed){
+                    header->setSectionResizeMode(i,QHeaderView::Fixed);
+                    table->setColumnWidth(i, cfg.width);
+                }      else{
+                    header->setSectionResizeMode(i,QHeaderView::Stretch);
+                }
+            }else{
+                //普通窗口
+                header->setSectionResizeMode(i,cfg.resizeMode);
+                if(cfg.resizeMode == QHeaderView::Fixed){
+                    table->setColumnWidth(i, cfg.width);
+                }
+            }
+
+        }
+    }
+}
+
 
 
 void BasePageWidget::initUI()
@@ -136,8 +183,8 @@ void BasePageWidget::initTabs()
 
         connect(header, &QHeaderView::geometriesChanged,
                 this, [=]() {
-            overlay->setGeometry(header->viewport()->rect());
-            overlay->update();
+                    overlay->setGeometry(header->viewport()->rect());
+                    overlay->update();
                 });
 
         connect(header, &QHeaderView::sectionResized,
@@ -153,8 +200,8 @@ void BasePageWidget::initTabs()
         connect(table->horizontalScrollBar(), &QScrollBar::valueChanged,
                 this, [=]()
                 {
-            overlay->setGeometry(header->viewport()->rect());
-            overlay->update();
+                    overlay->setGeometry(header->viewport()->rect());
+                    overlay->update();
                 });
         ///设置搜索区域,可以移除原先的自定义表头header，采用遮罩层方法
         QSet<QString> filterFields;
@@ -242,26 +289,17 @@ void BasePageWidget::initTabs()
                 });
 
 
-        // 整行选中（点击任意单元格时选中整行）
-        //  table->setSelectionBehavior(QAbstractItemView::SelectRows);
-        // 单选模式（一次只能选中一行）
-        // table->setSelectionMode( QAbstractItemView::SingleSelection);//批量check--NoSelection，ExtendedSelection
-        // 禁止编辑单元格
-        // 表格变成纯展示模式
+
         table->setEditTriggers( QAbstractItemView::NoEditTriggers);
         // 开启斑马纹（隔行颜色）
         table->setAlternatingRowColors(true);
-        // 最后一列自动拉伸填满剩余空间
-        // table->horizontalHeader()->setStretchLastSection(true);
+
+
         // 横向滚动按像素平滑滚动
         table->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
         // 根据需要显示横向滚动条
         table->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-        // 隐藏左侧垂直表头（默认行号）
-        table->verticalHeader()->hide();
-        // 设置列最小宽度
-        // 防止列太窄导致内容挤压
-        table->horizontalHeader()->setMinimumSectionSize(60);
+
         // 表头文字居中
         table->horizontalHeader()->setDefaultAlignment(Qt::AlignCenter);
 
@@ -270,6 +308,7 @@ void BasePageWidget::initTabs()
         // 文本过长时显示省略号 ...
         table->setTextElideMode(Qt::ElideRight);
 
+        updateTableResizeMode();
 
         m_stack->addWidget(table);
         m_tables.append(table);
@@ -312,8 +351,6 @@ void BasePageWidget::initConnect()
                     proxy->setKeyword(text);
                 }
             });
-
-
 
 }
 

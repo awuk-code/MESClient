@@ -29,7 +29,11 @@ public:
 public:
     void setupPage();
 
-
+protected:
+    //
+    void resizeEvent(QResizeEvent *event)override;
+//
+    void updateTableResizeMode();
 
 protected:
     // 子类实现

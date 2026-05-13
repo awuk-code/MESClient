@@ -72,7 +72,7 @@ void ProductionTaskModel::setColumnHeader()
                 true,
                 Qt::AlignCenter,
                 ColumnType::Normal,
-                QHeaderView::ResizeToContents
+                QHeaderView::Fixed
             },
 
             // 产品型号

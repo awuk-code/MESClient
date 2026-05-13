@@ -1,6 +1,4 @@
 #include "headerwidget.h"
-#include "configmanager.h"
-#include "MDebug.h"
 
 HeaderWidget::HeaderWidget(QWidget *parent)
     : QWidget{parent}
