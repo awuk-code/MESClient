@@ -37,20 +37,21 @@ void ProductionTaskModel::initConnect()
 
 void ProductionTaskModel::setColumnHeader()
 {
-    // ===== 3. 列配置 =====
     m_columns =
         {
             // 选择框
             {
-                "选择",
-                "checked",
-                50,
-                true,
-                Qt::AlignCenter,
-                ColumnType::CheckBox,
-                QHeaderView::Fixed,
-                //添加选择框代理
-                m_checkBoxDelegate
+                "选择",                    // title
+                "checked",                // field
+                50,                       // width
+                true,                     // visible
+                false,                    // editable
+                true,                     // fixedWidth
+                Qt::AlignCenter,          // alignment
+                ColumnType::CheckBox,     // type
+                QHeaderView::Fixed,       // resizeMode
+                FilterType::None,         // filterType
+                m_checkBoxDelegate        // delegate
             },
 
             // 序号
@@ -58,6 +59,8 @@ void ProductionTaskModel::setColumnHeader()
                 "序号",
                 "rowNumber",
                 50,
+                true,
+                false,
                 true,
                 Qt::AlignCenter,
                 ColumnType::RowNumber,
@@ -70,9 +73,12 @@ void ProductionTaskModel::setColumnHeader()
                 "taskNo",
                 180,
                 true,
+                false,
+                true,
                 Qt::AlignCenter,
                 ColumnType::Normal,
-                QHeaderView::Fixed
+                QHeaderView::Fixed,
+                FilterType::Keyword
             },
 
             // 产品型号
@@ -81,23 +87,40 @@ void ProductionTaskModel::setColumnHeader()
                 "productModel",
                 180,
                 true,
+                false,
+                false,
                 Qt::AlignCenter,
                 ColumnType::Normal,
-                QHeaderView::ResizeToContents
+                QHeaderView::ResizeToContents,
+                FilterType::Keyword
             },
 
             // ERP编码
             {
                 "产品ERP编码",
                 "erpCode",
-                180
+                180,
+                true,
+                false,
+                false,
+                Qt::AlignCenter,
+                ColumnType::Normal,
+                QHeaderView::ResizeToContents,
+                FilterType::Keyword
             },
 
             // 产品名称
             {
                 "产品名称",
                 "productName",
-                180
+                180,
+                true,
+                false,
+                false,
+                Qt::AlignCenter,
+                ColumnType::Normal,
+                QHeaderView::ResizeToContents,
+                FilterType::Keyword
             },
 
             // 产品类型
@@ -142,39 +165,47 @@ void ProductionTaskModel::setColumnHeader()
                 180
             },
 
-            // 开始时间
+            // 计划开始时间
             {
                 "计划开始时间",
                 "startTime",
                 130,
                 true,
+                false,
+                true,
                 Qt::AlignCenter,
                 ColumnType::Normal,
-                QHeaderView::Fixed
+                QHeaderView::Fixed,
+                FilterType::Date
             },
 
-            // 完成时间
+            // 计划完成时间
             {
                 "计划完成时间",
                 "finishTime",
                 130,
                 true,
+                false,
+                true,
                 Qt::AlignCenter,
                 ColumnType::Normal,
-                QHeaderView::Fixed
-
+                QHeaderView::Fixed,
+                FilterType::Date
             },
 
             // 优先级
-        {
-            "优先级",
-            "priority",
-            100,
-            true,
-            Qt::AlignCenter,
-            ColumnType::Normal,
-            QHeaderView::Fixed
-        },
+            {
+                "优先级",
+                "priority",
+                100,
+                true,
+                false,
+                true,
+                Qt::AlignCenter,
+                ColumnType::Normal,
+                QHeaderView::Fixed,
+                FilterType::Priority
+            },
 
             // 操作列
             {
@@ -182,9 +213,12 @@ void ProductionTaskModel::setColumnHeader()
                 "action",
                 180,
                 true,
+                false,
+                true,
                 Qt::AlignCenter,
                 ColumnType::Operation,
                 QHeaderView::Fixed,
+                FilterType::None,
                 opDelegate
             }
         };

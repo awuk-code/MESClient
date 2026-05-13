@@ -153,177 +153,50 @@ void BasePageWidget::initUI()
 
 void BasePageWidget::initTabs()
 {
-    QVector<TabConfig> tabs = this->tabs();
+    TabConfigs tabs = this->tabs();
 
     if (tabs.isEmpty())
+    {
         m_tabBar->hide();
+        return;
+    }
 
     for (int i = 0; i < tabs.size(); ++i)
     {
-        // Tab按钮
+
+        // 1. Tab UI
         m_tabBar->addTab(tabs[i].title);
-        //创建表格
-        QTableView* table = new QTableView;
-        //创建代理模型
-        auto proxy = createProxy(tabs[i].status);
-        if (!proxy || !m_model) continue;
+
+        // 2. Proxy
+        auto proxy = createProxy(tabs[i].data.toInt());
+        if (!proxy || !m_model)
+            continue;
 
         proxy->setSourceModel(m_model);
-        table->setModel(proxy);
 
-        auto header = new QHeaderView(Qt::Horizontal, table);
-        header->setDefaultAlignment(Qt::AlignCenter);
-        table->setHorizontalHeader(header);
-
-        auto overlay = new HeaderOverlayWidget(header, header->viewport());
-
-        overlay->setGeometry(header->viewport()->rect());
-        overlay->show();
-        overlay->raise();
-
-        connect(header, &QHeaderView::geometriesChanged,
-                this, [=]() {
-                    overlay->setGeometry(header->viewport()->rect());
-                    overlay->update();
-                });
-
-        connect(header, &QHeaderView::sectionResized,
-                this, [=]() {
-                    overlay->update();
-                });
-
-        connect(header, &QHeaderView::sectionMoved,
-                this, [=]() {
-                    overlay->update();
-                });
-        // ★ 新增：水平滚动时同步刷新 Overlay
-        connect(table->horizontalScrollBar(), &QScrollBar::valueChanged,
-                this, [=]()
-                {
-                    overlay->setGeometry(header->viewport()->rect());
-                    overlay->update();
-                });
-        ///设置搜索区域,可以移除原先的自定义表头header，采用遮罩层方法
-        QSet<QString> filterFields;
-        filterFields << "startTime"
-                     << "finishTime"
-                     << "priority";
-        overlay->setFilterFields(filterFields); // 用于筛选哪些需要自定义图标
-
-        connect(overlay, &HeaderOverlayWidget::filterSelected, this, [=](const QString& field, const QVariant &value){
-            qDebug() << "Header filter selected:"
-                     << "field =" << field
-                     << "value =" << value;
-
-            // 当前 tab 对应的代理模型
-            auto filterProxy =
-                qobject_cast<FieldFilterProxyModel *>(proxy);
-
-            if (!filterProxy)
-                return;
-
-            // 设置字段过滤条件
-            // 内部会调用 invalidateFilter()
-            filterProxy->setFieldFilter(field, value);
-        });
-
-
-        // ==============================
-        // 5. 设置列配置
-        // ===== 获取基础模型 =====
-        auto baseModel = qobject_cast<BaseTableModel*>(m_model);
-
-        if (baseModel)
-        {
-            const auto& columns = baseModel->columns();
-            qDebug() << __FUNCTION__ << "column count =" << columns.size();
-            auto header = table->horizontalHeader();    //--------
-            for (int col = 0; col < columns.size(); ++col)
-            {
-                const auto& cfg = columns[col];
-
-                //----设置列模式
-                header->setSectionResizeMode(col, cfg.resizeMode);
-                // ===== Fixed列设置宽度 =====
-                if (cfg.resizeMode == QHeaderView::Fixed)
-                {
-                    table->setColumnWidth(col, cfg.width);
-                }
-
-
-                // delegate
-                if (cfg.delegate)
-                {
-                    table->setItemDelegateForColumn(col, cfg.delegate);
-                }
-                // ===== 隐藏列 =====
-                table->setColumnHidden(
-                    col,
-                    !cfg.visible);
-            }
-        }
-        // ==============================
-        // 6. 点击复选框时选中/取消整行
-        // ==============================
-        connect(table, &QTableView::clicked, this, [=](const QModelIndex& index)
-                {
-                    if (!index.isValid())
-                        return;
-
-                    // checkbox列
-                    if (index.column() == 0)
-                    {
-                        auto state = index.data(Qt::CheckStateRole);
-
-                        // 已勾选
-                        if (state == Qt::Checked)
-                        {
-                            table->selectRow(index.row());
-                        }
-                        else
-                        {
-                            table->selectionModel()->select( index,
-                                                            QItemSelectionModel::Deselect | QItemSelectionModel::Rows);
-                        }
-                    }
-                });
-
-
-
-        table->setEditTriggers( QAbstractItemView::NoEditTriggers);
-        // 开启斑马纹（隔行颜色）
-        table->setAlternatingRowColors(true);
-
-
-        // 横向滚动按像素平滑滚动
-        table->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
-        // 根据需要显示横向滚动条
-        table->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-
-        // 表头文字居中
-        table->horizontalHeader()->setDefaultAlignment(Qt::AlignCenter);
-
-        // 禁止自动换行
-        table->setWordWrap(false);
-        // 文本过长时显示省略号 ...
-        table->setTextElideMode(Qt::ElideRight);
-
-        updateTableResizeMode();
+        // 3. Table（统一入口）
+        QTableView* table = createTable(proxy);
+        if (!table)
+            continue;
 
         m_stack->addWidget(table);
         m_tables.append(table);
         m_proxies.append(proxy);
-        qDebug() << __FUNCTION__ << __FUNCTION__ <<"Header class:"
-                 << table->horizontalHeader()
-                        ->metaObject()
-                        ->className();
     }
+
+
+    // 6. 默认选中第一个
     if (m_stack->count() > 0)
     {
         m_stack->setCurrentIndex(0);
         m_tabBar->setCurrentIndex(0);
     }
-
+    // 7. 延迟一次性刷新列宽（避免初始化阶段状态不稳定）
+    QMetaObject::invokeMethod(
+        this,
+        "updateTableResizeMode",
+        Qt::QueuedConnection
+        );
 }
 
 void BasePageWidget::initConnect()
@@ -353,5 +226,269 @@ void BasePageWidget::initConnect()
             });
 
 }
+
+QSet<QString> BasePageWidget::collectFilterFields() const
+{
+    QSet<QString> filterFields;
+
+    // 获取基础模型
+    auto baseModel = qobject_cast<BaseTableModel*>(m_model);
+    if (!baseModel)
+        return filterFields;
+
+    const auto& columns = baseModel->columns();
+
+    for (const auto& column : columns)
+    {
+        // 只有设置了筛选类型的列，才显示表头筛选图标
+        switch (column.filterType)
+        {
+        case FilterType::Date:
+        case FilterType::Priority:
+            // 只有这两种需要在表头绘制图标
+            filterFields.insert(column.field);
+            break;
+
+        default:
+            // None / Status / Keyword 等都不显示图标
+            break;
+        }
+    }
+
+    return filterFields;
+}
+
+QTableView *BasePageWidget::createTable(FieldFilterProxyModel *proxy)
+{
+    // 1. 创建表格
+    QTableView* table = new QTableView(this);
+
+    // 2. 设置模型
+    table->setModel(proxy);
+
+    // 3. 创建表头
+    auto header = new QHeaderView(Qt::Horizontal, table);
+    header->setDefaultAlignment(Qt::AlignCenter);
+    table->setHorizontalHeader(header);
+
+    // 4. 设置表头筛选 Overlay
+    setupHeaderOverlay(table, proxy);
+
+    // 5. 设置列配置
+    setupColumns(table);
+
+    // 6. 绑定复选框点击逻辑
+    setupCheckBoxSelection(table);
+
+    // 7. 设置表格外观
+    setupTableAppearance(table);
+
+    // 8. 根据窗口状态调整列宽
+    updateTableResizeMode();
+
+    return table;
+}
+
+void BasePageWidget::setupHeaderOverlay(
+    QTableView* table,
+    FieldFilterProxyModel* proxy)
+{
+    if (!table || !proxy)
+        return;
+
+    // 获取表头
+    auto header = table->horizontalHeader();
+    if (!header)
+        return;
+
+    // 创建 Overlay（父对象设为 header->viewport()）
+    auto overlay =
+        new HeaderOverlayWidget(header, header->viewport());
+
+    // 初始化位置
+    overlay->setGeometry(header->viewport()->rect());
+    overlay->show();
+    overlay->raise();
+
+    // 表头整体布局变化
+    connect(header,
+            &QHeaderView::geometriesChanged,
+            this,
+            [=]()
+            {
+                overlay->setGeometry(header->viewport()->rect());
+                overlay->update();
+            });
+
+    // 列宽变化
+    connect(header,
+            &QHeaderView::sectionResized,
+            this,
+            [=]()
+            {
+                overlay->update();
+            });
+
+    // 列移动
+    connect(header,
+            &QHeaderView::sectionMoved,
+            this,
+            [=]()
+            {
+                overlay->update();
+            });
+
+    // 水平滚动
+    connect(table->horizontalScrollBar(),
+            &QScrollBar::valueChanged,
+            this,
+            [=]()
+            {
+                overlay->setGeometry(header->viewport()->rect());
+                overlay->update();
+            });
+
+    // 设置需要显示筛选图标的字段
+    overlay->setFilterFields(collectFilterFields());
+
+    // 将筛选结果传递给代理模型
+    connect(overlay,
+            &HeaderOverlayWidget::filterSelected,
+            this,
+            [=](const QString& field, const QVariant& value)
+            {
+                proxy->setFieldFilter(field, value);
+            });
+}
+
+void BasePageWidget::setupColumns(QTableView *table)
+{
+    if (!table || !m_model)
+        return;
+
+    auto baseModel = qobject_cast<BaseTableModel*>(m_model);
+    if (!baseModel)
+        return;
+
+    const auto& columns = baseModel->columns();
+
+    auto header = table->horizontalHeader();
+    if (!header)
+        return;
+
+    for (int col = 0; col < columns.size(); ++col)
+    {
+        const auto& cfg = columns[col];
+
+        // =========================
+        // 1. 列显示/隐藏
+        // =========================
+        table->setColumnHidden(col, !cfg.visible);
+
+        if (!cfg.visible)
+            continue;
+
+        // =========================
+        // 2. 列宽模式
+        // =========================
+        header->setSectionResizeMode(col, cfg.resizeMode);
+
+        if (cfg.resizeMode == QHeaderView::Fixed)
+        {
+            table->setColumnWidth(col, cfg.width);
+        }
+
+        // =========================
+        // 3. Delegate
+        // =========================
+        if (cfg.delegate)
+        {
+            table->setItemDelegateForColumn(col, cfg.delegate);
+        }
+
+        // =========================
+        // 4. 对齐方式（补强项，建议保留）
+        // =========================
+        table->model()->setHeaderData(
+            col,
+            Qt::Horizontal,
+            // QVariant::fromValue(cfg.alignment),
+            static_cast<int>(cfg.alignment),
+            Qt::TextAlignmentRole
+            );
+    }
+}
+
+void BasePageWidget::setupTableAppearance(QTableView *table)
+{
+    table->setEditTriggers( QAbstractItemView::NoEditTriggers);
+    // 开启斑马纹（隔行颜色）
+    table->setAlternatingRowColors(true);
+
+
+    // 横向滚动按像素平滑滚动
+    table->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
+    // 根据需要显示横向滚动条
+    table->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+
+    // 表头文字居中
+    table->horizontalHeader()->setDefaultAlignment(Qt::AlignCenter);
+
+    // 禁止自动换行
+    table->setWordWrap(false);
+    // 文本过长时显示省略号 ...
+    table->setTextElideMode(Qt::ElideRight);
+
+}
+
+void BasePageWidget::setupCheckBoxSelection(QTableView* table)
+{
+    if (!table)
+        return;
+
+    auto baseModel = qobject_cast<BaseTableModel*>(m_model);
+    if (!baseModel)
+        return;
+
+    const auto& columns = baseModel->columns();
+
+    // 找到 checkbox 列
+    int checkCol = -1;
+    for (int i = 0; i < columns.size(); ++i)
+    {
+        if (columns[i].type == ColumnType::CheckBox)
+        {
+            checkCol = i;
+            break;
+        }
+    }
+
+    if (checkCol < 0)
+        return;
+
+    connect(table, &QTableView::clicked, this,
+            [=](const QModelIndex& index)
+            {
+                if (!index.isValid())
+                    return;
+
+                if (index.column() != checkCol)
+                    return;
+
+                auto state = index.data(Qt::CheckStateRole);
+
+                if (state == Qt::Checked)
+                {
+                    table->selectRow(index.row());
+                }
+                else
+                {
+                    table->selectionModel()->select(
+                        index,
+                        QItemSelectionModel::Deselect | QItemSelectionModel::Rows);
+                }
+            });
+}
+
 
 

@@ -7,7 +7,6 @@
 HeaderOverlayWidget::HeaderOverlayWidget(QHeaderView *header, QWidget *parent)
     : QWidget{parent}, m_header(header)
 {
-    //  setAttribute(Qt::WA_TransparentForMouseEvents, false);
     setAttribute(Qt::WA_TranslucentBackground);
     setAttribute(Qt::WA_NoSystemBackground);
 

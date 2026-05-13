@@ -6,5 +6,4 @@ HEADERS +=    \
     MDebug.h    \
 
 SOURCES += \
-    $$PWD/commonfunc.cpp \
     $$PWD/globaleventfilter.cpp
