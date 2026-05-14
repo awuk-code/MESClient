@@ -11,7 +11,9 @@
 #include <QPainter>
 #include <QStyle>
 
-class CheckBoxDelegate : public QStyledItemDelegate
+#include "baseitemdelegate.h"
+
+class CheckBoxDelegate : public BaseItemDelegate
 {
     Q_OBJECT
 public:

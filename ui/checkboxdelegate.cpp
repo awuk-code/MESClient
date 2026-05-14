@@ -1,7 +1,7 @@
 #include "checkboxdelegate.h"
 
 CheckBoxDelegate::CheckBoxDelegate(QObject *parent)
-    : QStyledItemDelegate{parent}
+    : BaseItemDelegate{parent}
 {}
 
 void CheckBoxDelegate::paint(QPainter *painter,

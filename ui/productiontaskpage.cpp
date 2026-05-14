@@ -30,6 +30,7 @@ FieldFilterProxyModel* ProductionTaskPage::createProxy(const QVariant& data)
 {
     auto proxy = new FieldFilterProxyModel(this);
 
+    //已经在FieldFilterProxyModel设置了关键字过滤
    // proxy->setFilterColumn(0);  // 👉 按“任务单号”过滤
     proxy->setStatus(data.toInt()); // 👉 Tab控制状态
 
