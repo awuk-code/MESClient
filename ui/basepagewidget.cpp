@@ -14,8 +14,6 @@ BasePageWidget::BasePageWidget(QWidget *parent)
 void BasePageWidget::setupPage()
 {
     initUI();
-    if (m_titleLabel)
-        m_titleLabel->setText(pageTitle());
     if(m_searchEdit)
         m_searchEdit->setPlaceholderText(searchInfo());
 
@@ -68,24 +66,33 @@ void BasePageWidget::updateTableResizeMode()
     }
 }
 
+TabConfigs BasePageWidget::Tabs() const
+{
+    return m_tabs;
+}
 
+QHBoxLayout *BasePageWidget::createTitleLayout()
+{
+    QHBoxLayout* layout = new QHBoxLayout;
+
+    QLabel* icon = new QLabel(this);
+    QLabel* text = new QLabel(this);
+
+    icon->setPixmap(QPixmap(":res/common/rect.svg").scaled(24,24, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    text->setText(pageTitle());
+    layout->addWidget(icon);
+    layout->addWidget(text);
+    addWidgetToTitle(layout);
+    return layout;
+}
 
 void BasePageWidget::initUI()
 {
     auto mainLayout = new QVBoxLayout(this);
 
     // ===== 1. 标题 =====
-    auto titleLayout = new QHBoxLayout;
-    m_titleIcon = new QLabel(this);
-    m_titleIcon->setPixmap(QPixmap(":res/common/rect.svg").scaled(24,24, Qt::KeepAspectRatio, Qt::SmoothTransformation));
 
-    m_titleLabel = new QLabel(this);
-    m_titleLabel->setObjectName("PageTitle");
-
-    titleLayout->addWidget(m_titleIcon);
-    titleLayout->addWidget(m_titleLabel);
-    titleLayout->addStretch();
-
+    auto titleLayout = createTitleLayout();
     mainLayout->addLayout(titleLayout);
 
     // ===== TabBar（只显示状态）=====
@@ -151,7 +158,7 @@ void BasePageWidget::initUI()
 
 void BasePageWidget::initTabs()
 {
-    TabConfigs tabs = this->tabs();
+    TabConfigs tabs = this->Tabs();
 
     if (tabs.isEmpty())
     {
@@ -167,7 +174,7 @@ void BasePageWidget::initTabs()
 
         // 2. Proxy
         auto proxy = createProxy(tabs[i].data);
-       // auto proxy = createProxy(tabs[i].data.toInt());
+        // auto proxy = createProxy(tabs[i].data.toInt());
         if (!proxy || !m_model)
             continue;
 
@@ -190,12 +197,6 @@ void BasePageWidget::initTabs()
         m_stack->setCurrentIndex(0);
         m_tabBar->setCurrentIndex(0);
     }
-    // 7. 延迟一次性刷新列宽（避免初始化阶段状态不稳定）
-    QMetaObject::invokeMethod(
-        this,
-        "updateTableResizeMode",
-        Qt::QueuedConnection
-        );
 }
 
 void BasePageWidget::initConnect()

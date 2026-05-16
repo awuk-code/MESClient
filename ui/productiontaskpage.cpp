@@ -15,8 +15,9 @@ QAbstractItemModel* ProductionTaskPage::createModel()
 
 
 
-TabConfigs ProductionTaskPage::tabs() const
+TabConfigs ProductionTaskPage::Tabs() const
 {
+
     return
         {
             {"未开工", /*QVariant::fromValue()*/ 0},
@@ -44,4 +45,9 @@ QString ProductionTaskPage::pageTitle() const
 QString ProductionTaskPage::searchInfo() const
 {
     return "请输入表单号";
+}
+
+void ProductionTaskPage::addWidgetToTitle(QHBoxLayout *layout)
+{
+    layout->addStretch();
 }

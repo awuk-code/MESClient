@@ -15,6 +15,7 @@ HeaderOverlayWidget::HeaderOverlayWidget(QHeaderView *header, QWidget *parent)
 
 void HeaderOverlayWidget::setFilterFields(const QSet<QString> &fields)
 {
+    qDebug() << "HeaderOverlayWidget =" << this;
     // 1. 保存需要显示图标的字段集合
     m_fields = fields;
 

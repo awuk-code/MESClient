@@ -10,10 +10,11 @@ public:
 protected:
     QAbstractItemModel* createModel() override;
 
-   TabConfigs tabs() const override;
+    TabConfigs Tabs() const override;
     FieldFilterProxyModel* createProxy(const QVariant& data) override;
     QString pageTitle() const override;
     QString searchInfo()const override;
+    void addWidgetToTitle(QHBoxLayout* layout) override;
 };
 
 #endif // PRODUCTIONTASKPAGE_H
