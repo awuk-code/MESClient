@@ -6,7 +6,6 @@ ProductionTaskPage::ProductionTaskPage(QWidget *parent)
     : BasePageWidget(parent)
 {
     setupPage();
-    qDebug() << "ProductionTaskPage ctor";
 }
 
 QAbstractItemModel* ProductionTaskPage::createModel()
@@ -16,11 +15,11 @@ QAbstractItemModel* ProductionTaskPage::createModel()
 
 
 
-QVector<TabConfig> ProductionTaskPage::tabs() const
+TabConfigs ProductionTaskPage::tabs() const
 {
     return
         {
-            {"未开工", 0},
+            {"未开工", /*QVariant::fromValue()*/ 0},
             {"已开工", 1},
             {"已完工", 2},
         };
@@ -32,7 +31,7 @@ FieldFilterProxyModel* ProductionTaskPage::createProxy(const QVariant& data)
 
     //已经在FieldFilterProxyModel设置了关键字过滤
    // proxy->setFilterColumn(0);  // 👉 按“任务单号”过滤
-    proxy->setStatus(data.toInt()); // 👉 Tab控制状态
+    proxy->setStatus(data); // 👉 Tab控制状态
 
     return proxy;
 }

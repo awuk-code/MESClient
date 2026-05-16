@@ -67,7 +67,6 @@ protected:
 
     virtual void setPageTitle(const QString &title){m_pageTitle = title;}
     virtual void setSearchInfo(const QString &info){m_searchInfo = info;}
-    virtual bool enableExport() const{return true;}
 
 protected:
     // 创建界面控件和布局。

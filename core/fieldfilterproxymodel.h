@@ -15,7 +15,7 @@ public:
     //搜索过滤
     void setFilterColumn(int column);     // 指定过滤列（核心）
     void setKeyword(const QString& keyword);
-    void setStatus(int status);           // 可选
+    void setStatus(QVariant status);           // 可选
     //表头过滤
     void setFieldFilter(const QString &field, const QVariant &value);
 
@@ -26,7 +26,7 @@ protected:
 private:
     int m_filterColumn = 0;
     QString m_keyword;
-    int m_status = -1;
+    QVariant m_status = -1;
 
     QMap<QString, QVariant> m_fieldFilters; //用于表头图标过滤
 };

@@ -19,8 +19,6 @@ void BasePageWidget::setupPage()
     if(m_searchEdit)
         m_searchEdit->setPlaceholderText(searchInfo());
 
-    m_exportBtn->setVisible(enableExport());
-
 }
 
 void BasePageWidget::resizeEvent(QResizeEvent *event)

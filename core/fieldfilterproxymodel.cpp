@@ -19,7 +19,7 @@ void FieldFilterProxyModel::setKeyword(const QString &keyword)
     invalidateFilter();
 }
 
-void FieldFilterProxyModel::setStatus(int status)
+void FieldFilterProxyModel::setStatus(QVariant status)
 {
     m_status = status;
     invalidateFilter();
@@ -88,7 +88,7 @@ bool FieldFilterProxyModel::filterAcceptsRow(int srcRow, const QModelIndex &srcP
 
     // ===== Tab状态过滤 =====
     QString status =  row.value("status").toString();
-    switch (m_status)
+    switch (m_status.toInt())
     {
     case -1:   return false;
             case 0:
