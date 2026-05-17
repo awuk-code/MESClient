@@ -49,5 +49,7 @@ QString ProductionTaskPage::searchInfo() const
 
 void ProductionTaskPage::addWidgetToTitle(QHBoxLayout *layout)
 {
+    ToggleSwitchWidget* m_switch = new ToggleSwitchWidget(this);
     layout->addStretch();
+    layout->addWidget(m_switch);
 }

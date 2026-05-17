@@ -1,7 +1,7 @@
 #include "fieldfilterproxymodel.h"
 #include "basetablemodel.h"
 #include "qdatetime.h"
-
+#include "commonfunc.h"
 
 FieldFilterProxyModel::FieldFilterProxyModel(QObject *parent)
     : QSortFilterProxyModel(parent)
@@ -84,27 +84,31 @@ bool FieldFilterProxyModel::filterAcceptsRow(int srcRow, const QModelIndex &srcP
     QVariantMap row =
         model->rowData(srcRow);
 
-
-
     // ===== Tab状态过滤 =====
     QString status =  row.value("status").toString();
-    switch (m_status.toInt())
+    qDebug() << __FUNCTION__ <<"filterProxy::status = "<<status;
+
+    FilterStatus filterStatus = m_status.value<FilterStatus>();
+    switch (filterStatus)
     {
-    case -1:   return false;
-            case 0:
+    case FilterStatus::UNKNOWN:
+        return false;
+
+    case FilterStatus::WAITWORK:
         if (status != "未开工")
             return false;
         break;
 
-    case 1:
+    case FilterStatus::ALREADY:
         if (status != "已开工")
             return false;
         break;
 
-    case 2:
+    case FilterStatus::FINISH:
         if (status != "已完工")
             return false;
         break;
+
     default:
         break;
     }

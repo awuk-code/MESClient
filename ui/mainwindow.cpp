@@ -31,7 +31,9 @@ void MainWindow::initUI()
 
 
     m_stack->addWidget(m_pageProduction); //id = 0
-    m_stack->addWidget(new QLabel(QStringLiteral("任务界面2")));
+    ToggleSwitchWidget* mm = new ToggleSwitchWidget(this);
+    m_stack->addWidget(mm);
+    // m_stack->addWidget(new QLabel(QStringLiteral("任务界面2")));
     m_stack->addWidget(new QLabel(QStringLiteral("任务界面3")));
     m_stack->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 

@@ -10,6 +10,7 @@
 #include "subheaderwidget.h"
 #include "sidebarwidget.h"
 #include "productiontaskpage.h"
+#include "toggleswitchwidget.h"
 
 class MainWindow : public QWidget
 {

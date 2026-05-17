@@ -2,7 +2,6 @@
 #define FIELDFILTERPROXYMODEL_H
 
 #include <QSortFilterProxyModel>
-#include "commonfunc.h"
 
 class FieldFilterProxyModel : public QSortFilterProxyModel
 {

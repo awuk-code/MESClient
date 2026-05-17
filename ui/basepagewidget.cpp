@@ -123,11 +123,6 @@ void BasePageWidget::initUI()
     mainLayout->addWidget(m_tabBar);
 
 
-    // ===== Tab =====
-    // m_tabWidget = new QTabWidget(this);
-    // mainLayout->addWidget(m_tabWidget);
-
-
     // ===== 搜索栏 =====
     auto searchLayout = new QHBoxLayout;
     m_searchEdit = new QLineEdit(this);
@@ -135,7 +130,6 @@ void BasePageWidget::initUI()
     m_searchBtn = new QPushButton(this);
     m_searchBtn->setIcon(QIcon(":/res/common/search.svg"));
 
-    // m_searchBtn->hide();
     searchLayout->addWidget(m_searchEdit);
     searchLayout->addWidget(m_searchBtn);
     searchLayout->addStretch();

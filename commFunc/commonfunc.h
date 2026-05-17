@@ -40,7 +40,26 @@ struct TabConfig
     QVariant data;      // 扩展数据（业务参数）
 };
 
+//筛选状态：
+enum class FilterStatus{
+    UNKNOWN = -1, //未知状态
+    WAITWORK = 0, //待开工
+    ALREADY = 1,    //已开工
+    FINISH = 2,     //已完工
 
+    //维修站
+    PENDING = 3,        //待处理
+    REVIEW = 4,         //审核中
+    WAITRETURN = 5,     //待返工
+    PROCESSED = 6       //已处理
+};
+Q_DECLARE_METATYPE(FilterStatus)
+enum class PageType{
+    TABLE,
+    PDF,
+    NORMAL
+};
+Q_DECLARE_METATYPE(PageType)
 // ============================================================
 // 筛选类型
 // ============================================================
