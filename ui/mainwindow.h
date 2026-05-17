@@ -10,7 +10,7 @@
 #include "subheaderwidget.h"
 #include "sidebarwidget.h"
 #include "productiontaskpage.h"
-#include "toggleswitchwidget.h"
+#include "processstationpage.h"
 
 class MainWindow : public QWidget
 {
@@ -40,8 +40,7 @@ private:
     QStackedWidget* m_stack{nullptr};
 
     ProductionTaskPage* m_pageProduction{nullptr};
-
-
+    ProcessStationPage* m_pageProcess{nullptr};
 
     QPushButton* m_sizeBtn{nullptr};
 };

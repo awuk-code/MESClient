@@ -25,5 +25,7 @@
         <file>res/common/search.svg</file>
         <file>res/common/rect.svg</file>
         <file>res/common/filter.svg</file>
+        <file>res/common/collapse.svg</file>
+        <file>res/common/expand.svg</file>
     </qresource>
 </RCC>
