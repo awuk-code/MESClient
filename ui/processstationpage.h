@@ -31,30 +31,39 @@ private:
     ProcessStationLeftPanel *m_leftPanel{nullptr};
 };
 
-
+using TaskList = QList<QVariant>;
 class ProcessStationLeftPanel : public QWidget
 {
     Q_OBJECT
 public:
     explicit ProcessStationLeftPanel(QWidget* parent = nullptr);
+    // 填充数据
+    void setTaskData(QTableWidget* table, const TaskList& keys, const TaskList& values);
+    void setTaskInfoValue(TaskList& values);
+    void setTaskStatusValue(TaskList& values);
 
+
+private:
     void initUI();
     void initConnect();
-
     //创建一个小页面,使用两次（任务单信息和任务单状态）
-    QWidget* createTaskWidget(const QString &title);
+    QWidget* createTaskWidget(const QString &title, QTableWidget* &tableout);
     //创建扫码过站小页面
     QWidget* createPassWidget(const QString &title);
-    // 填充数据
-    void setTaskData(QTableWidget* table, const QList<QVariant>& values);
+
+    TaskList taskInfoKeys() const;
+    TaskList taskStatusKeys() const;
 
 private:
     QWidget* m_taskInfo{nullptr};
     QWidget* m_taskStatus{nullptr};
     QWidget* m_pass{nullptr};
-    // 两个表格指针（用于后续填充数据）
+
     QTableWidget* m_taskInfoTable{nullptr};
     QTableWidget* m_taskStatusTable{nullptr};
+
+    TaskList m_taskInfoValue;
+    TaskList m_taskStatusValue;
 };
 
 class ProcessStationRightPanel : public BasePageWidget
@@ -67,7 +76,7 @@ signals:
     void toggleRequested(bool isChecked);
 
 protected:
-    TabConfigs Tabs() const;
+    TabConfigs Tabs() const override;
     QString pageTitle() const override;
     QString searchInfo() const override;
     QAbstractItemModel* createModel() override;

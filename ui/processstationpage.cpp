@@ -1,4 +1,5 @@
 #include "processstationpage.h"
+#include "processstationmodel.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -8,6 +9,7 @@
 #include <QPushButton>
 #include <QToolButton>
 #include <QStyle>
+#include <QRadioButton>
 
 ProcessStationPage::ProcessStationPage(QWidget *parent)
     : QWidget{parent}
@@ -28,8 +30,8 @@ void ProcessStationPage::initUI()
 
     layout->addWidget(m_leftPanel);
     layout->addWidget(m_rightPanel);
-    layout->setStretch(0, 1);
-    layout->setStretch(1,1);
+    layout->setStretch(0, 2);
+    layout->setStretch(1,3);
 }
 
 void ProcessStationPage::initConnect()
@@ -46,6 +48,32 @@ ProcessStationLeftPanel::ProcessStationLeftPanel(QWidget *parent)
     setObjectName("ProcessStationLeftPanel");
     initUI();
     initConnect();
+
+    // 任务单信息示例数据（7项，与 taskInfoKeys() 一一对应）
+    TaskList taskInfoValues = {
+        "RW20260519001",      // 生产任务单号
+        "XK-500A",            // 产品型号
+        "ERP-2026-001",       // 产品ERP编码
+        1000,                 // 生产任务工单数量
+        "2026-05-31",         // 生产任务单完成日期
+        "V2.3",               // 配置项配套表版本
+        "LINE-01"             // 生产线编号
+    };
+
+    // 任务单状态示例数据（7项，与 taskStatusKeys() 一一对应）
+    TaskList taskStatusValues = {
+        320,                  // 当前工序完成数量
+        5,                    // 当前工序NG数量
+        "装配",               // 上一工序
+        "测试",               // 当前工序
+        "包装",               // 下一工序
+        "已核对",             // 物料核对状态
+        "ST-001"              // 工站编号
+    };
+
+    // 填充表格
+    setTaskInfoValue(taskInfoValues);
+    setTaskStatusValue(taskStatusValues);
 }
 
 void ProcessStationLeftPanel::initUI()
@@ -54,8 +82,10 @@ void ProcessStationLeftPanel::initUI()
     mainLayout->setContentsMargins(0, 0, 0,0);
     mainLayout->setSpacing(8);
 
-    m_taskInfo = createTaskWidget(tr("任务单信息"));
-    m_taskStatus = createTaskWidget(tr("任务单状态"));
+    m_taskInfo = createTaskWidget(tr("任务单信息"), m_taskInfoTable);
+    m_taskStatus = createTaskWidget(tr("任务单状态"), m_taskStatusTable);
+    qDebug() << __FUNCTION__ <<"m_taskInfoTable: "<<m_taskInfoTable
+             <<"m_taskStatusTable:"<<m_taskStatusTable;
     m_pass = createPassWidget(tr("扫码过站"));
 
     mainLayout->addWidget(m_taskInfo);
@@ -72,7 +102,7 @@ void ProcessStationLeftPanel::initConnect()
 
 }
 
-QWidget *ProcessStationLeftPanel::createTaskWidget(const QString &title)
+QWidget *ProcessStationLeftPanel::createTaskWidget(const QString &title, QTableWidget *&tableout)
 {
     QWidget* widget = new QWidget(this);
 
@@ -120,9 +150,12 @@ QWidget *ProcessStationLeftPanel::createTaskWidget(const QString &title)
     // =========================
     // 表格
     // =========================
-    QTableWidget* table = new QTableWidget(7, 2, widget);
 
-    // table->setHorizontalHeaderLabels(QStringList() << "字段" << "内容");
+    QTableWidget* table = new QTableWidget(7, 2, widget);
+    tableout = table;
+    qDebug() << __FUNCTION__ <<"当前表格："<<table<<"m_taskInfoTable:"<<m_taskInfoTable
+             <<"m_taskStatusTable:"<<m_taskStatusTable;
+
     table->horizontalHeader()->hide();
     table->verticalHeader()->hide();
     // 基本属性
@@ -132,43 +165,40 @@ QWidget *ProcessStationLeftPanel::createTaskWidget(const QString &title)
     table->setAlternatingRowColors(true);
     table->setShowGrid(true);
 
-    table->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-    table->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
-
+    //table->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    //table->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+    table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    // 设置初始比例（只有在表格第一次显示时生效，之后由 Stretch 保持比例）
+    table->setColumnWidth(0, 45);
+    table->setColumnWidth(1, 55);
+    table->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     // 初始化单元格
     for (int row = 0; row < 7; ++row)
     {
-        table->setItem(row, 0, new QTableWidgetItem);
-        table->setItem(row, 1, new QTableWidgetItem);
+        QTableWidgetItem* item0 = new QTableWidgetItem;
+        QTableWidgetItem* item1 = new QTableWidgetItem;
+
+        // 设置文本水平和垂直居中
+        item0->setTextAlignment(Qt::AlignCenter);
+        item1->setTextAlignment(Qt::AlignCenter);
+
+        table->setItem(row, 0, item0);
+        table->setItem(row, 1, item1);
     }
 
     // 固定高度
     int height =
-        table->rowCount() * table->verticalHeader()->defaultSectionSize() +
-        4;
+        table->rowCount() * table->verticalHeader()->defaultSectionSize() + 4;
     table->setFixedHeight(height);
 
-    layout->addWidget(table);
-    // 样式：无外框，仅保留浅灰分隔线
-    table->setStyleSheet(R"(
-QTableWidget {
-    border: none;
-    background: white;
-    alternate-background-color: #fafafa;
-    gridline-color: #e8e8e8;
-}
+    // 替代 layout->addWidget(table);
+    QHBoxLayout* tableLayout = new QHBoxLayout;
+    tableLayout->setContentsMargins(0, 0, 0, 0);
+    tableLayout->setSpacing(0);
+    tableLayout->addSpacing(28);
+    tableLayout->addWidget(table);
 
-QTableWidget::item {
-    border: none;
-    padding: 4px 8px;
-}
-)");
-
-    // 保存表格指针
-    if (title == "任务单信息")
-        m_taskInfoTable = table;
-    else if (title == "任务单状态")
-        m_taskStatusTable = table;
+    layout->addLayout(tableLayout);
 
     connect(toggleBtn, &QToolButton::toggled,
             this,
@@ -201,9 +231,6 @@ QWidget *ProcessStationLeftPanel::createPassWidget(const QString &title)
     QWidget* widget = new QWidget(this);
 
     auto* layout = new QVBoxLayout(widget);
-    layout->setContentsMargins(0, 0, 0, 0);
-    layout->setSpacing(6);
-
 
     QHBoxLayout* titleLayout = new QHBoxLayout;
     titleLayout->setContentsMargins(0, 0, 0, 0);
@@ -216,32 +243,185 @@ QWidget *ProcessStationLeftPanel::createPassWidget(const QString &title)
     titleLayout->addWidget(icon);
     titleLayout->addWidget(text);
     titleLayout->addStretch();
-
     layout->addLayout(titleLayout);
 
-    // 输入区域
-    auto* row = new QHBoxLayout;
 
-    QLineEdit* scanEdit = new QLineEdit(widget);
-    scanEdit->setPlaceholderText("请扫描条码...");
+    QHBoxLayout* contentLayout = new QHBoxLayout;
+    contentLayout->setContentsMargins(0, 0, 0, 0);
+    contentLayout->setSpacing(0);
 
-    QPushButton* passBtn = new QPushButton("过站", widget);
+    // 左侧缩进
+    contentLayout->addSpacing(28);
 
-    row->addWidget(scanEdit);
-    row->addWidget(passBtn);
+    // 实际内容容器
+    QWidget* contentWidget = new QWidget(widget);
+    QVBoxLayout* contentVBox = new QVBoxLayout(contentWidget);
+    contentVBox->setContentsMargins(0, 0, 0, 0);
+    contentVBox->setSpacing(8);
 
-    layout->addLayout(row);
-    layout->addStretch();
+    // ==========================================================
+    // 1. 过站类别
+    // ==========================================================
+    {
+        QHBoxLayout* row = new QHBoxLayout;
+        row->setContentsMargins(0, 0, 0, 0);
+
+        QLabel* label = new QLabel(tr("过站类别："), contentWidget);
+        QPushButton* typeBtn = new QPushButton(tr("正常过站"), contentWidget);
+
+        row->addWidget(label);
+        row->addWidget(typeBtn);
+        row->addStretch();
+
+        contentVBox->addLayout(row);
+    }
+
+    // ==========================================================
+    // 2. 过站方式
+    // ==========================================================
+    {
+        QHBoxLayout* row = new QHBoxLayout;
+        row->setContentsMargins(0, 0, 0, 0);
+
+        QLabel* label = new QLabel(tr("过站方式："), contentWidget);
+
+        // 单选按钮
+        QRadioButton* scanInRadio = new QRadioButton(tr("扫入"), contentWidget);
+        QRadioButton* passRadio   = new QRadioButton(tr("PASS"), contentWidget);
+        QRadioButton* ngRadio     = new QRadioButton(tr("NG"), contentWidget);
+
+        // 默认选中“扫入”
+        scanInRadio->setChecked(true);
+
+        // 普通按钮
+        QPushButton* pauseBtn      = new QPushButton(tr("暂停"), contentWidget);
+        QPushButton* resumeBtn     = new QPushButton(tr("解除暂停"), contentWidget);
+        QPushButton* rollbackBtn   = new QPushButton(tr("工序回退"), contentWidget);
+
+        row->addWidget(label);
+        row->addWidget(scanInRadio);
+        row->addWidget(passRadio);
+        row->addWidget(ngRadio);
+        row->addSpacing(12);
+        row->addWidget(pauseBtn);
+        row->addWidget(resumeBtn);
+        row->addWidget(rollbackBtn);
+        row->addStretch();
+
+        contentVBox->addLayout(row);
+    }
+
+    // ==========================================================
+    // 3. 操作
+    // ==========================================================
+    {
+        QHBoxLayout* row = new QHBoxLayout;
+        row->setContentsMargins(0, 0, 0, 0);
+
+        QLabel* label = new QLabel(tr("扫码操作："), contentWidget);
+
+        QLineEdit* scanEdit = new QLineEdit(contentWidget);
+        scanEdit->setPlaceholderText(tr("请扫描产品条码..."));
+
+        QPushButton* actionBtn = new QPushButton(tr("执行"), contentWidget);
+
+        row->addWidget(label);
+        row->addWidget(scanEdit);
+        row->addWidget(actionBtn);
+        row->addStretch();
+
+        contentVBox->addLayout(row);
+    }
+
+    // ==========================================================
+    // 4. 状态信息（标签与表格在同一行）
+    // ==========================================================
+    {
+        QHBoxLayout* row = new QHBoxLayout;
+        row->setContentsMargins(0, 0, 0, 0);
+        row->setSpacing(8);
+
+        // 左侧标签
+        QLabel* label = new QLabel(tr("状态信息："), contentWidget);
+        row->addWidget(label, 0, Qt::AlignTop);
+        // 右侧表格
+        QTableView* tableView = new QTableView(contentWidget);
+
+        QStandardItemModel* model =
+            new QStandardItemModel(0, 5, tableView);
+
+        model->setHorizontalHeaderLabels(QStringList()
+                                         << tr("序号")
+                                         << tr("产品SN")
+                                         << tr("PASS")
+                                         << tr("NG")
+                                         << tr("暂停"));
+
+        tableView->setModel(model);
+
+        // 表格属性
+        tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+        tableView->setSelectionMode(QAbstractItemView::SingleSelection);
+        tableView->setAlternatingRowColors(true);
+        tableView->verticalHeader()->hide();
+
+        // 列宽按比例自动拉伸
+        tableView->horizontalHeader()->setSectionResizeMode(
+            QHeaderView::Stretch);
+
+        // 固定一个合适的高度
+        tableView->setMinimumHeight(180);
+
+        // 布局：
+        // label 固定宽度，tableView 占据剩余空间
+        row->addWidget(tableView, 1);
+
+        // 加入内容布局
+        contentVBox->addLayout(row);
+    }
+
+    // 将内容区域加入外层布局
+    contentLayout->addWidget(contentWidget);
+    layout->addLayout(contentLayout);
 
     return widget;
 }
 
-void ProcessStationLeftPanel::setTaskData(QTableWidget *table, const QList<QVariant> &values)
+TaskList ProcessStationLeftPanel::taskInfoKeys() const
+{
+    TaskList keys = {
+        tr("生产任务单号"),
+        tr("产品型号"),
+        tr("产品EPR编码"),
+        tr("生产任务工单数量"),
+        tr("生产任务单完成日期"),
+        tr("配置项配套表版本"),
+        tr("生产线编号")
+    };
+    return keys;
+}
+
+TaskList ProcessStationLeftPanel::taskStatusKeys() const
+{
+    TaskList keys = {
+        tr("当前工序完成数量"),
+        tr("当前工序NG数量"),
+        tr("上一工序"),
+        tr("当前工序"),
+        tr("下一工序"),
+        tr("物料和对状态"),
+        tr("工站编号")
+    };
+    return keys;
+}
+
+void ProcessStationLeftPanel::setTaskData(QTableWidget *table, const TaskList &keys, const TaskList &values)
 {
     if (!table)
         return;
 
-    const int rowCount = qMin(table->rowCount(), values.size());
+    const int rowCount = qMin(table->rowCount(), keys.size());
 
     for (int row = 0; row < rowCount; ++row)
     {
@@ -252,9 +432,27 @@ void ProcessStationLeftPanel::setTaskData(QTableWidget *table, const QList<QVari
         if (!table->item(row, 1))
             table->setItem(row, 1, new QTableWidgetItem);
 
-        // 这里只填充第二列的值
-        table->item(row, 1)->setText(values[row].toString());
+        // 第一列：字段名
+        table->item(row, 0)->setText(keys[row].toString());
+
+        // 第二列：字段值（values 不足时置空）
+        if (row < values.size())
+            table->item(row, 1)->setText(values[row].toString());
+        else
+            table->item(row, 1)->setText("");
     }
+}
+
+void ProcessStationLeftPanel::setTaskInfoValue(TaskList &values)
+{
+    m_taskInfoValue = values;
+    setTaskData(m_taskInfoTable, taskInfoKeys(), values);
+}
+
+void ProcessStationLeftPanel::setTaskStatusValue(TaskList &values)
+{
+    m_taskStatusValue = values;
+    setTaskData(m_taskStatusTable, taskStatusKeys(), values);
 }
 
 
@@ -313,17 +511,40 @@ QString ProcessStationRightPanel::pageTitle() const
 
 QString ProcessStationRightPanel::searchInfo() const
 {
-    return tr("请输入物料信息");
+    return m_currentSearchInfo.isEmpty()
+               ? tr("请输入物料信息")
+               : m_currentSearchInfo;;
 }
 
 QAbstractItemModel *ProcessStationRightPanel::createModel()
 {
-    return nullptr;
+    // 创建工艺站点右侧页面专用模型
+    // BasePageWidget 会将该模型绑定到所有 TABLE 类型的 Tab 页面中
+    ProcessStationModel* model = new ProcessStationModel(this);
+
+    // 默认显示第一个 Tab（物料核对）的数据
+    model->setTableType(ProcessStationModel::MaterialCheck);
+
+    return model;
 }
 
 FieldFilterProxyModel *ProcessStationRightPanel::createProxy(const QVariant &data)
 {
-    return nullptr;
+    // data 中保存的是当前 Tab 的类型：
+    // QVariant::fromValue(PageType::TABLE / PDF / NORMAL)
+
+    PageType pageType = data.value<PageType>();
+
+    // 只有 TABLE 类型才创建代理模型
+    if (pageType != PageType::TABLE)
+        return nullptr;
+
+    auto proxy = new FieldFilterProxyModel(this);
+
+    // 使用 BasePageWidget 中创建的源模型
+    proxy->setSourceModel(m_model);
+
+    return proxy;
 }
 
 void ProcessStationRightPanel::addWidgetToTitle(QHBoxLayout *layout)
