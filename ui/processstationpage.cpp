@@ -473,36 +473,43 @@ TabConfigs ProcessStationRightPanel::Tabs() const
     TabConfigs tabs;
     tabs.append({
         tr("物料核对"),
+                 PageType::TABLE,
         QVariant::fromValue(PageType::TABLE)
     });
 
     tabs.append({
         tr("工艺路线"),
+                 PageType::TABLE,
         QVariant::fromValue(PageType::TABLE)
     });
 
     tabs.append({
         tr("工艺文件"),
+                 PageType::PDF,
         QVariant::fromValue(PageType::PDF)
     });
 
     tabs.append({
         tr("引用文件"),
+                 PageType::PDF,
         QVariant::fromValue(PageType::PDF)
     });
 
     tabs.append({
         tr("工序物料信息"),
+                 PageType::TABLE,
         QVariant::fromValue(PageType::TABLE)
     });
 
     tabs.append({
         tr("工具设备"),
+                 PageType::TABLE,
         QVariant::fromValue(PageType::TABLE)
     });
 
     tabs.append({
         tr("资料上传"),
+            PageType::NORMAL,
         QVariant::fromValue(PageType::NORMAL)
     });
 

@@ -169,14 +169,14 @@ void ProcessStationModel::setToolEquipmentData()
     rows.append({
         {"equipmentCode", "EQ001"},
         {"equipmentName", "扭力枪"},
-        {"status", "正常"},
+      //  {"status", "正常"},
         {"verifyDate", "2026-05-01"}
     });
 
     rows.append({
         {"equipmentCode", "EQ002"},
         {"equipmentName", "条码枪"},
-        {"status", "正常"},
+       // {"status", "正常"},
         {"verifyDate", "2026-04-20"}
     });
 

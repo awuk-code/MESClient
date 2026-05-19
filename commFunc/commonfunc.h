@@ -34,9 +34,17 @@ constexpr auto FIELD_STARTED = "started";
 //     "未开工",
 //     0
 // }
+enum class PageType{
+    TABLE,
+    PDF,
+    NORMAL
+};
+Q_DECLARE_METATYPE(PageType)
+
 struct TabConfig
 {
     QString title;      // Tab 标题（显示给用户）
+    PageType pageType = PageType::TABLE;
     QVariant data;      // 扩展数据（业务参数）
 };
 
@@ -54,12 +62,7 @@ enum class FilterStatus{
     PROCESSED = 6       //已处理
 };
 Q_DECLARE_METATYPE(FilterStatus)
-enum class PageType{
-    TABLE,
-    PDF,
-    NORMAL
-};
-Q_DECLARE_METATYPE(PageType)
+
 // ============================================================
 // 筛选类型
 // ============================================================

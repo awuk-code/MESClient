@@ -149,7 +149,7 @@ void BasePageWidget::initUI()
     initTabs();
     initConnect();
 }
-
+/****
 void BasePageWidget::initTabs()
 {
     TabConfigs tabs = this->Tabs();
@@ -162,26 +162,176 @@ void BasePageWidget::initTabs()
 
     for (int i = 0; i < tabs.size(); ++i)
     {
+        const auto& tab = tabs[i];
 
+        // =========================
+        // 1. 添加 Tab
+        // =========================
+        m_tabBar->addTab(tab.title);
+
+        PageType type =
+            tab.data.value<PageType>();
+
+        QWidget* page = nullptr;
+
+        // =========================
+        // TABLE 页面
+        // =========================
+        if (type == PageType::TABLE)
+        {
+            auto proxy = createProxy(tab.data);
+
+            if (!proxy || !m_model)
+                continue;
+
+            proxy->setSourceModel(m_model);
+
+            auto table = createTable(proxy);
+
+            if (!table)
+                continue;
+
+            page = table;
+
+            m_tables.append(table);
+            m_proxies.append(proxy);
+        }
+
+        // =========================
+        // PDF 页面
+        // =========================
+        else if (type == PageType::PDF)
+        {
+            QWidget* pdfPage = new QWidget(this);
+
+            auto layout =
+                new QVBoxLayout(pdfPage);
+
+            QLabel* label =
+                new QLabel(tr("PDF 页面"), pdfPage);
+
+            label->setAlignment(Qt::AlignCenter);
+
+            layout->addWidget(label);
+
+            page = pdfPage;
+        }
+
+        // =========================
+        // NORMAL 页面
+        // =========================
+        else if (type == PageType::NORMAL)
+        {
+            QWidget* normalPage =
+                new QWidget(this);
+
+            auto layout =
+                new QVBoxLayout(normalPage);
+
+            QLabel* label =
+                new QLabel(tr("普通页面"), normalPage);
+
+            label->setAlignment(Qt::AlignCenter);
+
+            layout->addWidget(label);
+
+            page = normalPage;
+        }
+
+        // =========================
+        // 统一加入 Stack
+        // =========================
+        if (page)
+        {
+            m_stack->addWidget(page);
+            m_pages.append(page);
+        }
+    }
+
+    // =========================
+    // 默认页
+    // =========================
+    if (m_stack->count() > 0)
+    {
+        m_stack->setCurrentIndex(0);
+        m_tabBar->setCurrentIndex(0);
+    }
+}
+
+***/
+void BasePageWidget::initTabs()
+{
+    TabConfigs tabs = this->Tabs();
+
+    if (tabs.isEmpty())
+    {
+        m_tabBar->hide();
+        return;
+    }
+
+    for (int i = 0; i < tabs.size(); ++i)
+    {
         // 1. Tab UI
         m_tabBar->addTab(tabs[i].title);
 
-        // 2. Proxy
-        auto proxy = createProxy(tabs[i].data);
-        // auto proxy = createProxy(tabs[i].data.toInt());
-        if (!proxy || !m_model)
-            continue;
+        QWidget* page = nullptr;
 
-        proxy->setSourceModel(m_model);
+        // 2. TABLE 页面（默认）
+        if(tabs[i].pageType == PageType::TABLE){
 
-        // 3. Table（统一入口）
-        QTableView* table = createTable(proxy);
-        if (!table)
-            continue;
+            // 2. Proxy
+            auto proxy = createProxy(tabs[i].data);
+            // auto proxy = createProxy(tabs[i].data.toInt());
+            if (!proxy || !m_model)
+                continue;
 
-        m_stack->addWidget(table);
-        m_tables.append(table);
-        m_proxies.append(proxy);
+            proxy->setSourceModel(m_model);
+
+            // 3. Table（统一入口）
+            QTableView* table = createTable(proxy);
+            if (!table)
+                continue;
+            //表格
+            page = table;
+
+            m_tables.append(table);
+            m_proxies.append(proxy);
+        }
+        else if(tabs[i].pageType == PageType::PDF){
+            QWidget* pdfPage = new QWidget(this);
+
+            auto layout =
+                new QVBoxLayout(pdfPage);
+
+            QLabel* label =
+                new QLabel(tr("PDF 页面"), pdfPage);
+
+            label->setAlignment(Qt::AlignCenter);
+
+            layout->addWidget(label);
+
+            page = pdfPage;
+
+        }else if(tabs[i].pageType == PageType::NORMAL){
+            QWidget* normalPage =
+                new QWidget(this);
+
+            auto layout =
+                new QVBoxLayout(normalPage);
+
+            QLabel* label =
+                new QLabel(tr("普通页面"), normalPage);
+
+            label->setAlignment(Qt::AlignCenter);
+
+            layout->addWidget(label);
+
+            page = normalPage;
+        }
+        if(page){
+            m_stack->addWidget(page);
+            // m_pages.append(page);
+        }
     }
 
 
@@ -191,6 +341,113 @@ void BasePageWidget::initTabs()
         m_stack->setCurrentIndex(0);
         m_tabBar->setCurrentIndex(0);
     }
+    //--------------------------------------------------------------
+    /* TabConfigs tabs = this->Tabs();
+
+    if (tabs.isEmpty())
+    {
+        m_tabBar->hide();
+        return;
+    }
+
+    for (int i = 0; i < tabs.size(); ++i)
+    {
+        const auto& tab = tabs[i];
+
+        // =========================
+        // 1. 添加 Tab
+        // =========================
+        m_tabBar->addTab(tab.title);
+
+        // 当前页面类型
+        PageType type =
+            tab.data.value<PageType>();
+
+        QWidget* page = nullptr;
+
+        // =========================
+        // 2. TABLE 页面
+        // =========================
+        if (type == PageType::TABLE)
+        {
+            auto proxy = createProxy(tab.data);
+
+            if (!proxy || !m_model)
+                continue;
+
+            proxy->setSourceModel(m_model);
+
+            QTableView* table =
+                createTable(proxy);
+
+            if (!table)
+                continue;
+
+            page = table;
+
+            m_tables.append(table);
+            m_proxies.append(proxy);
+        }
+
+        // =========================
+        // 3. PDF 页面
+        // =========================
+        else if (type == PageType::PDF)
+        {
+            QWidget* pdfPage = new QWidget(this);
+
+            QVBoxLayout* layout =
+                new QVBoxLayout(pdfPage);
+
+            QLabel* label =
+                new QLabel(tr("PDF 页面"), pdfPage);
+
+            label->setAlignment(Qt::AlignCenter);
+
+            layout->addWidget(label);
+
+            page = pdfPage;
+        }
+
+        // =========================
+        // 4. NORMAL 页面
+        // =========================
+        else if (type == PageType::NORMAL)
+        {
+            QWidget* normalPage =
+                new QWidget(this);
+
+            QVBoxLayout* layout =
+                new QVBoxLayout(normalPage);
+
+            QLabel* label =
+                new QLabel(tr("普通页面"), normalPage);
+
+            label->setAlignment(Qt::AlignCenter);
+
+            layout->addWidget(label);
+
+            page = normalPage;
+        }
+
+        // =========================
+        // 5. 加入 Stack
+        // =========================
+        if (page)
+        {
+            m_stack->addWidget(page);
+        }
+    }
+
+    // =========================
+    // 6. 默认选中第一页
+    // =========================
+    if (m_stack->count() > 0)
+    {
+        m_stack->setCurrentIndex(0);
+        m_tabBar->setCurrentIndex(0);
+    }
+*/
 }
 
 void BasePageWidget::initConnect()

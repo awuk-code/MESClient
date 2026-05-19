@@ -15,12 +15,11 @@ QAbstractItemModel* ProductionTaskPage::createModel()
 
 TabConfigs ProductionTaskPage::Tabs() const
 {
-
     return
         {
-            {"未开工", /*QVariant::fromValue()*/ 0},
-            {"已开工", 1},
-            {"已完工", 2},
+            {"未开工", PageType::TABLE, QVariant::fromValue(FilterStatus::WAITWORK)},
+            {"已开工", PageType::TABLE,QVariant::fromValue(FilterStatus::ALREADY)},
+            {"已完工", PageType::TABLE,QVariant::fromValue(FilterStatus::FINISH)},
         };
 }
 

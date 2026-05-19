@@ -53,7 +53,7 @@ public:
 protected:
     //
     void resizeEvent(QResizeEvent *event)override;
-//
+    //
     void updateTableResizeMode();
 
 protected:
@@ -75,7 +75,7 @@ protected:
 protected:
     // 创建界面控件和布局。
     void initUI();
- void updateSearchInfo();
+    void updateSearchInfo();
     // 创建所有 Tabs 及其对应的表格和代理模型。
     void initTabs();
 
@@ -116,6 +116,7 @@ protected:
     TabConfigs m_tabs;      //用来保存tabs
     // 当前默认每个 Tab 对应一个 QTableView。
     // 后续可扩展为 QWidget*，支持 PDF、表单等。
+    QVector<QWidget*> m_pages;
     QVector<QTableView*> m_tables;
 
     QAbstractItemModel* m_model;    //基础模型
