@@ -75,7 +75,7 @@ protected:
 protected:
     // 创建界面控件和布局。
     void initUI();
-
+ void updateSearchInfo();
     // 创建所有 Tabs 及其对应的表格和代理模型。
     void initTabs();
 
@@ -101,7 +101,9 @@ protected:
 
     // 绑定复选框点击时的整行选中逻辑
     void setupCheckBoxSelection(QTableView* table);
-
+    //--------------------------------
+protected:
+    QTabBar* tabBar()const{return m_tabBar;};
 
 protected:
     QLineEdit* m_searchEdit{nullptr};

@@ -13,8 +13,6 @@ QAbstractItemModel* ProductionTaskPage::createModel()
     return new ProductionTaskModel(this);
 }
 
-
-
 TabConfigs ProductionTaskPage::Tabs() const
 {
 

@@ -460,6 +460,12 @@ ProcessStationRightPanel::ProcessStationRightPanel(QWidget *parent)
     : BasePageWidget(parent)
 {
     setupPage();
+    // m_tabWidget 为 BasePageWidget 中的成员
+    connect(tabBar(), &QTabBar::currentChanged,
+            this, &ProcessStationRightPanel::updateTableModelByTab);
+
+    updateTableModelByTab(tabBar()->currentIndex());
+    // 初始化第一页
 }
 
 TabConfigs ProcessStationRightPanel::Tabs() const
@@ -558,5 +564,35 @@ void ProcessStationRightPanel::addWidgetToTitle(QHBoxLayout *layout)
 
 void ProcessStationRightPanel::setCurrentSearchInfo(const QString &info)
 {
+m_currentSearchInfo = info;
+     updateSearchInfo();  // BasePageWidget 中已有刷新接口
+}
 
+void ProcessStationRightPanel::updateTableModelByTab(int index)
+{
+    auto model = qobject_cast<ProcessStationModel*>(m_model);
+    if (!model)
+        return;
+
+    switch (index)
+    {
+    case 0:
+        model->setTableType(ProcessStationModel::MaterialCheck);
+        break;
+
+    case 1:
+        model->setTableType(ProcessStationModel::ProcessRoute);
+        break;
+
+    case 4:
+        model->setTableType(ProcessStationModel::ProcessMaterial);
+        break;
+
+    case 5:
+        model->setTableType(ProcessStationModel::ToolEquipment);
+        break;
+
+    default:
+        break;
+    }
 }

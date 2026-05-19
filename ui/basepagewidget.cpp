@@ -484,5 +484,13 @@ void BasePageWidget::setupCheckBoxSelection(QTableView* table)
             });
 }
 
+void BasePageWidget::updateSearchInfo()
+{
+    if (m_searchEdit)
+    {
+        m_searchEdit->setPlaceholderText(searchInfo());
+    }
+}
+
 
 

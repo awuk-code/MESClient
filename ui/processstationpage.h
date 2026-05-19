@@ -84,9 +84,14 @@ protected:
     void addWidgetToTitle(QHBoxLayout *layout) override;
 
     void setCurrentSearchInfo(const QString& info);
+
+private:
+    void updateTableModelByTab(int index);
+
 private:
     ToggleSwitchWidget* m_toggle{nullptr};
     QString m_currentSearchInfo;
+
 
 };
 

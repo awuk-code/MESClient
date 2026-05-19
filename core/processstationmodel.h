@@ -5,6 +5,7 @@
 
 class ProcessStationModel : public BaseTableModel
 {
+    Q_OBJECT
 public:
     enum TableType
     {

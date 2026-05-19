@@ -1,6 +1,7 @@
 INCLUDEPATH += $$PWD
 
 HEADERS +=  \
+    $$PWD/basedialogwidget.h \
     $$PWD/basepagewidget.h \
     $$PWD/checkboxdelegate.h \
     $$PWD/datefilterpopup.h \
@@ -16,6 +17,7 @@ HEADERS +=  \
 
 
 SOURCES +=      \
+    $$PWD/basedialogwidget.cpp \
     $$PWD/basepagewidget.cpp \
     $$PWD/checkboxdelegate.cpp \
     $$PWD/datefilterpopup.cpp \
