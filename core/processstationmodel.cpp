@@ -42,16 +42,26 @@ ProcessStationModel::TableType ProcessStationModel::tableType() const
 
 void ProcessStationModel::setMaterialCheckHeader()
 {
-        m_columns =
+    m_columns =
         {
-            {"序号",         "rowNumber",         60},
-            {"物料编码",     "materialCode",      180},
-            {"物料名称",     "materialName",      220},
-            {"单套数量",     "singledQty",        100},
-            {"生产所需数量", "actualQty",         120},
-            {"物料标签码",   "materialLabelCode", 180},
-            {"EPR编码",      "EPR",               130},
-            {"批次号",       "batchNo",           130}
+            // title          field                width visible editable fixedWidth alignment         type                    resizeMode                   filterType        delegate
+            {"序号",           "rowNumber",          60,   true,  false,  true,      Qt::AlignCenter,  ColumnType::RowNumber,  QHeaderView::Fixed},
+
+            {"物料编码",       "materialCode",      180,  true,  false,  false,     Qt::AlignCenter,  ColumnType::Normal,     QHeaderView::ResizeToContents},
+
+            {"物料名称",       "materialName",      220,  true,  false,  false,     Qt::AlignCenter,  ColumnType::Normal,     QHeaderView::ResizeToContents},
+
+            {"单套数量",       "singledQty",        100,  true,  false,  false,     Qt::AlignCenter,  ColumnType::Normal,     QHeaderView::ResizeToContents},
+
+            {"生产所需数量",   "actualQty",         120,  true,  false,  false,     Qt::AlignCenter,  ColumnType::Normal,     QHeaderView::ResizeToContents},
+
+            // 可输入列：物料标签码
+            {"物料标签码",     "materialLabelCode", 220,  true,  true,   false,     Qt::AlignCenter,  ColumnType::LineEdit,   QHeaderView::Interactive,
+             FilterType::None, m_lineEditDelegate},
+
+            {"EPR编码",        "EPR",               130,  true,  false,  false,     Qt::AlignCenter,  ColumnType::Normal,     QHeaderView::ResizeToContents},
+
+            {"批次号",         "batchNo",           130,  true,  false,  false,     Qt::AlignCenter,  ColumnType::Normal,     QHeaderView::ResizeToContents}
         };
 }
 

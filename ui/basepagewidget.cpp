@@ -650,9 +650,15 @@ void BasePageWidget::setupColumns(QTableView *table)
         }
 
         // =========================
-        // 3. Delegate
+        // 3. Delegate,输入框代理创建
         // =========================
-        if (cfg.delegate)
+        if (cfg.type == ColumnType::LineEdit)
+        {
+            table->setItemDelegateForColumn(
+                col,
+                new LineEditDelegate(table));   // 每个表格独立创建
+        }
+        else if (cfg.delegate)
         {
             table->setItemDelegateForColumn(col, cfg.delegate);
         }

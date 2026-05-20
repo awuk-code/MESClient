@@ -19,6 +19,8 @@
 
 #include "fieldfilterproxymodel.h"
 #include "commonfunc.h"
+#include "lineeditdelegate.h"
+
 // 通用业务页面基类。
 //
 // 主要功能：
