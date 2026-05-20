@@ -5,7 +5,7 @@
 #include <QMouseEvent>
 #include <QStyleOptionButton>
 
-#include "../core/baseitemdelegate.h"
+#include "baseitemdelegate.h"
 
 class OperationDelegate : public BaseItemDelegate
 {

@@ -86,13 +86,12 @@ bool FieldFilterProxyModel::filterAcceptsRow(int srcRow, const QModelIndex &srcP
 
     // ===== Tab状态过滤 =====
     QString status =  row.value("status").toString();
-    qDebug() << __FUNCTION__ <<"filterProxy::status = "<<status;
 
     FilterStatus filterStatus = m_status.value<FilterStatus>();
     switch (filterStatus)
     {
     case FilterStatus::UNKNOWN:
-        return false;
+        break;
 
     case FilterStatus::WAITWORK:
         if (status != "未开工")

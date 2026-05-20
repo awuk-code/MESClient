@@ -1,5 +1,5 @@
 #include "productiontaskmodel.h"
-#include "../ui/operationdelegate.h"
+#include "operationdelegate.h"
 
 #include <QDebug>
 

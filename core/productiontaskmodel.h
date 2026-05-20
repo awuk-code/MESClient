@@ -3,8 +3,8 @@
 
 #include <QAbstractTableModel>
 #include "basetablemodel.h"
-#include "../ui/checkboxdelegate.h"
-#include "../ui/operationdelegate.h"
+#include "checkboxdelegate.h"
+#include "operationdelegate.h"
 
 class ProductionTaskModel : public BaseTableModel
 {

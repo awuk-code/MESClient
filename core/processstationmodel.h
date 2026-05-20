@@ -2,6 +2,7 @@
 #define PROCESSSTATIONMODEL_H
 
 #include "basetablemodel.h"
+#include "lineeditdelegate.h"
 
 class ProcessStationModel : public BaseTableModel
 {
@@ -28,6 +29,7 @@ private:
     // 物料核对
     void setMaterialCheckHeader();
     void setMaterialCheckData();
+    TabConfigs materialCheckHeader() const;
 
     // 工艺路线
     void setProcessRouteHeader();
@@ -43,6 +45,8 @@ private:
 
 private:
     TableType m_tableType{MaterialCheck};
+    //创建输入框代理
+    LineEditDelegate* m_lineEditDelegate{nullptr};
 };
 
 #endif // PROCESSSTATIONMODEL_H

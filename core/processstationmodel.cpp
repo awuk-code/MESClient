@@ -3,6 +3,7 @@
 ProcessStationModel::ProcessStationModel(QObject *parent)
     : BaseTableModel(parent)
 {
+    m_lineEditDelegate = new LineEditDelegate(this);
     setTableType(MaterialCheck);
 }
 
@@ -41,14 +42,16 @@ ProcessStationModel::TableType ProcessStationModel::tableType() const
 
 void ProcessStationModel::setMaterialCheckHeader()
 {
-    m_columns =
+        m_columns =
         {
-            {"序号", "rowNumber", 60},
-            {"物料编码", "materialCode", 180},
-            {"物料名称", "materialName", 220},
-            {"需求数量", "requiredQty", 100},
-            {"实发数量", "actualQty", 100},
-            {"核对状态", "checkStatus", 120}
+            {"序号",         "rowNumber",         60},
+            {"物料编码",     "materialCode",      180},
+            {"物料名称",     "materialName",      220},
+            {"单套数量",     "singledQty",        100},
+            {"生产所需数量", "actualQty",         120},
+            {"物料标签码",   "materialLabelCode", 180},
+            {"EPR编码",      "EPR",               130},
+            {"批次号",       "batchNo",           130}
         };
 }
 
@@ -59,31 +62,50 @@ void ProcessStationModel::setMaterialCheckData()
     rows.append({
         {"materialCode", "MAT001"},
         {"materialName", "主板"},
-        {"requiredQty", 1},
-        {"actualQty", 1},
-        {"checkStatus", "PASS"}
+        {"singledQty", 1},                 // 对应 单套数量
+        {"actualQty", 100},                // 对应 生产所需数量
+        {"materialLabelCode", "LBL202605001"},
+        {"EPR", "EPR-001"},
+        {"No.", "BATCH-001"}
     });
 
     rows.append({
         {"materialCode", "MAT002"},
         {"materialName", "外壳"},
-        {"requiredQty", 1},
-        {"actualQty", 1},
-        {"checkStatus", "PASS"}
+        {"singledQty", 1},
+        {"actualQty", 100},
+        {"materialLabelCode", "LBL202605002"},
+        {"EPR", "EPR-002"},
+        {"No.", "BATCH-002"}
+    });
+
+    rows.append({
+        {"materialCode", "MAT003"},
+        {"materialName", "显示屏"},
+        {"singledQty", 1},
+        {"actualQty", 100},
+        {"materialLabelCode", "LBL202605003"},
+        {"EPR", "EPR-003"},
+        {"No.", "BATCH-003"}
     });
 
     setRows(rows);
+}
+TabConfigs ProcessStationModel::materialCheckHeader() const
+{
+    TabConfigs materialcheck;
+    return materialcheck;
 }
 
 void ProcessStationModel::setProcessRouteHeader()
 {
     m_columns =
         {
-            {"序号", "rowNumber", 60},
-            {"工序编号", "processCode", 150},
-            {"工序名称", "processName", 180},
-            {"工位", "stationNo", 120},
-            {"状态", "status", 120}
+            {"序号",               "rowNumber",       60},
+            {"工序编号",           "processCode",     150},
+            {"工序名称",           "processName",     180},
+            {"并行步骤",           "parallelStep",    120},
+            {"当前工序待完成数量", "remainingQty",    160}
         };
 }
 
@@ -118,15 +140,30 @@ void ProcessStationModel::setProcessMaterialHeader()
 {
     m_columns =
         {
-            {"序号", "rowNumber", 60},
-            {"物料编码", "materialCode", 180},
-            {"物料名称", "materialName", 220},
-            {"单位", "unit", 100},
-            {"用量", "quantity", 100},
-            {"备注", "remark", 200}
+            // title      field            width  visible editable fixedWidth alignment          type                    resizeMode
+            {"序号",       "rowNumber",      60,   true,   false,  true,      Qt::AlignCenter,   ColumnType::RowNumber,  QHeaderView::Fixed},
+
+            {"产品SN",     "productSN",      180,  true,   false,  false,     Qt::AlignCenter,   ColumnType::Normal,     QHeaderView::ResizeToContents},
+
+            {"物料编码",   "materialCode",   180,  true,   false,  false,     Qt::AlignCenter,   ColumnType::Normal,     QHeaderView::ResizeToContents},
+
+            {"物料名称",   "materialName",   220,  true,   false,  false,     Qt::AlignCenter,   ColumnType::Normal,     QHeaderView::ResizeToContents},
+
+            {"物料型号",   "materialModel",  180,  true,   false,  false,     Qt::AlignCenter,   ColumnType::Normal,     QHeaderView::ResizeToContents},
+
+            {"数量",       "quantity",       100,  true,   false,  false,     Qt::AlignCenter,   ColumnType::Normal,     QHeaderView::ResizeToContents},
+
+            // 可输入列：物料SN
+            // 关键设置：
+            // 1. editable = true
+            // 2. type = ColumnType::LineEdit
+            {"物料SN",     "materialSN",     200,  true,   true,   false,     Qt::AlignCenter,   ColumnType::LineEdit,   QHeaderView::Interactive, FilterType::None, m_lineEditDelegate},
+
+            {"物料批次号", "materialBatch",  180,  true,   false,  false,     Qt::AlignCenter,   ColumnType::Normal,     QHeaderView::ResizeToContents},
+
+            {"序列号",     "serialNumber",   180,  true,   false,  false,     Qt::AlignCenter,   ColumnType::Normal,     QHeaderView::ResizeToContents}
         };
 }
-
 void ProcessStationModel::setProcessMaterialData()
 {
     QVector<QVariantMap> rows;
@@ -154,11 +191,11 @@ void ProcessStationModel::setToolEquipmentHeader()
 {
     m_columns =
         {
-            {"序号", "rowNumber", 60},
-            {"设备编号", "equipmentCode", 150},
-            {"设备名称", "equipmentName", 180},
-            {"状态", "status", 100},
-            {"校验日期", "verifyDate", 150}
+            {"序号",     "rowNumber",     60},
+            {"产品SN",   "productSN",     180},
+            {"设备名称", "equipmentName", 200},
+            {"设备编号", "equipmentCode", 180},
+            {"规格型号", "specModel",     180}
         };
 }
 
@@ -169,14 +206,14 @@ void ProcessStationModel::setToolEquipmentData()
     rows.append({
         {"equipmentCode", "EQ001"},
         {"equipmentName", "扭力枪"},
-      //  {"status", "正常"},
+        //  {"status", "正常"},
         {"verifyDate", "2026-05-01"}
     });
 
     rows.append({
         {"equipmentCode", "EQ002"},
         {"equipmentName", "条码枪"},
-       // {"status", "正常"},
+        // {"status", "正常"},
         {"verifyDate", "2026-04-20"}
     });
 

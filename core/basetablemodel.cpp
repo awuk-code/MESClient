@@ -117,6 +117,9 @@ Qt::ItemFlags BaseTableModel::flags(
         flags |= Qt::ItemIsUserCheckable;
     }
 
+    if(col.type == ColumnType::LineEdit){
+        flags |= Qt::ItemIsEditable;
+    }
     return flags;
 }
 
@@ -149,6 +152,20 @@ bool BaseTableModel::setData(
     if(role == Qt::UserRole){
         m_rows[index.row()] = value.toMap();
         emit dataChanged(index, index);
+        return true;
+    }
+    //lineedit
+    if((role == Qt::EditRole || role == Qt::DisplayRole)
+        && col.editable){
+        // 将当前单元格对应字段写回到行数据中
+        m_rows[index.row()][col.field] = value;
+
+        // 通知界面刷新
+        emit dataChanged(
+            index,
+            index,
+            {Qt::DisplayRole, Qt::EditRole});
+
         return true;
     }
 

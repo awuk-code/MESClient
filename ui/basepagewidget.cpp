@@ -672,7 +672,9 @@ void BasePageWidget::setupColumns(QTableView *table)
 
 void BasePageWidget::setupTableAppearance(QTableView *table)
 {
-    table->setEditTriggers( QAbstractItemView::NoEditTriggers);
+    table->setEditTriggers( QAbstractItemView::CurrentChanged |
+                           QAbstractItemView::SelectedClicked |
+                           QAbstractItemView::DoubleClicked);
     // 开启斑马纹（隔行颜色）
     table->setAlternatingRowColors(true);
 
