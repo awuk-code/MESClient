@@ -76,7 +76,7 @@ void ProcessStationModel::setMaterialCheckData()
         {"actualQty", 100},                // 对应 生产所需数量
         {"materialLabelCode", "LBL202605001"},
         {"EPR", "EPR-001"},
-        {"No.", "BATCH-001"}
+        {"batchNo", "BATCH-001"}
     });
 
     rows.append({
@@ -86,7 +86,7 @@ void ProcessStationModel::setMaterialCheckData()
         {"actualQty", 100},
         {"materialLabelCode", "LBL202605002"},
         {"EPR", "EPR-002"},
-        {"No.", "BATCH-002"}
+        {"batchNo", "BATCH-002"}
     });
 
     rows.append({
@@ -96,7 +96,7 @@ void ProcessStationModel::setMaterialCheckData()
         {"actualQty", 100},
         {"materialLabelCode", "LBL202605003"},
         {"EPR", "EPR-003"},
-        {"No.", "BATCH-003"}
+        {"batchNo", "BATCH-003"}
     });
 
     setRows(rows);
@@ -228,4 +228,20 @@ void ProcessStationModel::setToolEquipmentData()
     });
 
     setRows(rows);
+}
+
+void ProcessStationModel::afterCellEdited(int row, const QString &field, const QVariant &value)
+{
+    if (field != "materialLabelCode")
+        return;
+
+    QString labelCode = value.toString().trimmed();
+
+    if (labelCode.isEmpty())
+        return;
+
+    // 模拟接口返回
+    // requestMaterialInfo(row, labelCode);
+    m_rows[row]["EPR"] = "EPR-" + labelCode.right(3);
+    m_rows[row]["batchNo"] = "BATCH-" + labelCode.right(3);
 }

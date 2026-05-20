@@ -26,6 +26,16 @@ const QVector<ColumnConfig>& BaseTableModel::columns() const
     return m_columns;
 }
 
+void BaseTableModel::afterCellEdited(int row, const QString &field, const QVariant &value)
+{
+    Q_UNUSED(row)
+    Q_UNUSED(field)
+    Q_UNUSED(value)
+
+    // 默认不做任何事情。
+    // 子类（如 ProcessStationModel）可按需重写。
+}
+
 int BaseTableModel::rowCount(const QModelIndex &) const
 {
     return m_rows.size();
@@ -132,7 +142,7 @@ bool BaseTableModel::setData(
         return false;
 
     const auto& col = m_columns[index.column()];
-
+// 1. CheckBox 列处理
     if (col.type == ColumnType::CheckBox &&
         role == Qt::CheckStateRole)
     {
@@ -149,21 +159,46 @@ bool BaseTableModel::setData(
 
         return true;
     }
+    // 2. 整行数据更新
     if(role == Qt::UserRole){
         m_rows[index.row()] = value.toMap();
         emit dataChanged(index, index);
         return true;
     }
-    //lineedit
+    // 3. LineEdit / 可编辑列处理
     if((role == Qt::EditRole || role == Qt::DisplayRole)
         && col.editable){
-        // 将当前单元格对应字段写回到行数据中
+        // // 3.1 写入当前字段,将当前单元格对应字段写回到行数据中
         m_rows[index.row()][col.field] = value;
 
-        // 通知界面刷新
+        // 3.2 子类扩展点
+        //     例如：
+        //     - 输入物料标签码后自动带出 EPR 编码和批次号
+        //     - 输入物料 SN 后自动校验
+        // -----------------------------------------------------
+        //
+        // 需要在 BaseTableModel 中声明：
+        //
+        // protected:
+        //     virtual void afterCellEdited(
+        //         int row,
+        //         const QString& field,
+        //         const QVariant& value);
+        //
+        // 并提供默认空实现。
+         afterCellEdited(index.row(), col.field, value);
+        // 3.3 刷新整行
+        //     因为 afterCellEdited() 可能修改了同一行中的其他字段
+        //     （例如 EPR、批次号）
+        // -----------------------------------------------------
+        QModelIndex left  = this->index(index.row(), 0);
+        QModelIndex right = this->index(
+            index.row(),
+            columnCount() - 1);
+
         emit dataChanged(
-            index,
-            index,
+            left,
+            right,
             {Qt::DisplayRole, Qt::EditRole});
 
         return true;

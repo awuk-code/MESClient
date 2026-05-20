@@ -38,7 +38,29 @@ public:
     // 获取列配置
     const QVector<ColumnConfig>& columns() const;
 
+
 protected:
+protected:
+    // =========================================================
+    // 单元格编辑后的扩展点
+    //
+    // 作用：
+    // 子类可重写该函数，在某个字段被编辑后，
+    // 自动修改同一行中的其他字段。
+    //
+    // 典型场景：
+    // 1. 输入物料标签码 -> 自动带出 EPR 编码、批次号
+    // 2. 输入物料 SN   -> 自动带出批次号
+    // 3. 输入数量      -> 自动计算金额
+    //
+    // 参数：
+    // row   : 当前编辑的行号
+    // field : 当前编辑的字段名（如 "materialLabelCode"）
+    // value : 用户输入的新值
+virtual void afterCellEdited(int row,
+        const QString& field,
+        const QVariant& value);
+
     QVector<ColumnConfig> m_columns;
     QVector<QVariantMap> m_rows;
 

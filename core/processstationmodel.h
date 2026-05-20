@@ -43,6 +43,12 @@ private:
     void setToolEquipmentHeader();
     void setToolEquipmentData();
 
+protected:
+    void afterCellEdited(
+        int row,
+        const QString& field,
+        const QVariant& value) override;
+
 private:
     TableType m_tableType{MaterialCheck};
     //创建输入框代理
