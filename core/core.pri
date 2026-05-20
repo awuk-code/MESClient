@@ -9,7 +9,8 @@ HEADERS += \
     $$PWD/operationdelegate.h \
     $$PWD/operationdelegate.h \
     $$PWD/processstationmodel.h \
-    $$PWD/productiontaskmodel.h
+    $$PWD/productiontaskmodel.h \
+    $$PWD/textlinkdelegate.h
 
 SOURCES += \
     $$PWD/baseitemdelegate.cpp \
@@ -19,4 +20,5 @@ SOURCES += \
     $$PWD/lineeditdelegate.cpp \
     $$PWD/operationdelegate.cpp \
     $$PWD/processstationmodel.cpp \
-    $$PWD/productiontaskmodel.cpp
+    $$PWD/productiontaskmodel.cpp \
+    $$PWD/textlinkdelegate.cpp

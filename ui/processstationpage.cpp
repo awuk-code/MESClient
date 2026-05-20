@@ -466,6 +466,85 @@ ProcessStationRightPanel::ProcessStationRightPanel(QWidget *parent)
 
     updateTableModelByTab(tabBar()->currentIndex());
     // 初始化第一页
+     // 3. 获取 ProcessStationModel
+    auto model =
+        qobject_cast<ProcessStationModel*>(m_model);
+    if (model)
+    {
+        // ----------------------------------------------------
+        // 4. 获取产品SN代理
+        // ----------------------------------------------------
+        //
+        // 这里假设你在 ProcessStationModel 中提供了：
+        //
+        // ProductSnDelegate* productSnDelegate() const;
+        //
+        // 返回成员变量 m_productSnDelegate。
+        // ----------------------------------------------------
+        auto delegate = model->linkDelegate();
+
+        if (delegate)
+        {
+            // ------------------------------------------------
+            // 5. 连接点击信号
+            // ------------------------------------------------
+            //
+            // clicked(int row, const QString& field)
+            //
+            // row   = 点击的行号
+            // field = 当前列字段（例如 "productSN"）
+            // ------------------------------------------------
+            connect(delegate,
+                    &TextLinkDelegate::linkClicked,
+                    this,
+                    [=](int row, const QString& field)
+                    {
+                        // ------------------------------------
+                        // 6. 获取该行完整数据
+                        // ------------------------------------
+                        QVariantMap rowData =
+                            model->rowData(row);
+
+                        // 产品SN
+                        QString productSN =
+                            rowData.value(field).toString();
+
+                        // 其他字段也可以一起取出
+                        QString materialCode =
+                            rowData.value("materialCode").toString();
+
+                        QString materialName =
+                            rowData.value("materialName").toString();
+
+                        // ------------------------------------
+                        // 7. 在这里编写业务逻辑
+                        // ------------------------------------
+                        //
+                        // 常见用途：
+                        // - 打开产品详情窗口
+                        // - 查询追溯信息
+                        // - 打开维修记录
+                        // - 调用接口获取完整信息
+                        // ------------------------------------
+
+                        qDebug() << "点击产品SN:";
+                        qDebug() << "row =" << row;
+                        qDebug() << "field =" << field;
+                        qDebug() << "productSN =" << productSN;
+                        qDebug() << "materialCode =" << materialCode;
+                        qDebug() << "materialName =" << materialName;
+
+                        // 示例：
+                        // ProductTraceDialog dlg(productSN, this);
+                        // dlg.exec();
+                    });
+        }
+    }
+
+    // --------------------------------------------------------
+    // 8. 初始化显示第一个 Tab 的数据
+    // --------------------------------------------------------
+    updateTableModelByTab(tabBar()->currentIndex());
 }
 
 TabConfigs ProcessStationRightPanel::Tabs() const

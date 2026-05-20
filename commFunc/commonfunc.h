@@ -93,7 +93,8 @@ enum class ColumnType
     RowNumber,      // 行号
     Operation,      // 操作按钮（打印、开工、编辑、删除等）
     LineEdit,       // 输入框
-    ImageLink       // 显示“查看图片”，点击后弹出图片预览
+    ImageLink,       // 显示“查看图片”，点击后弹出图片预览
+    TextLink        //文本链接
 };
 
 

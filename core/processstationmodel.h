@@ -2,7 +2,7 @@
 #define PROCESSSTATIONMODEL_H
 
 #include "basetablemodel.h"
-#include "lineeditdelegate.h"
+#include "textlinkdelegate.h"
 
 class ProcessStationModel : public BaseTableModel
 {
@@ -42,7 +42,11 @@ private:
     // 工具设备
     void setToolEquipmentHeader();
     void setToolEquipmentData();
-
+public:
+    TextLinkDelegate* linkDelegate() const
+    {
+        return m_textLinkDelegate;
+    }
 protected:
     void afterCellEdited(
         int row,
@@ -51,8 +55,7 @@ protected:
 
 private:
     TableType m_tableType{MaterialCheck};
-    //创建输入框代理
-    LineEditDelegate* m_lineEditDelegate{nullptr};
+    TextLinkDelegate *m_textLinkDelegate{nullptr};
 };
 
 #endif // PROCESSSTATIONMODEL_H

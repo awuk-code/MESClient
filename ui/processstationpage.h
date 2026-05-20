@@ -12,6 +12,7 @@
 
 #include "basepagewidget.h"
 #include "toggleswitchwidget.h"
+#include "textlinkdelegate.h"
 
 
 class ProcessStationLeftPanel;

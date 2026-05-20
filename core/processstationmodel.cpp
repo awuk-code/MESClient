@@ -3,7 +3,7 @@
 ProcessStationModel::ProcessStationModel(QObject *parent)
     : BaseTableModel(parent)
 {
-    m_lineEditDelegate = new LineEditDelegate(this);
+    m_textLinkDelegate = new TextLinkDelegate(this);
     setTableType(MaterialCheck);
 }
 
@@ -47,7 +47,7 @@ void ProcessStationModel::setMaterialCheckHeader()
             // title          field                width visible editable fixedWidth alignment         type                    resizeMode                   filterType        delegate
             {"序号",           "rowNumber",          60,   true,  false,  true,      Qt::AlignCenter,  ColumnType::RowNumber,  QHeaderView::Fixed},
 
-            {"物料编码",       "materialCode",      180,  true,  false,  false,     Qt::AlignCenter,  ColumnType::Normal,     QHeaderView::ResizeToContents},
+            {"物料编码",       "materialCode",      180,  true,  false,  false,     Qt::AlignCenter,  ColumnType::Normal,     QHeaderView::ResizeToContents, FilterType::None, m_textLinkDelegate},
 
             {"物料名称",       "materialName",      220,  true,  false,  false,     Qt::AlignCenter,  ColumnType::Normal,     QHeaderView::ResizeToContents},
 
@@ -57,7 +57,7 @@ void ProcessStationModel::setMaterialCheckHeader()
 
             // 可输入列：物料标签码
             {"物料标签码",     "materialLabelCode", 220,  true,  true,   false,     Qt::AlignCenter,  ColumnType::LineEdit,   QHeaderView::Interactive,
-             FilterType::None, m_lineEditDelegate},
+             FilterType::None},
 
             {"EPR编码",        "EPR",               130,  true,  false,  false,     Qt::AlignCenter,  ColumnType::Normal,     QHeaderView::ResizeToContents},
 
@@ -167,7 +167,7 @@ void ProcessStationModel::setProcessMaterialHeader()
             // 关键设置：
             // 1. editable = true
             // 2. type = ColumnType::LineEdit
-            {"物料SN",     "materialSN",     200,  true,   true,   false,     Qt::AlignCenter,   ColumnType::LineEdit,   QHeaderView::Interactive, FilterType::None, m_lineEditDelegate},
+            {"物料SN",     "materialSN",     200,  true,   true,   false,     Qt::AlignCenter,   ColumnType::LineEdit,   QHeaderView::Interactive, FilterType::None},
 
             {"物料批次号", "materialBatch",  180,  true,   false,  false,     Qt::AlignCenter,   ColumnType::Normal,     QHeaderView::ResizeToContents},
 
