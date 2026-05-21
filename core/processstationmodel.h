@@ -42,6 +42,14 @@ private:
     // 工具设备
     void setToolEquipmentHeader();
     void setToolEquipmentData();
+
+    //接口请求函数
+    void requestMaterialCheckInfo(int row, const QString& labelCode);
+    void requestProcessMaterialInfo(int row, const QString& materialSN);
+
+    void applyMaterialCheckInfo(int row, const QVariantMap& data);
+    void applyProcessMaterialInfo(int row, const QVariantMap& data);
+
 public:
     TextLinkDelegate* linkDelegate() const
     {

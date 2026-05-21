@@ -47,7 +47,7 @@ void ProcessStationModel::setMaterialCheckHeader()
             // title          field                width visible editable fixedWidth alignment         type                    resizeMode                   filterType        delegate
             {"序号",           "rowNumber",          60,   true,  false,  true,      Qt::AlignCenter,  ColumnType::RowNumber,  QHeaderView::Fixed},
 
-            {"物料编码",       "materialCode",      180,  true,  false,  false,     Qt::AlignCenter,  ColumnType::Normal,     QHeaderView::ResizeToContents, FilterType::None, m_textLinkDelegate},
+            {"物料编码",       "materialCode",      180,  true,  false,  false,     Qt::AlignCenter,  ColumnType::TextLink,     QHeaderView::ResizeToContents, FilterType::None, m_textLinkDelegate},
 
             {"物料名称",       "materialName",      220,  true,  false,  false,     Qt::AlignCenter,  ColumnType::Normal,     QHeaderView::ResizeToContents},
 
@@ -111,7 +111,7 @@ void ProcessStationModel::setProcessRouteHeader()
 {
     m_columns =
         {
-            {"序号",               "rowNumber",       60},
+            {"序号",           "rowNumber",          60,   true,  false,  true,      Qt::AlignCenter,  ColumnType::RowNumber,  QHeaderView::Fixed},
             {"工序编号",           "processCode",     150},
             {"工序名称",           "processName",     180},
             {"并行步骤",           "parallelStep",    120},
@@ -151,7 +151,7 @@ void ProcessStationModel::setProcessMaterialHeader()
     m_columns =
         {
             // title      field            width  visible editable fixedWidth alignment          type                    resizeMode
-            {"序号",       "rowNumber",      60,   true,   false,  true,      Qt::AlignCenter,   ColumnType::RowNumber,  QHeaderView::Fixed},
+            {"序号",           "rowNumber",          60,   true,  false,  true,      Qt::AlignCenter,  ColumnType::RowNumber,  QHeaderView::Fixed},
 
             {"产品SN",     "productSN",      180,  true,   false,  false,     Qt::AlignCenter,   ColumnType::Normal,     QHeaderView::ResizeToContents},
 
@@ -201,7 +201,8 @@ void ProcessStationModel::setToolEquipmentHeader()
 {
     m_columns =
         {
-            {"序号",     "rowNumber",     60},
+            {"序号",           "rowNumber",          60,   true,  false,  true,      Qt::AlignCenter,  ColumnType::RowNumber,  QHeaderView::Fixed},
+
             {"产品SN",   "productSN",     180},
             {"设备名称", "equipmentName", 200},
             {"设备编号", "equipmentCode", 180},
@@ -230,18 +231,97 @@ void ProcessStationModel::setToolEquipmentData()
     setRows(rows);
 }
 
-void ProcessStationModel::afterCellEdited(int row, const QString &field, const QVariant &value)
+void ProcessStationModel::requestMaterialCheckInfo(int row, const QString &labelCode)
 {
-    if (field != "materialLabelCode")
-        return;
-
-    QString labelCode = value.toString().trimmed();
-
     if (labelCode.isEmpty())
         return;
 
-    // 模拟接口返回
-    // requestMaterialInfo(row, labelCode);
-    m_rows[row]["EPR"] = "EPR-" + labelCode.right(3);
-    m_rows[row]["batchNo"] = "BATCH-" + labelCode.right(3);
+    // ====================================================
+    // 这里未来替换成 HTTP 请求
+    // ====================================================
+
+    QVariantMap response;
+
+    response["EPR"] =
+        "EPR-" + labelCode.right(3);
+
+    response["batchNo"] =
+        "BATCH-" + labelCode.right(3);
+
+    // ====================================================
+    // 回填数据
+    // ====================================================
+
+    applyMaterialCheckInfo(row, response);
+}
+
+void ProcessStationModel::requestProcessMaterialInfo(int row, const QString &materialSN)
+{
+    if (row < 0 || row >= m_rows.size())
+        return;
+
+    QString sn = materialSN.trimmed();
+
+    if (sn.isEmpty())
+        return;
+
+    // 2. 未来这里替换成 HTTP 接口
+    // 3. 当前阶段：模拟接口返回
+
+    QVariantMap response;
+
+
+    response["materialBatch"] =
+        "BATCH-" + sn.right(3);
+
+    response["serialNumber"] =
+        "SERIAL-" + sn.right(5);
+    applyProcessMaterialInfo(row, response);
+}
+
+void ProcessStationModel::applyMaterialCheckInfo(int row, const QVariantMap &data)
+{
+    if (row < 0 || row >= m_rows.size())
+        return;
+
+    m_rows[row]["EPR"] =
+        data.value("EPR");
+
+    m_rows[row]["batchNo"] =
+        data.value("batchNo");
+
+    emit dataChanged(
+        index(row, 0),
+        index(row, columnCount() - 1));
+}
+
+void ProcessStationModel::applyProcessMaterialInfo(int row, const QVariantMap &data)
+{
+    if (row < 0 || row >= m_rows.size())
+        return;
+
+    m_rows[row]["materialBatch"] =
+        data.value("materialBatch");
+
+    m_rows[row]["serialNumber"] =
+        data.value("serialNumber");
+
+    emit dataChanged(
+        index(row, 0),
+        index(row, columnCount() - 1));
+}
+
+
+void ProcessStationModel::afterCellEdited(int row, const QString &field, const QVariant &value)
+{
+    //自动带出数据
+    if(field == "materialLabelCode")
+    {
+        requestMaterialCheckInfo(row, value.toString());
+    }
+
+    else if(field == "materialSN")
+    {
+        requestProcessMaterialInfo(row, value.toString());
+    }
 }
