@@ -40,7 +40,6 @@ public:
 
 
 protected:
-protected:
     // =========================================================
     // 单元格编辑后的扩展点
     //
@@ -81,6 +80,8 @@ public:
     bool setData(const QModelIndex &index,
                  const QVariant &value,
                  int role) override;
+
+    QString columnField(int column) const;
 
 };
 

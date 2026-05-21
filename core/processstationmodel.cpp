@@ -1,10 +1,12 @@
 #include "processstationmodel.h"
+#include <QMessageBox>
 
 ProcessStationModel::ProcessStationModel(QObject *parent)
     : BaseTableModel(parent)
 {
     m_textLinkDelegate = new TextLinkDelegate(this);
     setTableType(MaterialCheck);
+
 }
 
 void ProcessStationModel::setTableType(TableType type)

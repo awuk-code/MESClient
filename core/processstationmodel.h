@@ -51,7 +51,7 @@ private:
     void applyProcessMaterialInfo(int row, const QVariantMap& data);
 
 public:
-    TextLinkDelegate* linkDelegate() const
+    TextLinkDelegate* textLinkDelegate() const
     {
         return m_textLinkDelegate;
     }

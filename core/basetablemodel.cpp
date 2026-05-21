@@ -206,3 +206,13 @@ bool BaseTableModel::setData(
 
     return false;
 }
+
+QString BaseTableModel::columnField(int column) const
+{
+    if(column < 0 || column >= m_columns.size())
+    {
+        return QString();
+    }
+
+    return m_columns[column].field;
+}

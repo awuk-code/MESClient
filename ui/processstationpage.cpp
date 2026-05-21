@@ -481,24 +481,16 @@ ProcessStationRightPanel::ProcessStationRightPanel(QWidget *parent)
         //
         // 返回成员变量 m_productSnDelegate。
         // ----------------------------------------------------
-        auto delegate = model->linkDelegate();
+        auto delegate = model->textLinkDelegate();
 
         if (delegate)
         {
-            // ------------------------------------------------
-            // 5. 连接点击信号
-            // ------------------------------------------------
-            //
-            // clicked(int row, const QString& field)
-            //
-            // row   = 点击的行号
-            // field = 当前列字段（例如 "productSN"）
-            // ------------------------------------------------
+
             connect(delegate,
                     &TextLinkDelegate::linkClicked,
                     this,
                     [=](int row, const QString& field)
-                    {
+                    {qDebug() << __FUNCTION__ <<"""""sds"<<field;
                         // ------------------------------------
                         // 6. 获取该行完整数据
                         // ------------------------------------
@@ -527,16 +519,13 @@ ProcessStationRightPanel::ProcessStationRightPanel(QWidget *parent)
                         // - 调用接口获取完整信息
                         // ------------------------------------
 
-                        qDebug() << "点击产品SN:";
+                        qDebug() << "点击物料编码:";
                         qDebug() << "row =" << row;
                         qDebug() << "field =" << field;
                         qDebug() << "productSN =" << productSN;
                         qDebug() << "materialCode =" << materialCode;
                         qDebug() << "materialName =" << materialName;
 
-                        // 示例：
-                        // ProductTraceDialog dlg(productSN, this);
-                        // dlg.exec();
                     });
         }
     }

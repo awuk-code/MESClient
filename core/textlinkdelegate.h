@@ -19,7 +19,10 @@ signals:
     // row  : 当前点击的行号（代理模型中的行号）
     // text : 当前单元格显示内容
     void linkClicked(int row, const QString &text) const;
-
+private:
+    QRect textRect(
+        const QStyleOptionViewItem& option,
+        const QString& text) const;
 protected:
     // 自定义绘制
     void paint(QPainter *painter,

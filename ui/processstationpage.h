@@ -93,7 +93,6 @@ private:
     ToggleSwitchWidget* m_toggle{nullptr};
     QString m_currentSearchInfo;
 
-
 };
 
 #endif // PROCESSSTATIONPAGE_H

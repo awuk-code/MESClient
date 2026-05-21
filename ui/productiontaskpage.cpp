@@ -1,6 +1,7 @@
 #include "productiontaskpage.h"
 #include "productiontaskmodel.h"
 #include "fieldfilterproxymodel.h"
+#include "toggleswitchwidget.h"
 
 ProductionTaskPage::ProductionTaskPage(QWidget *parent)
     : BasePageWidget(parent)

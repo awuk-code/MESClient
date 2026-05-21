@@ -2,7 +2,7 @@
 #define PRODUCTIONTASKPAGE_H
 
 #include "basepagewidget.h"
-#include "toggleswitchwidget.h"
+
 
 class ProductionTaskPage : public BasePageWidget
 {

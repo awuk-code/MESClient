@@ -2,10 +2,49 @@
 #include <QPainter>
 #include <QMouseEvent>
 #include <QStyle>
+#include <QApplication>
+#include <QFontMetrics>
 
 TextLinkDelegate::TextLinkDelegate(QObject *parent)
     : BaseItemDelegate{parent}
 {}
+
+QRect TextLinkDelegate::textRect(const QStyleOptionViewItem &option, const QString &text) const
+{
+    // =========================
+    // 1. 字体度量
+    // =========================
+    QFontMetrics fm(option.font);
+
+    // =========================
+    // 2. 计算文本尺寸
+    // =========================
+    QRect textBounding =
+        fm.boundingRect(text);
+
+    int textWidth =
+        textBounding.width();
+
+    int textHeight =
+        textBounding.height();
+
+    // =========================
+    // 3. 居中计算
+    // =========================
+    int x =
+        option.rect.x()
+        + (option.rect.width() - textWidth) / 2;
+
+    int y =
+        option.rect.y()
+        + (option.rect.height() - textHeight) / 2;
+
+    return QRect(
+        x,
+        y,
+        textWidth,
+        textHeight);
+}
 
 void TextLinkDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
@@ -21,6 +60,8 @@ void TextLinkDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opti
             option.palette.highlight());
     }
 
+    QString text =
+        index.data(Qt::DisplayRole).toString();
     // =========================
     // 设置字体（保持默认）
     // =========================
@@ -31,38 +72,52 @@ void TextLinkDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opti
     // =========================
     painter->setPen(Qt::red);
 
-    // =========================
-    // 绘制文本（居中）
-    // =========================
+    QRect rect =
+        textRect(option, text);
+
     painter->drawText(
         option.rect,
         Qt::AlignCenter,
-        index.data(Qt::DisplayRole).toString());
+        text);
 
     painter->restore();
 }
 
 bool TextLinkDelegate::editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index)
 {
-    Q_UNUSED(model)
-    Q_UNUSED(option)
 
     // 只处理鼠标左键释放事件
-    if (event->type() == QEvent::MouseButtonRelease)
+    if (event->type() != QEvent::MouseButtonRelease)
     {
+        return QStyledItemDelegate::editorEvent(
+            event,
+            model,
+            option,
+            index);
+    }
+
         QMouseEvent *mouseEvent =
             static_cast<QMouseEvent *>(event);
 
-        if (mouseEvent->button() == Qt::LeftButton)
-        {
-            emit linkClicked(
-                index.row(),
-                index.data(Qt::DisplayRole).toString());
-
-            return true;    // 事件已处理
-        }
+    if (mouseEvent->button() != Qt::LeftButton)
+    {
+        return false;
     }
 
-    return QStyledItemDelegate::editorEvent(
-        event, model, option, index);
+    QString text =
+        index.data(Qt::DisplayRole).toString();
+
+    QRect rect = textRect(option, text);
+
+    if (rect.contains(mouseEvent->pos()))
+    {
+        qDebug() << __FUNCTION__ <<"sssssssssTEXT = "<<text;
+        emit linkClicked(
+            index.row(),
+            text);
+
+        return true;
+    }
+
+    return false;
 }
