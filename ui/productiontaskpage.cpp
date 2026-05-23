@@ -18,9 +18,9 @@ TabConfigs ProductionTaskPage::Tabs() const
 {
     return
         {
-            {"未开工", PageType::TABLE, QVariant::fromValue(FilterStatus::WAITWORK)},
-            {"已开工", PageType::TABLE,QVariant::fromValue(FilterStatus::ALREADY)},
-            {"已完工", PageType::TABLE,QVariant::fromValue(FilterStatus::FINISH)},
+            {"未开工", PageDisplayType::TABLE, QVariant::fromValue(FilterStatus::WAITWORK)},
+            {"已开工", PageDisplayType::TABLE,QVariant::fromValue(FilterStatus::ALREADY)},
+            {"已完工", PageDisplayType::TABLE,QVariant::fromValue(FilterStatus::FINISH)},
         };
 }
 

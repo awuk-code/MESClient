@@ -13,6 +13,9 @@ include(commFunc/common.pri)
 include(ui/ui.pri)
 include(core/core.pri)
 
+INCLUDEPATH += $$PWD/thirdparty/poppler/Library/include
+LIBS += -L$$PWD/thirdparty/poppler/Library/lib -lpoppler-cpp
+
 INCLUDEPATH +=      \
     $$PWD/app       \
     $$PWD/login     \
@@ -25,8 +28,6 @@ RESOURCES += \
     res.qrc
 
 DISTFILES += $$files(*/*.pri)
-
-
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

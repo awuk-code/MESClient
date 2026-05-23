@@ -1,4 +1,5 @@
 #include "textlinkdelegate.h"
+#include "commonfunc.h"
 #include <QPainter>
 #include <QMouseEvent>
 #include <QStyle>
@@ -96,8 +97,8 @@ bool TextLinkDelegate::editorEvent(QEvent *event, QAbstractItemModel *model, con
             index);
     }
 
-        QMouseEvent *mouseEvent =
-            static_cast<QMouseEvent *>(event);
+    QMouseEvent *mouseEvent =
+        static_cast<QMouseEvent *>(event);
 
     if (mouseEvent->button() != Qt::LeftButton)
     {
@@ -111,10 +112,18 @@ bool TextLinkDelegate::editorEvent(QEvent *event, QAbstractItemModel *model, con
 
     if (rect.contains(mouseEvent->pos()))
     {
-        qDebug() << __FUNCTION__ <<"sssssssssTEXT = "<<text;
-        emit linkClicked(
-            index.row(),
-            text);
+        QVariant var = index.data(Qt::DisplayRole);
+        if(var.isValid()) return false;
+
+        LinkData linkData = var.value<LinkData>();
+        switch (linkData.type) {
+        case LinkType::Page:
+            emit pageLinkClicked(linkData.target);
+            break;
+        case LinkType::Image:
+            emit imageLinkClicked(linkData.target);
+            break;
+        }
 
         return true;
     }

@@ -11,6 +11,9 @@
 #include "sidebarwidget.h"
 #include "productiontaskpage.h"
 #include "processstationpage.h"
+#include "repairstationpage.h"
+
+#include "navigationmanager.h"
 
 class MainWindow : public QWidget
 {
@@ -28,8 +31,11 @@ private:
 
 
 private slots:
+    //stack的页面跳转
     void onPageChanged(int index/*, QString &title*/);
-
+    //文本链接的跳转
+    void openPage(const QString& pageId);
+    void onOpenPage(PageType type);
 private:
     QPoint m_dragPos;           // 记录鼠标按下时的位置
     bool m_isResizing = false;  // 是否正在拉伸
@@ -41,7 +47,10 @@ private:
 
     ProductionTaskPage* m_pageProduction{nullptr};
     ProcessStationPage* m_pageProcess{nullptr};
+    RepairStationPage* m_pageRepairStation{nullptr};
 
+
+    QMap<QString, QWidget*> m_pageMap;
     QPushButton* m_sizeBtn{nullptr};
 };
 

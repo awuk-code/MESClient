@@ -7,6 +7,8 @@
 #include <QFile>
 #include <QString>
 
+#include "pdfviewwidget.h"
+
 typedef enum _LoginStatus{
     LoginFailed,
     UserExit,
@@ -71,10 +73,16 @@ int main(int argc, char *argv[])
     //     }
     // }while (status == LoginFailed);
 
-    MainWindow w;
+   // MainWindow w;
 
-    w.show();
+   // w.show();
 
+    auto pdfWidget = new PdfViewWidget;
+
+pdfWidget->resize(800, 600);
+    pdfWidget->show();
+pdfWidget->loadPdf(
+    "D:/123.pdf");
     return a.exec();
 
 }

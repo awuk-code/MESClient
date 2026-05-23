@@ -28,13 +28,26 @@ void MainWindow::initUI()
     m_stack = new QStackedWidget(this);
 
     m_pageProduction = new ProductionTaskPage(this);
+    //注册页面
+    NavigationManager::instance()->registerPage(
+        PageType::ProductionTask,
+        m_pageProduction);
 
 
     m_stack->addWidget(m_pageProduction); //id = 0
+
     m_pageProcess = new ProcessStationPage(this);
     m_stack->addWidget(m_pageProcess);
-    // m_stack->addWidget(new QLabel(QStringLiteral("任务界面2")));
-    m_stack->addWidget(new QLabel(QStringLiteral("任务界面3")));
+    NavigationManager::instance()->registerPage(
+        PageType::ProductionTask,
+        m_pageProcess);
+    m_pageRepairStation = new RepairStationPage(this);
+
+    m_stack->addWidget(m_pageRepairStation);
+    NavigationManager::instance()->registerPage(
+        PageType::RepairStation,
+        m_pageRepairStation);
+
     m_stack->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     // ===== 下半部分（左 Sidebar + 右 Central）=====
@@ -82,6 +95,11 @@ void MainWindow::initConnect()
 {
     connect(m_sidebar, &SideBarWidget::sigPageChanged,
             this, &MainWindow::onPageChanged);
+
+    //   connect(ProcessStationRightPanel, &ProcessStationRightPanel::requestOpenPage, this, &MainWindow::openPage);
+
+    // connect(NavigationManager::instance(), &NavigationManager::sigOpenPage,
+    //          this, &MainWindow::onOpenPage);
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -139,4 +157,31 @@ void MainWindow::onPageChanged(int index/*, QString &title*/)
 {
     funcDebug()<<"收到页面切换信号index= "<<index;
     m_stack->setCurrentIndex(index-1);
+}
+
+void MainWindow::openPage(const QString &pageId)
+{
+    if(!m_pageMap.contains(pageId))
+    {
+        funcDebug() << "页面不存在:" << pageId;
+        return;
+    }
+    QWidget* page = m_pageMap.value(pageId);
+
+    m_stack->setCurrentWidget(page);
+
+    funcDebug() << "打开页面:" << pageId;
+}
+
+void MainWindow::onOpenPage(PageType type)
+{
+    QWidget* page =
+        NavigationManager::instance()->page(type);
+
+    if (!page)
+    {
+        return;
+    }
+
+    m_stack->setCurrentWidget(page);
 }

@@ -466,29 +466,19 @@ ProcessStationRightPanel::ProcessStationRightPanel(QWidget *parent)
 
     updateTableModelByTab(tabBar()->currentIndex());
     // 初始化第一页
-     // 3. 获取 ProcessStationModel
+    // 3. 获取 ProcessStationModel
     auto model =
         qobject_cast<ProcessStationModel*>(m_model);
     if (model)
     {
-        // ----------------------------------------------------
-        // 4. 获取产品SN代理
-        // ----------------------------------------------------
-        //
-        // 这里假设你在 ProcessStationModel 中提供了：
-        //
-        // ProductSnDelegate* productSnDelegate() const;
-        //
-        // 返回成员变量 m_productSnDelegate。
-        // ----------------------------------------------------
         auto delegate = model->textLinkDelegate();
 
         if (delegate)
         {
-
             connect(delegate,
-                    &TextLinkDelegate::linkClicked,
-                    this,
+                    &TextLinkDelegate::pageLinkClicked,
+                    this,&ProcessStationRightPanel::onPageLinkClicked
+                    /*
                     [=](int row, const QString& field)
                     {qDebug() << __FUNCTION__ <<"""""sds"<<field;
                         // ------------------------------------
@@ -526,7 +516,8 @@ ProcessStationRightPanel::ProcessStationRightPanel(QWidget *parent)
                         qDebug() << "materialCode =" << materialCode;
                         qDebug() << "materialName =" << materialName;
 
-                    });
+                    }*/
+                    );
         }
     }
 
@@ -536,49 +527,55 @@ ProcessStationRightPanel::ProcessStationRightPanel(QWidget *parent)
     updateTableModelByTab(tabBar()->currentIndex());
 }
 
+void ProcessStationRightPanel::onPageLinkClicked(const QString &pageId)
+{
+    emit requestOpenPage(pageId);
+}
+
 TabConfigs ProcessStationRightPanel::Tabs() const
 {
     TabConfigs tabs;
     tabs.append({
         tr("物料核对"),
-                 PageType::TABLE,
-        QVariant::fromValue(PageType::TABLE)
+        PageDisplayType::TABLE,
+        QVariant::fromValue(PageDisplayType::TABLE)
     });
 
     tabs.append({
         tr("工艺路线"),
-                 PageType::TABLE,
-        QVariant::fromValue(PageType::TABLE)
+        PageDisplayType::TABLE,
+        QVariant::fromValue(PageDisplayType::TABLE)
     });
 
     tabs.append({
         tr("工艺文件"),
-                 PageType::PDF,
-        QVariant::fromValue(PageType::PDF)
+        PageDisplayType::PDF,
+        QVariant::fromValue(PageDisplayType::PDF)
+
     });
 
     tabs.append({
         tr("引用文件"),
-                 PageType::PDF,
-        QVariant::fromValue(PageType::PDF)
+        PageDisplayType::PDF,
+        QVariant::fromValue(PageDisplayType::PDF)
     });
 
     tabs.append({
         tr("工序物料信息"),
-                 PageType::TABLE,
-        QVariant::fromValue(PageType::TABLE)
+        PageDisplayType::TABLE,
+        QVariant::fromValue(PageDisplayType::TABLE)
     });
 
     tabs.append({
         tr("工具设备"),
-                 PageType::TABLE,
-        QVariant::fromValue(PageType::TABLE)
+        PageDisplayType::TABLE,
+        QVariant::fromValue(PageDisplayType::TABLE)
     });
 
     tabs.append({
         tr("资料上传"),
-            PageType::NORMAL,
-        QVariant::fromValue(PageType::NORMAL)
+        PageDisplayType::NORMAL,
+        QVariant::fromValue(PageDisplayType::NORMAL)
     });
 
     return tabs;
@@ -593,8 +590,8 @@ QString ProcessStationRightPanel::pageTitle() const
 QString ProcessStationRightPanel::searchInfo() const
 {
     return m_currentSearchInfo.isEmpty()
-               ? tr("请输入物料信息")
-               : m_currentSearchInfo;;
+    ? tr("请输入物料信息")
+    : m_currentSearchInfo;;
 }
 
 QAbstractItemModel *ProcessStationRightPanel::createModel()
@@ -612,12 +609,13 @@ QAbstractItemModel *ProcessStationRightPanel::createModel()
 FieldFilterProxyModel *ProcessStationRightPanel::createProxy(const QVariant &data)
 {
     // data 中保存的是当前 Tab 的类型：
-    // QVariant::fromValue(PageType::TABLE / PDF / NORMAL)
+    // QVariant::fromValue(PageDisplayType::TABLE / PDF / NORMAL)
 
-    PageType pageType = data.value<PageType>();
+    PageDisplayType pageDisplayType = data.value<PageDisplayType>();
+
 
     // 只有 TABLE 类型才创建代理模型
-    if (pageType != PageType::TABLE)
+    if (pageDisplayType != PageDisplayType::TABLE)
         return nullptr;
 
     auto proxy = new FieldFilterProxyModel(this);
@@ -639,8 +637,8 @@ void ProcessStationRightPanel::addWidgetToTitle(QHBoxLayout *layout)
 
 void ProcessStationRightPanel::setCurrentSearchInfo(const QString &info)
 {
-m_currentSearchInfo = info;
-     updateSearchInfo();  // BasePageWidget 中已有刷新接口
+    m_currentSearchInfo = info;
+    updateSearchInfo();  // BasePageWidget 中已有刷新接口
 }
 
 void ProcessStationRightPanel::updateTableModelByTab(int index)

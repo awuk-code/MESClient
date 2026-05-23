@@ -34,18 +34,21 @@ constexpr auto FIELD_STARTED = "started";
 //     "未开工",
 //     0
 // }
-enum class PageType{
+enum class PageDisplayType{
     TABLE,
     PDF,
     NORMAL
 };
-Q_DECLARE_METATYPE(PageType)
+Q_DECLARE_METATYPE(PageDisplayType)
+
+
 
 struct TabConfig
 {
     QString title;      // Tab 标题（显示给用户）
-    PageType pageType = PageType::TABLE;
+    PageDisplayType PageDisplayType = PageDisplayType::TABLE;
     QVariant data;      // 扩展数据（业务参数）
+    QWidget* page = nullptr;
 };
 
 //筛选状态：
@@ -97,117 +100,42 @@ enum class ColumnType
     TextLink        //文本链接
 };
 
-
-// ============================================================
-// 列配置
-// ============================================================
-// 用于描述表格中一列的完整属性。
-//
-// 初始化顺序：
-// {
-//     title,       // 列标题
-//     field,       // 字段名
-//     width,       // 列宽
-//     visible,     // 是否显示
-//     editable,    // 是否可编辑
-//     fixedWidth,  // 是否固定宽度
-//     alignment,   // 对齐方式
-//     type,        // 列类型
-//     resizeMode,  // 列宽调整模式
-//     filterType,  // 筛选类型
-//     delegate     // 自定义代理
-// }
-//
-// 示例：
-// {
-//     "优先级",
-//     "priority",
-//     100,
-//     true,
-//     false,
-//     true,
-//     Qt::AlignCenter,
-//     ColumnType::Normal,
-//     QHeaderView::Fixed,
-//     FilterType::Priority
-// }
 struct ColumnConfig
 {
-    // --------------------------------------------------------
-    // 基础信息
-    // --------------------------------------------------------
     QString title;      // 列标题（显示在表头上的文字）
     QString field;      // 字段名（程序内部唯一标识，如 taskNo、priority）
 
-    // --------------------------------------------------------
-    // 显示属性
-    // --------------------------------------------------------
     int width = 120;    // 列宽（单位：像素）
 
     bool visible = true;        // 是否显示该列
     bool editable = false;      // 单元格是否允许编辑
     bool fixedWidth = false;    // 是否固定宽度（最大化时不参与比例缩放）
 
-    // --------------------------------------------------------
-    // 单元格显示方式
-    // --------------------------------------------------------
     Qt::Alignment alignment = Qt::AlignCenter;   // 文本对齐方式
     ColumnType type = ColumnType::Normal;        // 列类型
 
-    // --------------------------------------------------------
-    // 列宽调整模式
-    // --------------------------------------------------------
-    // QHeaderView::Fixed
-    //     固定宽度，不自动变化
-    //
-    // QHeaderView::ResizeToContents
-    //     根据内容自动调整
-    //
-    // QHeaderView::Stretch
-    //     自动拉伸填满剩余空间
     QHeaderView::ResizeMode resizeMode =
         QHeaderView::ResizeToContents;
 
-    // --------------------------------------------------------
-    // 表头筛选类型
-    // --------------------------------------------------------
-    // FilterType::None
-    //     无筛选功能
-    //
-    // FilterType::Date
-    //     点击表头按钮弹出日历
-    //
-    // FilterType::Priority
-    //     点击表头按钮弹出优先级菜单
     FilterType filterType = FilterType::None;
 
-    // --------------------------------------------------------
-    // 自定义代理
-    // --------------------------------------------------------
-    // nullptr
-    //     不使用代理
-    //
-    // m_checkBoxDelegate
-    //     复选框代理
-    //
-    // opDelegate
-    //     操作列代理
-    //
-    // imageDelegate
-    //     图片查看代理
     QStyledItemDelegate* delegate = nullptr;
 };
 
-
-// ============================================================
-// 类型别名
-// ============================================================
-// TabConfigs
-//     等价于 QVector<TabConfig>
-//
-// ColumnConfigs
-//     等价于 QVector<ColumnConfig>
 using TabConfigs    = QVector<TabConfig>;
 using ColumnConfigs = QVector<ColumnConfig>;
+
+enum class LinkType{
+    Page,
+    Image
+};
+
+struct LinkData
+{
+    LinkType type;
+    QString text;   //点击的文本
+    QString target; //跳转的目标
+};
+Q_DECLARE_METATYPE(LinkData)
 
 #endif // COMMONFUNC_H

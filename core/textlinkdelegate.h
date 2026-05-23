@@ -16,9 +16,11 @@ public:
     explicit TextLinkDelegate(QObject *parent = nullptr);
 
 signals:
-    // row  : 当前点击的行号（代理模型中的行号）
-    // text : 当前单元格显示内容
-    void linkClicked(int row, const QString &text) const;
+
+    void pageLinkClicked(const QString& pageId);
+
+    void imageLinkClicked(const QString& imagePath);
+
 private:
     QRect textRect(
         const QStyleOptionViewItem& option,

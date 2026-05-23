@@ -76,6 +76,9 @@ public:
 signals:
     void toggleRequested(bool isChecked);
 
+    void requestOpenPage(const QString& pageId);
+private slots:
+    void onPageLinkClicked(const QString& pageId);
 protected:
     TabConfigs Tabs() const override;
     QString pageTitle() const override;
@@ -92,6 +95,10 @@ private:
 private:
     ToggleSwitchWidget* m_toggle{nullptr};
     QString m_currentSearchInfo;
+    //pdf
+    // m_processPdfPage
+    //m_referencePdfPage
+    //normal
 
 };
 

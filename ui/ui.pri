@@ -7,8 +7,10 @@ HEADERS +=  \
     $$PWD/headeroverlaywidget.h \
     $$PWD/headerwidget.h \
     $$PWD/mainwindow.h \
+    $$PWD/pdfviewwidget.h \
     $$PWD/processstationpage.h \
     $$PWD/productiontaskpage.h \
+    $$PWD/repairstationpage.h \
     $$PWD/sidebarwidget.h \
     $$PWD/subheaderwidget.h \
     $$PWD/toggleswitchwidget.h
@@ -21,8 +23,10 @@ SOURCES +=      \
     $$PWD/headeroverlaywidget.cpp \
         $$PWD/headerwidget.cpp \
         $$PWD/mainwindow.cpp \
+    $$PWD/pdfviewwidget.cpp \
     $$PWD/processstationpage.cpp \
     $$PWD/productiontaskpage.cpp \
+    $$PWD/repairstationpage.cpp \
     $$PWD/sidebarwidget.cpp \
     $$PWD/subheaderwidget.cpp \
     $$PWD/toggleswitchwidget.cpp
