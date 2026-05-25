@@ -1,3 +1,4 @@
+#include "imageviewwidget.h"
 #include "mainwindow.h"
 #include "mloginwedget.h"
 #include "mlocalauthservice.h"
@@ -83,6 +84,11 @@ int main(int argc, char *argv[])
     // pdfWidget->show();
     // pdfWidget->loadPdf(
     //     "D:/C++11.pdf");
+    qDebug() << QFile::exists("D:/DSC00040.JPG");
+    auto view = new ImageViewWidget;
+    view->resize(1200, 800);
+    view->show();
+    view->loadImage("D:/DSC00040.JPG");
     return a.exec();
 
 }

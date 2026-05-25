@@ -18,7 +18,6 @@ public:
     //表头过滤
     void setFieldFilter(const QString &field, const QVariant &value);
 
-
 protected:
     bool filterAcceptsRow(int srcRow, const QModelIndex &srcParent) const override;
 

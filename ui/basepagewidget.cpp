@@ -2,13 +2,13 @@
 #include "fieldfilterproxymodel.h"
 #include "basetablemodel.h"
 #include "headeroverlaywidget.h"
+#include "imageviewwidget.h"
 
 #include <QScrollBar>
 
 BasePageWidget::BasePageWidget(QWidget *parent)
     : QWidget{parent}
 {
-
 }
 
 void BasePageWidget::setupPage()
@@ -24,9 +24,25 @@ void BasePageWidget::onPageLinkClicked(const QVariantMap &rowData, const QString
     qDebug() << __FUNCTION__ <<"clicked";
 }
 
-void BasePageWidget::onImageLinkClicked(int row)
+void BasePageWidget::onImageLinkClicked(const QString &NGNumber)
 {
     qDebug() << __FUNCTION__ <<"clicked";
+    qDebug() << "查看图片:" << NGNumber;
+
+    // 1. 创建图片查看器
+
+    auto viewer =
+        new ImageViewWidget;
+
+    viewer->resize(1200, 800);
+
+    viewer->show();
+
+    // 2. 发HTTP请求
+
+    // emit sigRequestNGImage(
+    //     ngNumber,
+    //     viewer);
 }
 
 void BasePageWidget::resizeEvent(QResizeEvent *event)
@@ -242,6 +258,7 @@ void BasePageWidget::initConnect()
             });
     connect(this, &BasePageWidget::sigPageSwitching, this, &BasePageWidget::onPageLinkClicked);
     connect(this, &BasePageWidget::sigIMGView, this, &BasePageWidget::onImageLinkClicked);
+
 }
 
 QSet<QString> BasePageWidget::collectFilterFields() const

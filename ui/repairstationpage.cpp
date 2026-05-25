@@ -44,7 +44,7 @@ RepairStationPage::RepairStationPage(QWidget *parent)
                             emit sigPageSwitching(rowData, pageid);
                         }else if(text == NGImg)
                         {
-                            emit sigIMGView(row);
+                            emit sigIMGView(NGnumber);
                         }
                     });
         }
