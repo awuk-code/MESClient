@@ -19,6 +19,16 @@ void BasePageWidget::setupPage()
 
 }
 
+void BasePageWidget::onPageLinkClicked(const QVariantMap &rowData, const QString &pageID)
+{
+    qDebug() << __FUNCTION__ <<"clicked";
+}
+
+void BasePageWidget::onImageLinkClicked(int row)
+{
+    qDebug() << __FUNCTION__ <<"clicked";
+}
+
 void BasePageWidget::resizeEvent(QResizeEvent *event)
 {
     QWidget::resizeEvent(event);
@@ -202,113 +212,7 @@ void BasePageWidget::initTabs()
         m_stack->setCurrentIndex(0);
         m_tabBar->setCurrentIndex(0);
     }
-    //--------------------------------------------------------------
-    /* TabConfigs tabs = this->Tabs();
 
-    if (tabs.isEmpty())
-    {
-        m_tabBar->hide();
-        return;
-    }
-
-    for (int i = 0; i < tabs.size(); ++i)
-    {
-        const auto& tab = tabs[i];
-
-        // =========================
-        // 1. 添加 Tab
-        // =========================
-        m_tabBar->addTab(tab.title);
-
-        // 当前页面类型
-        PageDisplayType type =
-            tab.data.value<PageDisplayType>();
-
-        QWidget* page = nullptr;
-
-        // =========================
-        // 2. TABLE 页面
-        // =========================
-        if (type == PageDisplayType::TABLE)
-        {
-            auto proxy = createProxy(tab.data);
-
-            if (!proxy || !m_model)
-                continue;
-
-            proxy->setSourceModel(m_model);
-
-            QTableView* table =
-                createTable(proxy);
-
-            if (!table)
-                continue;
-
-            page = table;
-
-            m_tables.append(table);
-            m_proxies.append(proxy);
-        }
-
-        // =========================
-        // 3. PDF 页面
-        // =========================
-        else if (type == PageDisplayType::PDF)
-        {
-            QWidget* pdfPage = new QWidget(this);
-
-            QVBoxLayout* layout =
-                new QVBoxLayout(pdfPage);
-
-            QLabel* label =
-                new QLabel(tr("PDF 页面"), pdfPage);
-
-            label->setAlignment(Qt::AlignCenter);
-
-            layout->addWidget(label);
-
-            page = pdfPage;
-        }
-
-        // =========================
-        // 4. NORMAL 页面
-        // =========================
-        else if (type == PageDisplayType::NORMAL)
-        {
-            QWidget* normalPage =
-                new QWidget(this);
-
-            QVBoxLayout* layout =
-                new QVBoxLayout(normalPage);
-
-            QLabel* label =
-                new QLabel(tr("普通页面"), normalPage);
-
-            label->setAlignment(Qt::AlignCenter);
-
-            layout->addWidget(label);
-
-            page = normalPage;
-        }
-
-        // =========================
-        // 5. 加入 Stack
-        // =========================
-        if (page)
-        {
-            m_stack->addWidget(page);
-        }
-    }
-
-    // =========================
-    // 6. 默认选中第一页
-    // =========================
-    if (m_stack->count() > 0)
-    {
-        m_stack->setCurrentIndex(0);
-        m_tabBar->setCurrentIndex(0);
-    }
-*/
 }
 
 void BasePageWidget::initConnect()
@@ -336,7 +240,8 @@ void BasePageWidget::initConnect()
                     proxy->setKeyword(text);
                 }
             });
-
+    connect(this, &BasePageWidget::sigPageSwitching, this, &BasePageWidget::onPageLinkClicked);
+    connect(this, &BasePageWidget::sigIMGView, this, &BasePageWidget::onImageLinkClicked);
 }
 
 QSet<QString> BasePageWidget::collectFilterFields() const

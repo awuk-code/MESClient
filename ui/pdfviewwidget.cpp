@@ -33,9 +33,7 @@ void PdfViewWidget::initUI()
     auto mainLayout =
         new QVBoxLayout(this);
 
-    // =========================
     // toolbar
-    // =========================
 
     auto toolbarLayout =
         new QHBoxLayout;
@@ -93,6 +91,20 @@ void PdfViewWidget::initUI()
 
     mainLayout->addWidget(m_view);
 
+
+    m_view->setDragMode(
+        QGraphicsView::ScrollHandDrag);
+
+    m_view->setTransformationAnchor(
+        QGraphicsView::AnchorUnderMouse);
+
+    m_view->setResizeAnchor(
+        QGraphicsView::AnchorUnderMouse);
+
+    m_view->setViewportUpdateMode(
+        QGraphicsView::SmartViewportUpdate);
+
+
     // =========================
     // connect
     // =========================
@@ -121,6 +133,8 @@ void PdfViewWidget::initUI()
         this,
         &PdfViewWidget::onZoomOut);
 }
+
+
 bool PdfViewWidget::loadPdf(
     const QString &filePath)
 {
@@ -176,39 +190,59 @@ void PdfViewWidget::renderPage()
 
     if (!page)
         return;
+    // 根据缩放比例提高DPI
 
+    double dpi = 150.0 * m_scaleFactor;
     poppler::page_renderer renderer;
 
-    auto image =
-        renderer.render_page(
-            page,
-            96 * m_scaleFactor,
-            96 * m_scaleFactor);
+    auto image =renderer.render_page( page, dpi,dpi);
+    delete page;
 
     if (!image.is_valid())
-    {
-        delete page;
-
         return;
-    }
 
-    QImage qimage(
-        reinterpret_cast<const uchar*>(image.data()),
-        image.width(),
+    // Poppler -> QImage
+QImage qimage(image.width(),
         image.height(),
-        image.bytes_per_row(),
-        QImage::Format_RGBA8888);
+        QImage::Format_ARGB32);
+
+    for (int y = 0; y < image.height(); ++y)
+    {
+        const uchar* src =
+            reinterpret_cast<const uchar*>(
+                image.data() +
+                y * image.bytes_per_row());
+
+        QRgb* dst =
+            reinterpret_cast<QRgb*>(
+                qimage.scanLine(y));
+
+        for (int x = 0; x < image.width(); ++x)
+        {
+            uchar b = src[x * 4 + 0];
+            uchar g = src[x * 4 + 1];
+            uchar r = src[x * 4 + 2];
+            uchar a = src[x * 4 + 3];
+
+            dst[x] = qRgba(r, g, b, a);
+        }
+    }
+    // scene
 
     m_scene->clear();
 
-    m_scene->addPixmap(
-        QPixmap::fromImage(qimage.copy()));
+    m_pixmapItem =
+        m_scene->addPixmap(
+            QPixmap::fromImage(qimage));
+    // 首次加载自动铺满
+    if (m_firstShow)
+    {
+        m_view->fitInView(
+            m_pixmapItem,
+            Qt::KeepAspectRatio);
 
-    m_view->fitInView(
-        m_scene->itemsBoundingRect(),
-        Qt::KeepAspectRatio);
-
-    delete page;
+        m_firstShow = false;
+    }
 }
 
 void PdfViewWidget::updatePageLabel()
@@ -259,20 +293,23 @@ void PdfViewWidget::onNextPage()
 
 void PdfViewWidget::onZoomIn()
 {
-    m_scaleFactor += 0.2;
-
-    renderPage();
+    m_view->scale(1.2, 1.2);
 }
 
 void PdfViewWidget::onZoomOut()
 {
-    m_scaleFactor -= 0.2;
+    m_view->scale(0.8, 0.8);
+}
 
-    if (m_scaleFactor < 0.4)
+void PdfViewWidget::resizeEvent(QResizeEvent *event)
+{
+    QWidget::resizeEvent(event);
+
+    if (m_pixmapItem)
     {
-        m_scaleFactor = 0.4;
+        m_view->fitInView(
+            m_pixmapItem,
+            Qt::KeepAspectRatio);
     }
-
-    renderPage();
 }
 

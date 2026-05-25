@@ -115,16 +115,7 @@ bool TextLinkDelegate::editorEvent(QEvent *event, QAbstractItemModel *model, con
         QVariant var = index.data(Qt::DisplayRole);
         if(var.isValid()) return false;
 
-        LinkData linkData = var.value<LinkData>();
-        switch (linkData.type) {
-        case LinkType::Page:
-            emit pageLinkClicked(linkData.target);
-            break;
-        case LinkType::Image:
-            emit imageLinkClicked(linkData.target);
-            break;
-        }
-
+        emit linkClicked(QPersistentModelIndex(index), text);
         return true;
     }
 

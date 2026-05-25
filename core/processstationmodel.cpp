@@ -4,9 +4,7 @@
 ProcessStationModel::ProcessStationModel(QObject *parent)
     : BaseTableModel(parent)
 {
-    m_textLinkDelegate = new TextLinkDelegate(this);
     setTableType(MaterialCheck);
-
 }
 
 void ProcessStationModel::setTableType(TableType type)
@@ -49,7 +47,7 @@ void ProcessStationModel::setMaterialCheckHeader()
             // title          field                width visible editable fixedWidth alignment         type                    resizeMode                   filterType        delegate
             {"序号",           "rowNumber",          60,   true,  false,  true,      Qt::AlignCenter,  ColumnType::RowNumber,  QHeaderView::Fixed},
 
-            {"物料编码",       "materialCode",      180,  true,  false,  false,     Qt::AlignCenter,  ColumnType::TextLink,     QHeaderView::ResizeToContents, FilterType::None, m_textLinkDelegate},
+            {"物料编码",       "materialCode",      180,  true,  false,  false,     Qt::AlignCenter,  ColumnType::TextLink,     QHeaderView::ResizeToContents, FilterType::None},
 
             {"物料名称",       "materialName",      220,  true,  false,  false,     Qt::AlignCenter,  ColumnType::Normal,     QHeaderView::ResizeToContents},
 

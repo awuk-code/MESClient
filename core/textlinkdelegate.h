@@ -16,11 +16,7 @@ public:
     explicit TextLinkDelegate(QObject *parent = nullptr);
 
 signals:
-
-    void pageLinkClicked(const QString& pageId);
-
-    void imageLinkClicked(const QString& imagePath);
-
+    void linkClicked( const QPersistentModelIndex& index, const QString &text);
 private:
     QRect textRect(
         const QStyleOptionViewItem& option,

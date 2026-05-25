@@ -1,4 +1,5 @@
 #include "processstationpage.h"
+#include "pdfviewwidget.h"
 #include "processstationmodel.h"
 
 #include <QVBoxLayout>
@@ -459,67 +460,28 @@ void ProcessStationLeftPanel::setTaskStatusValue(TaskList &values)
 ProcessStationRightPanel::ProcessStationRightPanel(QWidget *parent)
     : BasePageWidget(parent)
 {
+    m_processPdfPage = new PdfViewWidget(this);
+    m_processPdfPage->loadPdf("D:/C++11.pdf");
+
+    m_referencePdfPage = new PdfViewWidget(this);
+
+    m_referencePdfPage->loadPdf("D:/C++11.pdf");
+
+    m_uploadPage =
+        new QWidget(this);
+    auto uploadLayout =
+        new QVBoxLayout(m_uploadPage);
+
+    uploadLayout->addWidget(
+        new QLabel("资料上传页面"));
+
+    uploadLayout->addStretch();
     setupPage();
     // m_tabWidget 为 BasePageWidget 中的成员
     connect(tabBar(), &QTabBar::currentChanged,
             this, &ProcessStationRightPanel::updateTableModelByTab);
 
     updateTableModelByTab(tabBar()->currentIndex());
-    // 初始化第一页
-    // 3. 获取 ProcessStationModel
-    auto model =
-        qobject_cast<ProcessStationModel*>(m_model);
-    if (model)
-    {
-        auto delegate = model->textLinkDelegate();
-
-        if (delegate)
-        {
-            connect(delegate,
-                    &TextLinkDelegate::pageLinkClicked,
-                    this,&ProcessStationRightPanel::onPageLinkClicked
-                    /*
-                    [=](int row, const QString& field)
-                    {qDebug() << __FUNCTION__ <<"""""sds"<<field;
-                        // ------------------------------------
-                        // 6. 获取该行完整数据
-                        // ------------------------------------
-                        QVariantMap rowData =
-                            model->rowData(row);
-
-                        // 产品SN
-                        QString productSN =
-                            rowData.value(field).toString();
-
-                        // 其他字段也可以一起取出
-                        QString materialCode =
-                            rowData.value("materialCode").toString();
-
-                        QString materialName =
-                            rowData.value("materialName").toString();
-
-                        // ------------------------------------
-                        // 7. 在这里编写业务逻辑
-                        // ------------------------------------
-                        //
-                        // 常见用途：
-                        // - 打开产品详情窗口
-                        // - 查询追溯信息
-                        // - 打开维修记录
-                        // - 调用接口获取完整信息
-                        // ------------------------------------
-
-                        qDebug() << "点击物料编码:";
-                        qDebug() << "row =" << row;
-                        qDebug() << "field =" << field;
-                        qDebug() << "productSN =" << productSN;
-                        qDebug() << "materialCode =" << materialCode;
-                        qDebug() << "materialName =" << materialName;
-
-                    }*/
-                    );
-        }
-    }
 
     // --------------------------------------------------------
     // 8. 初始化显示第一个 Tab 的数据
@@ -535,6 +497,7 @@ void ProcessStationRightPanel::onPageLinkClicked(const QString &pageId)
 TabConfigs ProcessStationRightPanel::Tabs() const
 {
     TabConfigs tabs;
+
     tabs.append({
         tr("物料核对"),
         PageDisplayType::TABLE,
@@ -550,14 +513,8 @@ TabConfigs ProcessStationRightPanel::Tabs() const
     tabs.append({
         tr("工艺文件"),
         PageDisplayType::PDF,
-        QVariant::fromValue(PageDisplayType::PDF)
-
-    });
-
-    tabs.append({
-        tr("引用文件"),
-        PageDisplayType::PDF,
-        QVariant::fromValue(PageDisplayType::PDF)
+        QVariant::fromValue(PageDisplayType::PDF),
+        m_processPdfPage
     });
 
     tabs.append({
@@ -576,8 +533,14 @@ TabConfigs ProcessStationRightPanel::Tabs() const
         tr("资料上传"),
         PageDisplayType::NORMAL,
         QVariant::fromValue(PageDisplayType::NORMAL)
+        ,m_uploadPage
     });
-
+    tabs.append({
+        tr("引用文件"),
+        PageDisplayType::PDF,
+        QVariant::fromValue(PageDisplayType::PDF)
+        , m_referencePdfPage
+    });
     return tabs;
 
 }

@@ -50,11 +50,6 @@ private:
     void applyMaterialCheckInfo(int row, const QVariantMap& data);
     void applyProcessMaterialInfo(int row, const QVariantMap& data);
 
-public:
-    TextLinkDelegate* textLinkDelegate() const
-    {
-        return m_textLinkDelegate;
-    }
 protected:
     void afterCellEdited(
         int row,
@@ -63,7 +58,7 @@ protected:
 
 private:
     TableType m_tableType{MaterialCheck};
-    TextLinkDelegate *m_textLinkDelegate{nullptr};
+
 };
 
 #endif // PROCESSSTATIONMODEL_H

@@ -12,11 +12,11 @@
 
 #include "basepagewidget.h"
 #include "toggleswitchwidget.h"
-#include "textlinkdelegate.h"
 
 
 class ProcessStationLeftPanel;
 class ProcessStationRightPanel;
+class PdfViewWidget;
 class ProcessStationPage : public QWidget
 {
     Q_OBJECT
@@ -99,7 +99,10 @@ private:
     // m_processPdfPage
     //m_referencePdfPage
     //normal
+    PdfViewWidget* m_processPdfPage{nullptr};
+    PdfViewWidget* m_referencePdfPage{nullptr};
 
+    QWidget* m_uploadPage{nullptr};
 };
 
 #endif // PROCESSSTATIONPAGE_H

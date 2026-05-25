@@ -2,6 +2,7 @@
 #define PDFVIEWWIDGET_H
 
 #include <QWidget>
+#include <QGraphicsPixmapItem>
 
 class QPushButton;
 class QLabel;
@@ -39,6 +40,8 @@ private slots:
 
     void onZoomOut();
 
+protected:
+    void resizeEvent(QResizeEvent* event)override;
 private:
     // =========================
     // toolbar
@@ -71,6 +74,9 @@ private:
     int m_currentPage = 0;
 
     double m_scaleFactor = 1.0;
+
+    bool m_firstShow = true;
+    QGraphicsPixmapItem* m_pixmapItem{nullptr};
 };
 
 #endif // PDFVIEWWIDGET_H

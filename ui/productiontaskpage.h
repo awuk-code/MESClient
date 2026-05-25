@@ -16,7 +16,6 @@ protected:
     QString pageTitle() const override;
     QString searchInfo()const override;
     void addWidgetToTitle(QHBoxLayout* layout) override;
-
 };
 
 #endif // PRODUCTIONTASKPAGE_H

@@ -6,6 +6,7 @@ HEADERS +=  \
     $$PWD/datefilterpopup.h \
     $$PWD/headeroverlaywidget.h \
     $$PWD/headerwidget.h \
+    $$PWD/imageviewwidget.h \
     $$PWD/mainwindow.h \
     $$PWD/pdfviewwidget.h \
     $$PWD/processstationpage.h \
@@ -22,6 +23,7 @@ SOURCES +=      \
     $$PWD/datefilterpopup.cpp \
     $$PWD/headeroverlaywidget.cpp \
         $$PWD/headerwidget.cpp \
+    $$PWD/imageviewwidget.cpp \
         $$PWD/mainwindow.cpp \
     $$PWD/pdfviewwidget.cpp \
     $$PWD/processstationpage.cpp \

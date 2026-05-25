@@ -52,6 +52,15 @@ public:
 public:
     void setupPage();
 
+signals:
+    void sigPageSwitching(const QVariantMap& rowData,
+                          const QString& pageID);
+    void sigIMGView(int row);
+
+private slots:
+    void onPageLinkClicked(const QVariantMap& rowData,
+                          const  QString& pageID);
+    void onImageLinkClicked(int row);
 protected:
     //
     void resizeEvent(QResizeEvent *event)override;

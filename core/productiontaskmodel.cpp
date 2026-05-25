@@ -222,6 +222,7 @@ void ProductionTaskModel::setColumnHeader()
                 opDelegate
             }
         };
+
 }
 
 void ProductionTaskModel::setColumnData()
