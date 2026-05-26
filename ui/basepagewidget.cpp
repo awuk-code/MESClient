@@ -113,6 +113,21 @@ QHBoxLayout *BasePageWidget::createTitleLayout()
     return layout;
 }
 
+void BasePageWidget::setupSearchLayout(QHBoxLayout* layout)
+{
+    m_searchEdit = new QLineEdit(this);
+    m_searchEdit->setFixedWidth(240);
+    m_searchBtn = new QPushButton(this);
+    m_searchBtn->setIcon(QIcon(":/res/common/search.svg"));
+
+    layout->addWidget(m_searchEdit);
+    layout->addWidget(m_searchBtn);
+    layout->addStretch();
+
+    m_exportBtn = new QPushButton("导出报表",this);
+    layout->addWidget(m_exportBtn);
+}
+
 void BasePageWidget::initUI()
 {
     auto mainLayout = new QVBoxLayout(this);
@@ -151,19 +166,11 @@ void BasePageWidget::initUI()
 
 
     // ===== 搜索栏 =====
-    auto searchLayout = new QHBoxLayout;
-    m_searchEdit = new QLineEdit(this);
-    m_searchEdit->setFixedWidth(240);
-    m_searchBtn = new QPushButton(this);
-    m_searchBtn->setIcon(QIcon(":/res/common/search.svg"));
-
-    searchLayout->addWidget(m_searchEdit);
-    searchLayout->addWidget(m_searchBtn);
-    searchLayout->addStretch();
-
-    m_exportBtn = new QPushButton("导出报表",this);
-    searchLayout->addWidget(m_exportBtn);
-    mainLayout->addLayout(searchLayout);
+    m_searchWidget = new QWidget(this);
+    m_searchLayout = new QHBoxLayout(m_searchWidget);
+    m_searchLayout->setContentsMargins(0, 0, 0, 0);
+    setupSearchLayout(m_searchLayout);
+    mainLayout->addWidget(m_searchWidget);
 
     // ===== Stack（表格区域）=====
     m_stack = new QStackedWidget(this);

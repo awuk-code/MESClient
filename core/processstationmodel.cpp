@@ -101,11 +101,6 @@ void ProcessStationModel::setMaterialCheckData()
 
     setRows(rows);
 }
-TabConfigs ProcessStationModel::materialCheckHeader() const
-{
-    TabConfigs materialcheck;
-    return materialcheck;
-}
 
 void ProcessStationModel::setProcessRouteHeader()
 {

@@ -13,6 +13,8 @@
 #include "basepagewidget.h"
 #include "toggleswitchwidget.h"
 
+class QComboBox;
+class QLabel;
 
 class ProcessStationLeftPanel;
 class ProcessStationRightPanel;
@@ -82,15 +84,19 @@ protected:
     QAbstractItemModel* createModel() override;
     FieldFilterProxyModel* createProxy(const QVariant &data) override;
     void addWidgetToTitle(QHBoxLayout *layout) override;
+    void setupSearchLayout(QHBoxLayout* layout) override;
 
     void setCurrentSearchInfo(const QString& info);
 
 private:
     void updateTableModelByTab(int index);
+    void updateSearchBarByTab(int index);
 
 private:
     ToggleSwitchWidget* m_toggle{nullptr};
     QString m_currentSearchInfo;
+    QLabel* m_productSnLabel{nullptr};
+    QComboBox* m_productSnCombo{nullptr};
     //pdf
     // m_processPdfPage
     //m_referencePdfPage

@@ -26,19 +26,18 @@ void SubHeaderWidget::initUI()
     layout->addWidget(m_path);
     layout->addStretch();
 
-    //m_onlineTime = new QLabel(QStringLiteral("在线时长：35min"), this);
-    // m_onlineTimeBtn = new QPushButton(this);
-    // m_onlineTimeBtn->setIcon(QIcon(":/res/common/time.svg"));
-    // m_onlineTimeBtn->setStyleSheet("border: none; color: transparent");
-
     m_loginTime = new QComboBox(this);
-    m_loginTime->addItem(QStringLiteral("在线时长：35min"));
-    QString time = QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm");
+    m_loginTime->setMinimumWidth(170);
+    m_loginTime->addItem(QStringLiteral("本次在线：00:00:00"));
+    m_loginTime->addItem(QStringLiteral("周：00:00:00"));
+    m_loginTime->addItem(QStringLiteral("月：00:00:00"));
+    m_loginTime->addItem(QStringLiteral("季：00:00:00"));
+    m_loginTime->addItem(QStringLiteral("半年：00:00:00"));
+    m_loginTime->addItem(QStringLiteral("年：00:00:00"));
+
     m_currentTime = new QLabel(this);
     layout->addStretch();
     layout->addWidget(m_loginTime);
-    layout->addWidget(m_onlineTime);
-    layout->addWidget(m_onlineTimeBtn);
     layout->addWidget(m_currentTime);
 }
 
@@ -49,10 +48,13 @@ void SubHeaderWidget::updateTime()
     QString totalTime = cfg.formatTime(cfg.getTotalSeconds());
     QString currentDateTime = QDateTime::currentDateTime().toString("yyyy/MM/dd dddd HH:mm:ss");
 
-    m_currentTime->setText(QStringLiteral("本次在线: %1 | 累计时长: %2 | %3")
-                                 .arg(sessionTime)
-                                 .arg(totalTime)
-                                 .arg(currentDateTime));
+    m_loginTime->setItemText(0, QStringLiteral("本次在线：%1").arg(sessionTime));
+    m_loginTime->setItemText(1, QStringLiteral("周：%1").arg(totalTime));
+    m_loginTime->setItemText(2, QStringLiteral("月：%1").arg(totalTime));
+    m_loginTime->setItemText(3, QStringLiteral("季：%1").arg(totalTime));
+    m_loginTime->setItemText(4, QStringLiteral("半年：%1").arg(totalTime));
+    m_loginTime->setItemText(5, QStringLiteral("年：%1").arg(totalTime));
+    m_currentTime->setText(currentDateTime);
 
     static int saveCounter =0;
     saveCounter++;

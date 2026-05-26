@@ -20,11 +20,10 @@ private:
     void initUI();
     void updateTime();
     void initConnect();
+
 private:
     QLabel *m_path{nullptr};
     QComboBox *m_loginTime{nullptr};
-    QLabel *m_onlineTime{nullptr};
-    QPushButton* m_onlineTimeBtn{nullptr};
     QLabel* m_currentTime{nullptr};
     QTimer *timer{nullptr};
 };

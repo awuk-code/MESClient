@@ -31,6 +31,8 @@ private:
 
     void updatePageLabel();
 
+    void fitPageToView();
+
 private slots:
     void onPrevPage();
 
@@ -75,7 +77,7 @@ private:
 
     double m_scaleFactor = 1.0;
 
-    bool m_firstShow = true;
+    bool m_autoFit = true;
     QGraphicsPixmapItem* m_pixmapItem{nullptr};
 };
 

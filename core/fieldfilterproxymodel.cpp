@@ -146,7 +146,10 @@ bool FieldFilterProxyModel::filterAcceptsRow(int srcRow, const QModelIndex &srcP
                 "productModel",
                 "productSN",
                 "erpCode",
-                "productName"
+                "productName",
+                "materialCode",
+                "materialName",
+                "processName"
             };
 
         bool matched = false;

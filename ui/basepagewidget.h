@@ -82,6 +82,7 @@ protected:
 
     virtual QHBoxLayout* createTitleLayout();
     virtual void addWidgetToTitle(QHBoxLayout* layout) = 0;
+    virtual void setupSearchLayout(QHBoxLayout* layout);
 
 protected:
     // 创建界面控件和布局。
@@ -126,6 +127,8 @@ protected:
     QLineEdit* m_searchEdit{nullptr};
     QPushButton* m_searchBtn{nullptr};
     QPushButton* m_exportBtn{nullptr};
+    QWidget* m_searchWidget{nullptr};
+    QHBoxLayout* m_searchLayout{nullptr};
 
     QTabBar* m_tabBar{nullptr};
     QStackedWidget* m_stack{nullptr};

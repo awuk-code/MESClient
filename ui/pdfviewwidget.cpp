@@ -15,6 +15,7 @@
 
 #include <QDebug>
 #include <QFile>
+#include <QResizeEvent>
 
 
 PdfViewWidget::PdfViewWidget(QWidget *parent)
@@ -169,6 +170,8 @@ bool PdfViewWidget::loadPdf(
     qDebug() << "pdf loaded";
 
     m_currentPage = 0;
+    m_scaleFactor = 1.0;
+    m_autoFit = true;
 
     renderPage();
 
@@ -227,21 +230,18 @@ QImage qimage(image.width(),
             dst[x] = qRgba(r, g, b, a);
         }
     }
-    // scene
-
     m_scene->clear();
 
     m_pixmapItem =
         m_scene->addPixmap(
             QPixmap::fromImage(qimage));
-    // 首次加载自动铺满
-    if (m_firstShow)
-    {
-        m_view->fitInView(
-            m_pixmapItem,
-            Qt::KeepAspectRatio);
 
-        m_firstShow = false;
+    m_scene->setSceneRect(
+        m_pixmapItem->boundingRect());
+
+    if (m_autoFit)
+    {
+        fitPageToView();
     }
 }
 
@@ -293,23 +293,34 @@ void PdfViewWidget::onNextPage()
 
 void PdfViewWidget::onZoomIn()
 {
-    m_view->scale(1.2, 1.2);
+    m_autoFit = false;
+    m_scaleFactor *= 1.2;
+    renderPage();
 }
 
 void PdfViewWidget::onZoomOut()
 {
-    m_view->scale(0.8, 0.8);
+    m_autoFit = false;
+    m_scaleFactor *= 0.8;
+    renderPage();
 }
 
 void PdfViewWidget::resizeEvent(QResizeEvent *event)
 {
     QWidget::resizeEvent(event);
 
-    if (m_pixmapItem)
-    {
-        m_view->fitInView(
-            m_pixmapItem,
-            Qt::KeepAspectRatio);
-    }
+    if (m_autoFit)
+        fitPageToView();
+}
+
+void PdfViewWidget::fitPageToView()
+{
+    if (!m_pixmapItem || !m_view)
+        return;
+
+    m_view->resetTransform();
+    m_view->fitInView(
+        m_pixmapItem,
+        Qt::KeepAspectRatio);
 }
 

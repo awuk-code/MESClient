@@ -29,7 +29,6 @@ private:
     // 物料核对
     void setMaterialCheckHeader();
     void setMaterialCheckData();
-    TabConfigs materialCheckHeader() const;
 
     // 工艺路线
     void setProcessRouteHeader();

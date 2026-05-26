@@ -11,6 +11,7 @@
 #include <QToolButton>
 #include <QStyle>
 #include <QRadioButton>
+#include <QComboBox>
 
 ProcessStationPage::ProcessStationPage(QWidget *parent)
     : QWidget{parent}
@@ -480,13 +481,17 @@ ProcessStationRightPanel::ProcessStationRightPanel(QWidget *parent)
     // m_tabWidget 为 BasePageWidget 中的成员
     connect(tabBar(), &QTabBar::currentChanged,
             this, &ProcessStationRightPanel::updateTableModelByTab);
+    connect(tabBar(), &QTabBar::currentChanged,
+            this, &ProcessStationRightPanel::updateSearchBarByTab);
 
     updateTableModelByTab(tabBar()->currentIndex());
+    updateSearchBarByTab(tabBar()->currentIndex());
 
     // --------------------------------------------------------
     // 8. 初始化显示第一个 Tab 的数据
     // --------------------------------------------------------
     updateTableModelByTab(tabBar()->currentIndex());
+    updateSearchBarByTab(tabBar()->currentIndex());
 }
 
 
@@ -594,10 +599,82 @@ void ProcessStationRightPanel::addWidgetToTitle(QHBoxLayout *layout)
             this, &ProcessStationRightPanel::toggleRequested);
 }
 
+void ProcessStationRightPanel::setupSearchLayout(QHBoxLayout *layout)
+{
+    m_searchEdit = new QLineEdit(this);
+    m_searchEdit->setFixedWidth(240);
+
+    m_searchBtn = new QPushButton(this);
+    m_searchBtn->setIcon(QIcon(":/res/common/search.svg"));
+
+    m_productSnLabel = new QLabel(tr("产品SN："), this);
+
+    m_productSnCombo = new QComboBox(this);
+    m_productSnCombo->setFixedWidth(240);
+    m_productSnCombo->addItem(tr("全部"));
+
+    m_exportBtn = new QPushButton(tr("导出"), this);
+
+    layout->addWidget(m_searchEdit);
+    layout->addWidget(m_searchBtn);
+    layout->addWidget(m_productSnLabel);
+    layout->addWidget(m_productSnCombo);
+    layout->addStretch();
+    layout->addWidget(m_exportBtn);
+}
+
 void ProcessStationRightPanel::setCurrentSearchInfo(const QString &info)
 {
     m_currentSearchInfo = info;
     updateSearchInfo();  // BasePageWidget 中已有刷新接口
+}
+
+void ProcessStationRightPanel::updateSearchBarByTab(int index)
+{
+    if (!m_searchWidget)
+        return;
+
+    const bool useKeywordSearch =
+        index == 0 || index == 1;
+
+    const bool useProductSnSearch =
+        index == 3 || index == 4;
+
+    const bool showSearchBar =
+        useKeywordSearch || useProductSnSearch;
+
+    m_searchWidget->setVisible(showSearchBar);
+
+    if (!showSearchBar)
+    {
+        if (m_searchEdit)
+            m_searchEdit->clear();
+        return;
+    }
+
+    if (m_searchEdit)
+    {
+        m_searchEdit->setVisible(useKeywordSearch);
+        if (index == 0)
+            m_searchEdit->setPlaceholderText(tr("请输入物料信息"));
+        else if (index == 1)
+            m_searchEdit->setPlaceholderText(tr("请输入工序名称"));
+
+        if (!useKeywordSearch)
+            m_searchEdit->clear();
+    }
+
+    if (m_searchBtn)
+        m_searchBtn->setVisible(useKeywordSearch);
+
+    if (m_productSnLabel)
+        m_productSnLabel->setVisible(useProductSnSearch);
+
+    if (m_productSnCombo)
+        m_productSnCombo->setVisible(useProductSnSearch);
+
+    if (m_exportBtn)
+        m_exportBtn->setVisible(useKeywordSearch || useProductSnSearch);
 }
 
 void ProcessStationRightPanel::updateTableModelByTab(int index)
@@ -616,11 +693,11 @@ void ProcessStationRightPanel::updateTableModelByTab(int index)
         model->setTableType(ProcessStationModel::ProcessRoute);
         break;
 
-    case 4:
+    case 3:
         model->setTableType(ProcessStationModel::ProcessMaterial);
         break;
 
-    case 5:
+    case 4:
         model->setTableType(ProcessStationModel::ToolEquipment);
         break;
 
