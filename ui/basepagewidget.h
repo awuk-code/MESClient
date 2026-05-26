@@ -92,26 +92,32 @@ protected:
 
     // 建立内部信号连接。
     void initConnect();
+    // 判断指定 Tab 下某列是否显示。子类可按状态控制不同表头。
+    virtual bool isColumnVisibleForTab(
+        const ColumnConfig& column,
+        const QVariant& tabData) const;
+
     // 收集需要在表头显示筛选图标的字段
-    QSet<QString> collectFilterFields() const;
+    QSet<QString> collectFilterFields(const QVariant& tabData) const;
 
     // 创建并初始化一个表格
-    QTableView* createTable(FieldFilterProxyModel* proxy);
+    QTableView* createTable(FieldFilterProxyModel* proxy, const QVariant& tabData);
 
     // 设置表头筛选 Overlay
     void setupHeaderOverlay(
         QTableView* table,
-        FieldFilterProxyModel* proxy);
+        FieldFilterProxyModel* proxy,
+        const QVariant& tabData);
 
     // 根据 BaseTableModel::columns() 设置列属性
-    void setupColumns(QTableView* table);
+    void setupColumns(QTableView* table, const QVariant& tabData);
 
     // 设置表格通用属性
     void setupTableAppearance(QTableView* table);
 
 
     // 绑定复选框点击时的整行选中逻辑
-    void setupCheckBoxSelection(QTableView* table);
+    void setupCheckBoxSelection(QTableView* table, const QVariant& tabData);
     //--------------------------------
 protected:
     QTabBar* tabBar()const{return m_tabBar;};

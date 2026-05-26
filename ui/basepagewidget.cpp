@@ -66,11 +66,12 @@ void BasePageWidget::updateTableResizeMode()
         if(!table) continue;
 
         auto header = table->horizontalHeader();
+        const QVariant tabData = table->property("tabData");
 
         for(int i=0; i< columns.size();++i){
             const auto &cfg = columns[i];
 
-            if(!cfg.visible) continue;
+            if(!isColumnVisibleForTab(cfg, tabData)) continue;
 
             if(windowIsMax){
 
@@ -204,7 +205,7 @@ void BasePageWidget::initTabs()
             proxy->setSourceModel(m_model);
 
             // 3. Table（统一入口）
-            QTableView* table = createTable(proxy);
+            QTableView* table = createTable(proxy, tabs[i].data);
             if (!table)
                 continue;
             //表格
@@ -261,7 +262,15 @@ void BasePageWidget::initConnect()
 
 }
 
-QSet<QString> BasePageWidget::collectFilterFields() const
+bool BasePageWidget::isColumnVisibleForTab(
+    const ColumnConfig& column,
+    const QVariant& tabData) const
+{
+    Q_UNUSED(tabData)
+    return column.visible;
+}
+
+QSet<QString> BasePageWidget::collectFilterFields(const QVariant& tabData) const
 {
     QSet<QString> filterFields;
 
@@ -274,6 +283,9 @@ QSet<QString> BasePageWidget::collectFilterFields() const
 
     for (const auto& column : columns)
     {
+        if (!isColumnVisibleForTab(column, tabData))
+            continue;
+
         // 只有设置了筛选类型的列，才显示表头筛选图标
         switch (column.filterType)
         {
@@ -292,10 +304,11 @@ QSet<QString> BasePageWidget::collectFilterFields() const
     return filterFields;
 }
 
-QTableView *BasePageWidget::createTable(FieldFilterProxyModel *proxy)
+QTableView *BasePageWidget::createTable(FieldFilterProxyModel *proxy, const QVariant& tabData)
 {
     // 1. 创建表格
     QTableView* table = new QTableView(this);
+    table->setProperty("tabData", tabData);
 
     // 2. 设置模型
     table->setModel(proxy);
@@ -306,13 +319,13 @@ QTableView *BasePageWidget::createTable(FieldFilterProxyModel *proxy)
     table->setHorizontalHeader(header);
 
     // 4. 设置表头筛选 Overlay
-    setupHeaderOverlay(table, proxy);
+    setupHeaderOverlay(table, proxy, tabData);
 
     // 5. 设置列配置
-    setupColumns(table);
+    setupColumns(table, tabData);
 
     // 6. 绑定复选框点击逻辑
-    setupCheckBoxSelection(table);
+    setupCheckBoxSelection(table, tabData);
 
     // 7. 设置表格外观
     setupTableAppearance(table);
@@ -325,7 +338,8 @@ QTableView *BasePageWidget::createTable(FieldFilterProxyModel *proxy)
 
 void BasePageWidget::setupHeaderOverlay(
     QTableView* table,
-    FieldFilterProxyModel* proxy)
+    FieldFilterProxyModel* proxy,
+    const QVariant& tabData)
 {
     if (!table || !proxy)
         return;
@@ -383,7 +397,7 @@ void BasePageWidget::setupHeaderOverlay(
             });
 
     // 设置需要显示筛选图标的字段
-    overlay->setFilterFields(collectFilterFields());
+    overlay->setFilterFields(collectFilterFields(tabData));
 
     // 将筛选结果传递给代理模型
     connect(overlay,
@@ -395,7 +409,7 @@ void BasePageWidget::setupHeaderOverlay(
             });
 }
 
-void BasePageWidget::setupColumns(QTableView *table)
+void BasePageWidget::setupColumns(QTableView *table, const QVariant& tabData)
 {
     if (!table || !m_model)
         return;
@@ -417,9 +431,11 @@ void BasePageWidget::setupColumns(QTableView *table)
         // =========================
         // 1. 列显示/隐藏
         // =========================
-        table->setColumnHidden(col, !cfg.visible);
+        const bool visible = isColumnVisibleForTab(cfg, tabData);
 
-        if (!cfg.visible)
+        table->setColumnHidden(col, !visible);
+
+        if (!visible)
             continue;
 
         // =========================
@@ -483,7 +499,7 @@ void BasePageWidget::setupTableAppearance(QTableView *table)
 
 }
 
-void BasePageWidget::setupCheckBoxSelection(QTableView* table)
+void BasePageWidget::setupCheckBoxSelection(QTableView* table, const QVariant& tabData)
 {
     if (!table)
         return;
@@ -498,6 +514,9 @@ void BasePageWidget::setupCheckBoxSelection(QTableView* table)
     int checkCol = -1;
     for (int i = 0; i < columns.size(); ++i)
     {
+        if (!isColumnVisibleForTab(columns[i], tabData))
+            continue;
+
         if (columns[i].type == ColumnType::CheckBox)
         {
             checkCol = i;

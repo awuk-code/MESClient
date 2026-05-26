@@ -108,6 +108,26 @@ bool FieldFilterProxyModel::filterAcceptsRow(int srcRow, const QModelIndex &srcP
             return false;
         break;
 
+    case FilterStatus::PENDING:
+        if (status != "待处理")
+            return false;
+        break;
+
+    case FilterStatus::REVIEW:
+        if (status != "审核中")
+            return false;
+        break;
+
+    case FilterStatus::WAITRETURN:
+        if (status != "待返工")
+            return false;
+        break;
+
+    case FilterStatus::PROCESSED:
+        if (status != "已处理")
+            return false;
+        break;
+
     default:
         break;
     }
@@ -120,7 +140,11 @@ bool FieldFilterProxyModel::filterAcceptsRow(int srcRow, const QModelIndex &srcP
             {
             /////////拓展搜索区域
                 "taskNo",
+                "reworkTaskNo",
+                "exceptionHandleNo",
+                "exceptionHandleNoLink",
                 "productModel",
+                "productSN",
                 "erpCode",
                 "productName"
             };

@@ -489,10 +489,6 @@ ProcessStationRightPanel::ProcessStationRightPanel(QWidget *parent)
     updateTableModelByTab(tabBar()->currentIndex());
 }
 
-void ProcessStationRightPanel::onPageLinkClicked(const QString &pageId)
-{
-    emit requestOpenPage(pageId);
-}
 
 TabConfigs ProcessStationRightPanel::Tabs() const
 {

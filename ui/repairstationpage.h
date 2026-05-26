@@ -15,6 +15,11 @@ public:
     QString pageTitle() const override;
     QString searchInfo()const override;
     void addWidgetToTitle(QHBoxLayout* layout) override;
+
+protected:
+    bool isColumnVisibleForTab(
+        const ColumnConfig& column,
+        const QVariant& tabData) const override;
 };
 
 #endif // REPAIRSTATIONPAGE_H

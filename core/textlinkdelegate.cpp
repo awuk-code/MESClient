@@ -113,7 +113,7 @@ bool TextLinkDelegate::editorEvent(QEvent *event, QAbstractItemModel *model, con
     if (rect.contains(mouseEvent->pos()))
     {
         QVariant var = index.data(Qt::DisplayRole);
-        if(var.isValid()) return false;
+        if(!var.isValid() || var.toString().isEmpty()) return false;
 
         emit linkClicked(QPersistentModelIndex(index), text);
         return true;

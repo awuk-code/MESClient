@@ -14,6 +14,8 @@ RepairStationPage::RepairStationPage(QWidget *parent)
         {
             connect(delegate, &TextLinkDelegate::linkClicked,
                     this, [=](const QPersistentModelIndex& proxyIndex, const QString &text){
+                        Q_UNUSED(text);
+
                         auto proxy =
                             qobject_cast<const FieldFilterProxyModel*>(
                                 proxyIndex.model());
@@ -31,20 +33,22 @@ RepairStationPage::RepairStationPage(QWidget *parent)
                         QVariantMap rowData =
                             model->rowData(row);
 
-                        QString NGnumber =
-                            rowData.value("NGNumber").toString();
+                        const QString field =
+                            model->columnField(sourceIndex.column());
 
-                        QString NGImg =
-                            rowData.value("NGImg").toString();
+                        QString exceptionNo =
+                            rowData.value("exceptionHandleNo").toString();
 
-                        if(text == NGnumber)
+                        if(field == "exceptionHandleNoLink" ||
+                            field == "reworkTaskNo")
                         {
                             //跳转到维修判定页面
                             QString pageid("judge");
                             emit sigPageSwitching(rowData, pageid);
-                        }else if(text == NGImg)
+                        }
+                        else if(field == "abnormalImage")
                         {
-                            emit sigIMGView(NGnumber);
+                            emit sigIMGView(exceptionNo);
                         }
                     });
         }
@@ -88,4 +92,32 @@ QString RepairStationPage::searchInfo() const
 void RepairStationPage::addWidgetToTitle(QHBoxLayout *layout)
 {
     layout->addStretch();
+}
+
+bool RepairStationPage::isColumnVisibleForTab(
+    const ColumnConfig& column,
+    const QVariant& tabData) const
+{
+    if (!BasePageWidget::isColumnVisibleForTab(column, tabData))
+        return false;
+
+    const auto status = tabData.value<FilterStatus>();
+
+    if (column.field == "reworkTaskNo")
+        return status == FilterStatus::WAITRETURN;
+
+    if (column.field == "exceptionHandleNoLink")
+        return status != FilterStatus::WAITRETURN;
+
+    if (column.field == "exceptionHandleNo")
+        return status == FilterStatus::WAITRETURN;
+
+    if (column.field == "taskNo")
+        return status != FilterStatus::WAITRETURN;
+
+    if (column.field == "handleMethod")
+        return status == FilterStatus::REVIEW ||
+               status == FilterStatus::PROCESSED;
+
+    return true;
 }

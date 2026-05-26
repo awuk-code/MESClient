@@ -75,10 +75,6 @@ public:
 
 signals:
     void toggleRequested(bool isChecked);
-
-    void requestOpenPage(const QString& pageId);
-private slots:
-    void onPageLinkClicked(const QString& pageId);
 protected:
     TabConfigs Tabs() const override;
     QString pageTitle() const override;
