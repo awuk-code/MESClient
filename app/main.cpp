@@ -9,6 +9,7 @@
 #include <QString>
 
 #include "pdfviewwidget.h"
+#include "repairjudgepage.h"
 
 typedef enum _LoginStatus{
     LoginFailed,
@@ -89,6 +90,10 @@ int main(int argc, char *argv[])
     view->resize(1200, 800);
     view->show();
     view->loadImage("D:/DSC00040.JPG");
+
+
+    RepairJudgePage R;
+    R.show();
     return a.exec();
 
 }

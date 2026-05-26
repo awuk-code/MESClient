@@ -11,6 +11,7 @@ HEADERS +=  \
     $$PWD/pdfviewwidget.h \
     $$PWD/processstationpage.h \
     $$PWD/productiontaskpage.h \
+    $$PWD/repairjudgepage.h \
     $$PWD/repairstationpage.h \
     $$PWD/sidebarwidget.h \
     $$PWD/subheaderwidget.h \
@@ -28,6 +29,7 @@ SOURCES +=      \
     $$PWD/pdfviewwidget.cpp \
     $$PWD/processstationpage.cpp \
     $$PWD/productiontaskpage.cpp \
+    $$PWD/repairjudgepage.cpp \
     $$PWD/repairstationpage.cpp \
     $$PWD/sidebarwidget.cpp \
     $$PWD/subheaderwidget.cpp \
