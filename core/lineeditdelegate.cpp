@@ -2,6 +2,7 @@
 
 #include <QAbstractItemModel>
 #include <QApplication>
+#include <QFontMetrics>
 #include <QPainter>
 #include <QStyle>
 
@@ -63,6 +64,21 @@ void LineEditDelegate::paint(QPainter *painter,
 
     QStyle *style = opt.widget ? opt.widget->style() : QApplication::style();
     style->drawControl(QStyle::CE_ItemViewItem, &opt, painter, opt.widget);
+}
+
+QSize LineEditDelegate::sizeHint(const QStyleOptionViewItem &option,
+                                 const QModelIndex &index) const
+{
+    QSize size = QStyledItemDelegate::sizeHint(option, index);
+
+    const QString text = index.data(Qt::DisplayRole).toString();
+    if (text.isEmpty())
+    {
+        QFontMetrics fm(option.font);
+        size.setWidth(qMax(size.width(), fm.horizontalAdvance(lineEditPlaceholderText(index)) + 16));
+    }
+
+    return size;
 }
 
 void LineEditDelegate::setEditorData(

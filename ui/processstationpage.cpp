@@ -443,6 +443,7 @@ void ProcessStationLeftPanel::setTaskData(QTableWidget *table, const TaskList &k
         else
             table->item(row, 1)->setText("");
     }
+
 }
 
 void ProcessStationLeftPanel::setTaskInfoValue(TaskList &values)
@@ -602,7 +603,8 @@ void ProcessStationRightPanel::addWidgetToTitle(QHBoxLayout *layout)
 void ProcessStationRightPanel::setupSearchLayout(QHBoxLayout *layout)
 {
     m_searchEdit = new QLineEdit(this);
-    m_searchEdit->setFixedWidth(240);
+    m_searchEdit->setMinimumWidth(180);
+    m_searchEdit->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 
     m_searchBtn = new QPushButton(this);
     m_searchBtn->setIcon(QIcon(":/res/common/search.svg"));
@@ -610,7 +612,8 @@ void ProcessStationRightPanel::setupSearchLayout(QHBoxLayout *layout)
     m_productSnLabel = new QLabel(tr("产品SN："), this);
 
     m_productSnCombo = new QComboBox(this);
-    m_productSnCombo->setFixedWidth(240);
+    m_productSnCombo->setMinimumWidth(180);
+    m_productSnCombo->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
     m_productSnCombo->addItem(tr("全部"));
 
     m_exportBtn = new QPushButton(tr("导出"), this);
@@ -710,6 +713,5 @@ void ProcessStationRightPanel::updateTableModelByTab(int index)
     if (table)
     {
         setupColumns(table, table->property("tabData"));
-        updateTableResizeMode();
     }
 }

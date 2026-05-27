@@ -97,7 +97,7 @@ QRect HeaderOverlayWidget::calcIconRect(int column) const
 
     // 图标参数
     const int iconSize = 14;
-    const int rightMargin = 6;
+    const int rightMargin = 8;
 
     // 图标放在列右侧，垂直居中
     return QRect(
@@ -214,13 +214,12 @@ void HeaderOverlayWidget::paintEvent(QPaintEvent *)
             continue;
 
         QRect iconRect(
-            rect.right() - iconSize - 6,
+            rect.right() - iconSize - 8,
             rect.center().y() - iconSize / 2,
             iconSize,
             iconSize
             );
 
-        painter.drawRect(iconRect);   // debug 红框
         icon.paint(&painter, iconRect);
     }
     m_iconRects.clear();

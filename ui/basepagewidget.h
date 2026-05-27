@@ -62,11 +62,7 @@ protected slots:
                           const  QString& pageID);
     void onImageLinkClicked(const QString& NGNumber);
 protected:
-    //
-    void resizeEvent(QResizeEvent *event)override;
-    //
     void updateTableResizeMode();
-
 protected:
     // 创建基础数据模型（通常继承自 BaseTableModel）。
     virtual QAbstractItemModel* createModel() = 0;

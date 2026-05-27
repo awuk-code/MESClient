@@ -105,7 +105,15 @@ QVariant BaseTableModel::headerData(
     {
         if (section < 0 || section >= m_columns.size())
             return {};
-        return m_columns[section].title;
+
+        const auto& column = m_columns[section];
+        if (column.filterType == FilterType::Date ||
+            column.filterType == FilterType::Priority)
+        {
+            return column.title + QStringLiteral("    ");
+        }
+
+        return column.title;
 
     }
 

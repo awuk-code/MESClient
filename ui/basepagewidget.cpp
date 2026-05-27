@@ -45,14 +45,10 @@ void BasePageWidget::onImageLinkClicked(const QString &NGNumber)
     //     viewer);
 }
 
-void BasePageWidget::resizeEvent(QResizeEvent *event)
-{
-    QWidget::resizeEvent(event);
-    updateTableResizeMode();
-}
-
 void BasePageWidget::updateTableResizeMode()
 {
+    return;
+/*
     //获取基础模型
     auto baseModel = qobject_cast<BaseTableModel*>(m_model);
     if(!baseModel) return;
@@ -91,6 +87,7 @@ void BasePageWidget::updateTableResizeMode()
 
         }
     }
+*/
 }
 
 TabConfigs BasePageWidget::Tabs() const
@@ -116,7 +113,8 @@ QHBoxLayout *BasePageWidget::createTitleLayout()
 void BasePageWidget::setupSearchLayout(QHBoxLayout* layout)
 {
     m_searchEdit = new QLineEdit(this);
-    m_searchEdit->setFixedWidth(240);
+    m_searchEdit->setMinimumWidth(180);
+    m_searchEdit->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
     m_searchBtn = new QPushButton(this);
     m_searchBtn->setIcon(QIcon(":/res/common/search.svg"));
 
@@ -338,8 +336,6 @@ QTableView *BasePageWidget::createTable(FieldFilterProxyModel *proxy, const QVar
     setupTableAppearance(table);
 
     // 8. 根据窗口状态调整列宽
-    updateTableResizeMode();
-
     return table;
 }
 
@@ -448,12 +444,18 @@ void BasePageWidget::setupColumns(QTableView *table, const QVariant& tabData)
         // =========================
         // 2. 列宽模式
         // =========================
-        header->setSectionResizeMode(col, cfg.resizeMode);
+        const bool contentSizedColumn =
+            cfg.type == ColumnType::RowNumber ||
+            cfg.type == ColumnType::CheckBox ||
+            cfg.type == ColumnType::Operation ||
+            cfg.filterType == FilterType::Date ||
+            cfg.filterType == FilterType::Priority;
 
-        if (cfg.resizeMode == QHeaderView::Fixed)
-        {
-            table->setColumnWidth(col, cfg.width);
-        }
+        header->setSectionResizeMode(
+            col,
+            contentSizedColumn
+                ? QHeaderView::ResizeToContents
+                : QHeaderView::Stretch);
 
         // =========================
         // 3. Delegate,输入框代理创建
@@ -485,6 +487,7 @@ void BasePageWidget::setupColumns(QTableView *table, const QVariant& tabData)
             Qt::TextAlignmentRole
             );
     }
+
 }
 
 void BasePageWidget::setupTableAppearance(QTableView *table)
@@ -504,10 +507,9 @@ void BasePageWidget::setupTableAppearance(QTableView *table)
     // 表头文字居中
     table->horizontalHeader()->setDefaultAlignment(Qt::AlignCenter);
 
-    // 禁止自动换行
+    // 禁止自动换行，列宽按内容自适应，放不下时使用横向滚动条完整查看。
     table->setWordWrap(false);
-    // 文本过长时显示省略号 ...
-    table->setTextElideMode(Qt::ElideRight);
+    table->setTextElideMode(Qt::ElideNone);
 
 }
 

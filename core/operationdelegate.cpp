@@ -114,6 +114,16 @@ void OperationDelegate::paint(
     painter->restore();
 }
 
+QSize OperationDelegate::sizeHint(const QStyleOptionViewItem &option,
+                                  const QModelIndex &index) const
+{
+    Q_UNUSED(index)
+
+    QSize size = BaseItemDelegate::sizeHint(option, index);
+    size.setWidth(qMax(size.width(), 150));
+    return size;
+}
+
 bool OperationDelegate::editorEvent(
     QEvent *event,
     QAbstractItemModel *model,
