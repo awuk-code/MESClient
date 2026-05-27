@@ -2,6 +2,7 @@
 #define FIELDFILTERPROXYMODEL_H
 
 #include <QSortFilterProxyModel>
+#include <QStringList>
 
 class FieldFilterProxyModel : public QSortFilterProxyModel
 {
@@ -13,6 +14,7 @@ public:
 
     //搜索过滤
     void setFilterColumn(int column);     // 指定过滤列（核心）
+    void addSearchFields(const QString& field);
     void setKeyword(const QString& keyword);
     void setStatus(QVariant status);           // 可选
     //表头过滤
@@ -24,6 +26,7 @@ protected:
 private:
     int m_filterColumn = 0;
     QString m_keyword;
+    QStringList searchFields;
     QVariant m_status = -1;
 
     QMap<QString, QVariant> m_fieldFilters; //用于表头图标过滤

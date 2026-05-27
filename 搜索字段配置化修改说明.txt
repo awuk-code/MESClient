@@ -1,0 +1,112 @@
+本次搜索字段配置化修改说明
+
+一、修改文件：core/fieldfilterproxymodel.h
+
+1. 修改类：FieldFilterProxyModel
+
+修改内容：
+新增函数 addSearchFields。
+
+函数作用：
+用于向代理模型添加一个需要参与关键字搜索的字段名。
+
+2. 修改类：FieldFilterProxyModel
+
+修改内容：
+新增成员变量 searchFields。
+
+变量作用：
+用于保存当前代理模型需要搜索的字段列表。
+
+修改原因：
+之前搜索字段写死在过滤函数内部，不方便不同页面按自己的业务配置搜索范围。
+改成成员变量后，每个页面创建 proxy 时可以自己添加需要搜索的字段。
+
+二、修改文件：core/fieldfilterproxymodel.cpp
+
+1. 修改函数：FieldFilterProxyModel::addSearchFields
+
+修改内容：
+新增该函数的实现。
+
+具体逻辑：
+如果传入字段为空，不添加。
+如果字段已经存在，不重复添加。
+添加成功后刷新过滤结果。
+
+2. 修改函数：FieldFilterProxyModel::filterAcceptsRow
+
+修改内容：
+删除原来函数内部写死的搜索字段列表。
+关键字搜索改为遍历成员变量 searchFields。
+
+具体逻辑：
+当关键字不为空，并且 searchFields 中配置了字段时，才执行关键字过滤。
+只要任意一个配置字段包含关键字，就认为该行匹配。
+如果所有配置字段都不匹配，则过滤掉该行。
+
+修改原因：
+把搜索字段从代理模型内部固定逻辑中解耦出来，让不同页面可以自行配置搜索范围。
+
+三、修改文件：ui/productiontaskpage.cpp
+
+1. 修改函数：ProductionTaskPage::createProxy
+
+修改内容：
+创建生产任务页面 proxy 时，手动添加生产任务页面需要搜索的字段。
+
+添加字段：
+taskNo
+productModel
+erpCode
+productName
+
+修改原因：
+生产任务页面搜索框主要用于搜索任务单号、产品型号、ERP 编码和产品名称。
+
+四、修改文件：ui/repairstationpage.cpp
+
+1. 修改函数：RepairStationPage::createProxy
+
+修改内容：
+创建维修站页面 proxy 时，手动添加维修站页面需要搜索的字段。
+
+添加字段：
+taskNo
+reworkTaskNo
+exceptionHandleNo
+exceptionHandleNoLink
+productModel
+productSN
+
+修改原因：
+维修站页面涉及生产任务单、返工任务单、异常处理单、产品型号和产品 SN 等字段，需要独立配置搜索范围。
+
+五、修改文件：ui/processstationpage.cpp
+
+1. 修改函数：ProcessStationRightPanel::createProxy
+
+修改内容：
+创建工序站点右侧表格 proxy 时，手动添加工序站点页面需要搜索的字段。
+
+添加字段：
+materialCode
+materialName
+processName
+
+修改原因：
+工序站点页面不同 Tab 的搜索目标不同，目前保留物料信息和工序名称相关字段作为关键字搜索范围。
+
+六、后续使用方式
+
+后续如果某个页面需要新增关键字搜索字段，只需要在该页面创建 proxy 的函数中调用 addSearchFields。
+
+例如：
+新增一个字段叫 productSN，就在 createProxy 中添加 productSN。
+
+这样不需要再修改 FieldFilterProxyModel 内部过滤逻辑。
+
+七、验证情况
+
+已进行 Debug 编译验证，编译通过。
+构建过程中仍存在项目原有 warning，不是本次修改引入。

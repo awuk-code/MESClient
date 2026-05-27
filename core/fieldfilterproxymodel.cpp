@@ -1,4 +1,4 @@
-#include "fieldfilterproxymodel.h"
+﻿#include "fieldfilterproxymodel.h"
 #include "basetablemodel.h"
 #include "qdatetime.h"
 #include "commonfunc.h"
@@ -10,6 +10,15 @@ FieldFilterProxyModel::FieldFilterProxyModel(QObject *parent)
 void FieldFilterProxyModel::setFilterColumn(int column)
 {
     m_filterColumn = column;
+    invalidateFilter();
+}
+
+void FieldFilterProxyModel::addSearchFields(const QString &field)
+{
+    if (field.isEmpty() || searchFields.contains(field))
+        return;
+
+    searchFields.append(field);
     invalidateFilter();
 }
 
@@ -134,24 +143,8 @@ bool FieldFilterProxyModel::filterAcceptsRow(int srcRow, const QModelIndex &srcP
 
 
     // ===== 关键字过滤 =====
-    if (!m_keyword.isEmpty())
+    if (!m_keyword.isEmpty() && !searchFields.isEmpty())
     {
-        QStringList searchFields =
-            {
-            /////////拓展搜索区域
-                "taskNo",
-                "reworkTaskNo",
-                "exceptionHandleNo",
-                "exceptionHandleNoLink",
-                "productModel",
-                "productSN",
-                "erpCode",
-                "productName",
-                "materialCode",
-                "materialName",
-                "processName"
-            };
-
         bool matched = false;
 
         for (const QString& field : searchFields)
@@ -221,3 +214,4 @@ bool FieldFilterProxyModel::filterAcceptsRow(int srcRow, const QModelIndex &srcP
     }
     return true;
 }
+

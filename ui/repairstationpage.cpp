@@ -74,6 +74,12 @@ TabConfigs RepairStationPage::Tabs() const
 FieldFilterProxyModel *RepairStationPage::createProxy(const QVariant &data)
 {
     auto proxy = new FieldFilterProxyModel(this);
+    proxy->addSearchFields("taskNo");
+    proxy->addSearchFields("reworkTaskNo");
+    proxy->addSearchFields("exceptionHandleNo");
+    proxy->addSearchFields("exceptionHandleNoLink");
+    proxy->addSearchFields("productModel");
+    proxy->addSearchFields("productSN");
     proxy->setStatus(data); // 👉 Tab控制状态
 
     return proxy;

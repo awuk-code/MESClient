@@ -584,6 +584,9 @@ FieldFilterProxyModel *ProcessStationRightPanel::createProxy(const QVariant &dat
         return nullptr;
 
     auto proxy = new FieldFilterProxyModel(this);
+    proxy->addSearchFields("materialCode");
+    proxy->addSearchFields("materialName");
+    proxy->addSearchFields("processName");
 
     // 使用 BasePageWidget 中创建的源模型
     proxy->setSourceModel(m_model);
