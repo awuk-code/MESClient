@@ -1,5 +1,7 @@
 #include "headerwidget.h"
 
+#include <QSystemTrayIcon>
+
 HeaderWidget::HeaderWidget(QWidget *parent)
     : QWidget{parent}
 {
@@ -11,14 +13,12 @@ HeaderWidget::HeaderWidget(QWidget *parent)
 
 void HeaderWidget::mousePressEvent(QMouseEvent *event)
 {
-    if(event->button() == Qt::LeftButton)
-        m_dragPos = event->globalPos() - window()->frameGeometry().topLeft();
+    event->ignore();
 }
 
 void HeaderWidget::mouseMoveEvent(QMouseEvent *event)
 {
-    if(event->buttons() & Qt::LeftButton)
-        window()->move(event->globalPos() - m_dragPos);
+    event->ignore();
 }
 
 
@@ -38,7 +38,7 @@ void HeaderWidget::initUI()
     m_btnMin = new QPushButton(this);
     m_btnMin->setIcon(QIcon(":/res/common/min.svg"));
     m_btnMax = new QPushButton(this);
-    m_btnMax->setIcon(QIcon(":/res/common/max1.svg"));
+    m_btnMax->setIcon(QIcon(":/res/common/max2.svg"));
     m_btnClose = new QPushButton(this);
     m_btnClose->setIcon(QIcon(":/res/common/close.svg"));
 
@@ -91,16 +91,29 @@ void HeaderWidget::initConnect()
     connect(m_btnClose, &QPushButton::clicked, this, [this](){
         window()->close();
     });
+    m_trayIcon = new QSystemTrayIcon(QIcon(":/res/common/user.svg"), this);
+    connect(m_trayIcon, &QSystemTrayIcon::activated, this,
+            [this](QSystemTrayIcon::ActivationReason reason) {
+                if (reason == QSystemTrayIcon::Trigger
+                    || reason == QSystemTrayIcon::DoubleClick) {
+                    window()->showMaximized();
+                    window()->raise();
+                    window()->activateWindow();
+                }
+            });
+    if (QSystemTrayIcon::isSystemTrayAvailable()) {
+        m_trayIcon->show();
+    }
+
     connect(m_btnMin, &QPushButton::clicked, this, [this](){
+        if (m_trayIcon && QSystemTrayIcon::isSystemTrayAvailable()) {
+            window()->hide();
+            return;
+        }
         window()->showMinimized();
     });;
     connect(m_btnMax, &QPushButton::clicked, this, [this](){
-        if(window()->isMaximized()){
-            window()->showNormal();
-            m_btnMax->setIcon(QIcon(":/res/common/max1.svg"));
-        }else{
-            window()->showMaximized();
-            m_btnMax->setIcon(QIcon(":/res/common/max2.svg"));
-        }
+        window()->showMaximized();
+        m_btnMax->setIcon(QIcon(":/res/common/max2.svg"));
     });
 }

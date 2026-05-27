@@ -1,4 +1,3 @@
-#include "imageviewwidget.h"
 #include "mainwindow.h"
 #include "mloginwedget.h"
 #include "mlocalauthservice.h"
@@ -7,9 +6,6 @@
 #include <QApplication>
 #include <QFile>
 #include <QString>
-
-#include "pdfviewwidget.h"
-#include "repairjudgepage.h"
 
 typedef enum _LoginStatus{
     LoginFailed,
@@ -77,23 +73,7 @@ int main(int argc, char *argv[])
 
     MainWindow w;
 
-    w.show();
-
-    // auto pdfWidget = new PdfViewWidget;
-
-    // pdfWidget->resize(800, 600);
-    // pdfWidget->show();
-    // pdfWidget->loadPdf(
-    //     "D:/C++11.pdf");
-    qDebug() << QFile::exists("D:/DSC00040.JPG");
-    auto view = new ImageViewWidget;
-    view->resize(1200, 800);
-    view->show();
-    view->loadImage("D:/DSC00040.JPG");
-
-
-    RepairJudgePage R;
-    R.show();
+    w.showMaximized();
     return a.exec();
 
 }

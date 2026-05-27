@@ -1,4 +1,4 @@
-#ifndef MAINWINDOW_H
+﻿#ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 #pragma once
 
@@ -23,8 +23,6 @@ public:
 
 protected:
     void closeEvent(QCloseEvent* event)override;
-    void resizeEvent(QResizeEvent* event)override;
-    bool eventFilter(QObject* obj, QEvent* event)override;
 private:
     void initUI();
     void initConnect();
@@ -51,7 +49,6 @@ private:
 
 
     QMap<QString, QWidget*> m_pageMap;
-    QPushButton* m_sizeBtn{nullptr};
 };
 
 #endif // MAINWINDOW_H

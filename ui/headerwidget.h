@@ -9,6 +9,8 @@
 #include <QDateTime>
 #include <QHBoxLayout>
 
+class QSystemTrayIcon;
+
 class HeaderWidget : public QWidget
 {
     Q_OBJECT
@@ -33,8 +35,7 @@ private:
     QPushButton* m_btnMin{nullptr};
     QPushButton* m_btnMax{nullptr};
     QPushButton* m_btnClose{nullptr};
-
-    QPoint m_dragPos;
+    QSystemTrayIcon* m_trayIcon{nullptr};
 
 signals:
 };
