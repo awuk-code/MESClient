@@ -704,4 +704,12 @@ void ProcessStationRightPanel::updateTableModelByTab(int index)
     default:
         break;
     }
+
+    // 当前页面复用同一个模型，切换表格类型后需要重新设置列委托。
+    auto table = qobject_cast<QTableView*>(m_stack->widget(index));
+    if (table)
+    {
+        setupColumns(table, table->property("tabData"));
+        updateTableResizeMode();
+    }
 }

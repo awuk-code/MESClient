@@ -468,6 +468,11 @@ void BasePageWidget::setupColumns(QTableView *table, const QVariant& tabData)
         {
             table->setItemDelegateForColumn(col, cfg.delegate);
         }
+        else
+        {
+            // 切换不同表格类型后，清掉当前列可能残留的旧输入框委托。
+            table->setItemDelegateForColumn(col, nullptr);
+        }
 
         // =========================
         // 4. 对齐方式（补强项，建议保留）

@@ -74,7 +74,8 @@ void ProcessStationModel::setMaterialCheckData()
         {"materialName", "主板"},
         {"singledQty", 1},                 // 对应 单套数量
         {"actualQty", 100},                // 对应 生产所需数量
-        {"materialLabelCode", "LBL202605001"},
+        // 默认值清空，让表格直接显示输入提示。
+        {"materialLabelCode", ""},
         {"EPR", "EPR-001"},
         {"batchNo", "BATCH-001"}
     });
@@ -84,7 +85,8 @@ void ProcessStationModel::setMaterialCheckData()
         {"materialName", "外壳"},
         {"singledQty", 1},
         {"actualQty", 100},
-        {"materialLabelCode", "LBL202605002"},
+        // 默认值清空，让表格直接显示输入提示。
+        {"materialLabelCode", ""},
         {"EPR", "EPR-002"},
         {"batchNo", "BATCH-002"}
     });
@@ -94,7 +96,8 @@ void ProcessStationModel::setMaterialCheckData()
         {"materialName", "显示屏"},
         {"singledQty", 1},
         {"actualQty", 100},
-        {"materialLabelCode", "LBL202605003"},
+        // 默认值清空，让表格直接显示输入提示。
+        {"materialLabelCode", ""},
         {"EPR", "EPR-003"},
         {"batchNo", "BATCH-003"}
     });
