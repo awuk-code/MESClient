@@ -1,12 +1,25 @@
 #include "productiontaskpage.h"
 #include "productiontaskmodel.h"
 #include "fieldfilterproxymodel.h"
+#include "navigationmanager.h"
 #include "toggleswitchwidget.h"
+
+#include <QTableView>
+#include <QDebug>
 
 ProductionTaskPage::ProductionTaskPage(QWidget *parent)
     : BasePageWidget(parent)
 {
     setupPage();
+
+    auto model = dynamic_cast<ProductionTaskModel*>(m_model);
+    if (model && model->opDelegate)
+    {
+        connect(model->opDelegate, QOverload<int>::of(&OperationDelegate::sigStartClicked),
+                this, &ProductionTaskPage::startProcessByProxyRow);
+        connect(model->opDelegate, QOverload<const QVariantMap&>::of(&OperationDelegate::sigStartClicked),
+                this, &ProductionTaskPage::startProcessByRowData);
+    }
 }
 
 QAbstractItemModel* ProductionTaskPage::createModel()
@@ -54,4 +67,29 @@ void ProductionTaskPage::addWidgetToTitle(QHBoxLayout *layout)
     ToggleSwitchWidget* m_switch = new ToggleSwitchWidget(this);
     layout->addStretch();
     layout->addWidget(m_switch);
+}
+
+void ProductionTaskPage::startProcessByProxyRow(int proxyRow)
+{
+    Q_UNUSED(proxyRow)
+}
+
+void ProductionTaskPage::startProcessByRowData(const QVariantMap &rowData)
+{
+    auto table =
+        qobject_cast<QTableView*>(m_stack ? m_stack->currentWidget() : nullptr);
+    if (!table)
+        return;
+
+    if (rowData.isEmpty())
+        return;
+
+    qDebug() << __FUNCTION__
+             << "start process taskNo =" << rowData.value("taskNo").toString()
+             << "productModel =" << rowData.value("productModel").toString();
+
+    // 开工按钮点击后进入工序站点页面；后续如果需要调用开工接口，可在跳转前补充接口请求。
+    NavigationManager::instance()->openPage(
+        PageType::ProcessStation,
+        rowData);
 }

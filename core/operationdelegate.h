@@ -20,6 +20,7 @@ public:
     void sigPrintClicked(int row);
 
     void sigStartClicked(int row);
+    void sigStartClicked(const QVariantMap& rowData);
 
 public:
     void paint(QPainter *painter,

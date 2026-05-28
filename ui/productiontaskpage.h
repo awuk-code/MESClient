@@ -16,6 +16,10 @@ protected:
     QString pageTitle() const override;
     QString searchInfo()const override;
     void addWidgetToTitle(QHBoxLayout* layout) override;
+
+private:
+    void startProcessByProxyRow(int proxyRow);
+    void startProcessByRowData(const QVariantMap& rowData);
 };
 
 #endif // PRODUCTIONTASKPAGE_H

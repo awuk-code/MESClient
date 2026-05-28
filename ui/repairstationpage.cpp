@@ -113,9 +113,10 @@ void RepairStationPage::setupSearchLayout(QHBoxLayout *layout)
     m_searchEdit->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 
     m_repairJudgeBtn =
-        new QPushButton(QString::fromUtf8("\xE7\xBB\xB4\xE4\xBF\xAE\xE5\x88\xA4\xE5\xAE\x9A"), this);
+        new QPushButton(tr("维修判定"), this);
     m_exportBtn =
-        new QPushButton(QString::fromUtf8("\xE5\xAF\xBC\xE5\x87\xBA\xE6\x8A\xA5\xE8\xA1\xA8"), this);
+        new QPushButton(tr("导出报表"), this);
+    m_exportBtn->setProperty("buttonRole", "export");
 
     connect(m_repairJudgeBtn, &QPushButton::clicked, this, [this]() {
         if (tabBar()->currentIndex() != 0)

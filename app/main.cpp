@@ -73,8 +73,6 @@ int main(int argc, char *argv[])
     //     }
     // }while (status == LoginFailed);
 
-    RepairJudgePage P;
-    P.showMaximized();
     MainWindow w;
 
     w.showMaximized();

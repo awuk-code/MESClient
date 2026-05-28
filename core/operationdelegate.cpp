@@ -92,8 +92,7 @@ void OperationDelegate::paint(
     // 已打印：绿色
     QString status =  rowData.value("status").toString();
     QColor startColor;
-    if (labelPrinted &&
-        status != QStringLiteral("已完工"))
+    if (status != QStringLiteral("已完工"))
     {
         startColor = QColor("#67C23A");
     }
@@ -141,10 +140,6 @@ bool OperationDelegate::editorEvent(
     QVariantMap rowData =
         model->data(index, Qt::UserRole).toMap();
 
-    bool labelPrinted =
-        rowData.value(FIELD_LABEL_PRINTED, false).toBool();
-
-
     QRect rect = option.rect;
 
     QRect printRect(rect.left() + 10,
@@ -182,11 +177,11 @@ bool OperationDelegate::editorEvent(
         QString status =
             rowData.value("status").toString();
 
-        // 已打印且不是“已完工”时才允许开工
-        if (labelPrinted &&
-            status != QStringLiteral("已完工"))
+        // 开工按钮只限制已完工任务不可再次开工；后续若需要恢复“必须先标签打印”，在这里加接口/状态判断。
+        if (status != QStringLiteral("已完工"))
         {
             rowData[FIELD_STARTED] = true;
+            rowData["status"] = QStringLiteral("已开工");
 
             if (updateRowData(model, index, rowData))
             {
@@ -194,6 +189,7 @@ bool OperationDelegate::editorEvent(
                 // 1. 调用接口通知 MES 系统
                 // 2. 跳转到工序站点页面
                 emit sigStartClicked(index.row());
+                emit sigStartClicked(rowData);
             }
         }
 

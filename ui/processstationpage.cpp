@@ -60,6 +60,30 @@ void ProcessStationPage::setReworkTaskMode(bool advancedPermission)
     qDebug() << __FUNCTION__ << "advanced permission:" << advancedPermission;
 }
 
+void ProcessStationPage::setProductionTaskData(const QVariantMap &rowData)
+{
+    if (!m_leftPanel || rowData.isEmpty())
+        return;
+
+    TaskList taskInfoValues = {
+        rowData.value("taskNo"),
+        rowData.value("productModel"),
+        rowData.value("erpCode"),
+        rowData.value("workCount"),
+        rowData.value("finishTime"),
+        rowData.value("routeName"),
+        rowData.value("lineNo")
+    };
+
+    // 生产任务点击“开工”后带入当前任务数据；后续接接口时可在这里补充更多字段映射。
+    m_leftPanel->setDisplayMode(ProcessStationLeftPanel::DisplayMode::NormalTask);
+    m_leftPanel->setTaskInfoValue(taskInfoValues);
+
+    qDebug() << __FUNCTION__
+             << "taskNo =" << rowData.value("taskNo").toString()
+             << "productModel =" << rowData.value("productModel").toString();
+}
+
 ProcessStationLeftPanel::ProcessStationLeftPanel(QWidget *parent)
     : QWidget(parent)
 {
@@ -737,6 +761,11 @@ void ProcessStationRightPanel::setupSearchLayout(QHBoxLayout *layout)
     m_productSnCombo->addItem(tr("全部"));
 
     m_exportBtn = new QPushButton(tr("保存"), this);
+    m_exportBtn->setProperty("buttonRole", "save");
+    connect(m_exportBtn, &QPushButton::clicked, this, []() {
+        // TODO: 保存按钮逻辑待定，后续接口或本地保存规则确定后在这里补充。
+        qDebug() << "ProcessStationRightPanel save clicked, wait implementation";
+    });
 
     layout->addWidget(m_searchEdit);
     layout->addWidget(m_productSnLabel);

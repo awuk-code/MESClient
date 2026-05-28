@@ -115,6 +115,7 @@ protected:
 
     // 绑定复选框点击时的整行选中逻辑
     void setupCheckBoxSelection(QTableView* table, const QVariant& tabData);
+    void exportCurrentTableToExcel();
     //--------------------------------
 protected:
     QTabBar* tabBar()const{return m_tabBar;};

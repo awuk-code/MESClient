@@ -37,7 +37,10 @@ void MainWindow::initUI()
     m_stack->addWidget(m_pageProduction); //id = 0
 
     m_pageProcess = new ProcessStationPage(this);
+
     m_pageProcess->setReworkTaskMode(false);
+
+
     m_stack->addWidget(m_pageProcess);
     NavigationManager::instance()->registerPage(
         PageType::ProcessStation,
@@ -227,6 +230,11 @@ void MainWindow::onOpenPage(PageType type)
     if (type == PageType::RepairJudge && m_pageRepairJudge)
     {
         m_pageRepairJudge->setRepairData(
+            NavigationManager::instance()->pageData(type));
+    }
+    else if (type == PageType::ProcessStation && m_pageProcess)
+    {
+        m_pageProcess->setProductionTaskData(
             NavigationManager::instance()->pageData(type));
     }
 

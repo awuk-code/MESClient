@@ -26,7 +26,7 @@ void ProductionTaskModel::initConnect()
             });
 
     connect(opDelegate,
-            &OperationDelegate::sigStartClicked,
+            QOverload<int>::of(&OperationDelegate::sigStartClicked),
             this,
             [](int row)
             {

@@ -25,6 +25,7 @@ class ProcessStationPage : public QWidget
 public:
     explicit ProcessStationPage(QWidget *parent = nullptr);
     void setReworkTaskMode(bool advancedPermission);
+    void setProductionTaskData(const QVariantMap& rowData);
 
 private:
     void initUI();

@@ -4,7 +4,13 @@
 #include "headeroverlaywidget.h"
 #include "imageviewwidget.h"
 
+#include <QDateTime>
+#include <QFile>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QStandardPaths>
 #include <QScrollBar>
+#include <QTextStream>
 
 BasePageWidget::BasePageWidget(QWidget *parent)
     : QWidget{parent}
@@ -123,6 +129,7 @@ void BasePageWidget::setupSearchLayout(QHBoxLayout* layout)
     layout->addStretch();
 
     m_exportBtn = new QPushButton("导出报表",this);
+    m_exportBtn->setProperty("buttonRole", "export");
     layout->addWidget(m_exportBtn);
 }
 
@@ -265,9 +272,91 @@ void BasePageWidget::initConnect()
                     }
                 });
     }
+    if (m_exportBtn &&
+        m_exportBtn->property("buttonRole").toString() == "export")
+    {
+        connect(m_exportBtn, &QPushButton::clicked, this,
+                &BasePageWidget::exportCurrentTableToExcel);
+    }
+
     connect(this, &BasePageWidget::sigPageSwitching, this, &BasePageWidget::onPageLinkClicked);
     connect(this, &BasePageWidget::sigIMGView, this, &BasePageWidget::onImageLinkClicked);
 
+}
+
+void BasePageWidget::exportCurrentTableToExcel()
+{
+    auto table =
+        qobject_cast<QTableView*>(m_stack ? m_stack->currentWidget() : nullptr);
+    if (!table || !table->model())
+    {
+        QMessageBox::information(this, tr("导出报表"), tr("当前页面没有可导出的表格。"));
+        return;
+    }
+
+    const QString defaultDir =
+        QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+    const QString defaultName =
+        QStringLiteral("%1/报表_%2.xls")
+            .arg(defaultDir)
+            .arg(QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss"));
+
+    const QString fileName = QFileDialog::getSaveFileName(
+        this,
+        tr("导出报表"),
+        defaultName,
+        tr("Excel 文件 (*.xls);;HTML 文件 (*.html)"));
+    if (fileName.isEmpty())
+        return;
+
+    QFile file(fileName);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        QMessageBox::warning(this, tr("导出报表"), tr("文件打开失败，无法导出。"));
+        return;
+    }
+
+    QTextStream out(&file);
+    out.setEncoding(QStringConverter::Utf8);
+
+    // 这里使用 Excel 可直接打开的 HTML 表格格式，后续如引入 xlsx 库，可只替换本函数的写文件部分。
+    out << "<html><head><meta charset=\"UTF-8\"></head><body><table border=\"1\">\n";
+    out << "<tr>";
+    for (int col = 0; col < table->model()->columnCount(); ++col)
+    {
+        if (table->isColumnHidden(col))
+            continue;
+
+        const QString header =
+            table->model()->headerData(col, Qt::Horizontal, Qt::DisplayRole)
+                .toString()
+                .toHtmlEscaped();
+        out << "<th>" << header << "</th>";
+    }
+    out << "</tr>\n";
+
+    for (int row = 0; row < table->model()->rowCount(); ++row)
+    {
+        out << "<tr>";
+        for (int col = 0; col < table->model()->columnCount(); ++col)
+        {
+            if (table->isColumnHidden(col))
+                continue;
+
+            const QString text =
+                table->model()->index(row, col)
+                    .data(Qt::DisplayRole)
+                    .toString()
+                    .toHtmlEscaped();
+            out << "<td>" << text << "</td>";
+        }
+        out << "</tr>\n";
+    }
+
+    out << "</table></body></html>\n";
+    file.close();
+
+    QMessageBox::information(this, tr("导出报表"), tr("导出完成。"));
 }
 
 bool BasePageWidget::isColumnVisibleForTab(

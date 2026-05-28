@@ -1,18 +1,24 @@
 #include "repairjudgepage.h"
 #include "imageviewwidget.h"
+#include "navigationmanager.h"
 
 #include <QDebug>
+#include <QDir>
 #include <QFile>
 #include <QFrame>
 #include <QButtonGroup>
 #include <QGridLayout>
 #include <QHBoxLayout>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QLabel>
+#include <QMessageBox>
 #include <QPushButton>
 #include <QPixmap>
 #include <QRadioButton>
 #include <QScrollArea>
 #include <QSizePolicy>
+#include <QStandardPaths>
 #include <QTextEdit>
 #include <QVBoxLayout>
 
@@ -191,6 +197,80 @@ void RepairJudgePage::initUI()
 
     judgeLayout->addWidget(judgeContent, 1);
     mainLayout->addWidget(m_contentWidget, 1);
+
+    connect(m_saveBtn, &QPushButton::clicked,
+            this, &RepairJudgePage::saveJudgeDraft);
+    connect(m_backBtn, &QPushButton::clicked,
+            this, &RepairJudgePage::backToRepairStation);
+    connect(m_submitBtn, &QPushButton::clicked,
+            this, &RepairJudgePage::submitJudgeResult);
+}
+
+QVariantMap RepairJudgePage::judgeData() const
+{
+    QVariantMap data = m_rowData;
+
+    QString method;
+    if (m_methodGroup && m_methodGroup->checkedButton())
+        method = m_methodGroup->checkedButton()->text();
+
+    data["judgeMethod"] = method;
+    data["judgeContent"] =
+        m_judgeTextEdit ? m_judgeTextEdit->toPlainText() : QString();
+
+    return data;
+}
+
+void RepairJudgePage::saveJudgeDraft()
+{
+    const QVariantMap data = judgeData();
+    const QString dirPath =
+        QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    QDir dir(dirPath);
+    if (!dir.exists())
+        dir.mkpath(".");
+
+    const QString key =
+        data.value("exceptionHandleNo").toString().isEmpty()
+            ? QStringLiteral("unknown")
+            : data.value("exceptionHandleNo").toString();
+    const QString filePath =
+        dir.filePath(QStringLiteral("repair_judge_%1.json").arg(key));
+
+    QFile file(filePath);
+    if (!file.open(QIODevice::WriteOnly))
+    {
+        QMessageBox::warning(this, tr("保存"), tr("维修判定临时文件保存失败。"));
+        return;
+    }
+
+    QJsonObject object = QJsonObject::fromVariantMap(data);
+    file.write(QJsonDocument(object).toJson(QJsonDocument::Indented));
+    file.close();
+
+    // 当前先保存到本地临时文件；后续如果改为接口草稿保存，只需要替换这里的写文件逻辑。
+    qDebug() << __FUNCTION__ << "draft saved:" << filePath;
+    QMessageBox::information(this, tr("保存"), tr("维修判定内容已临时保存。"));
+}
+
+void RepairJudgePage::submitJudgeResult()
+{
+    const QVariantMap data = judgeData();
+
+    // TODO: 提交按钮后续在这里调用上传接口，将 judgeMethod 和 judgeContent 一并提交给后端。
+    qDebug() << __FUNCTION__
+             << "wait upload, exceptionHandleNo ="
+             << data.value("exceptionHandleNo").toString()
+             << "method =" << data.value("judgeMethod").toString()
+             << "content =" << data.value("judgeContent").toString();
+
+    QMessageBox::information(this, tr("提交"), tr("提交接口待接入，当前仅保留调试输出。"));
+}
+
+void RepairJudgePage::backToRepairStation()
+{
+    // 返回按钮只负责回到维修站页面，不清空当前内容，方便用户再次进入时继续查看。
+    NavigationManager::instance()->openPage(PageType::RepairStation);
 }
 
 void RepairJudgePage::rebuildInfo()

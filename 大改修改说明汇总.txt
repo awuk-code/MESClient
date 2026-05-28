@@ -1,0 +1,615 @@
+今晚其他大改修改说明汇总
+
+说明：
+本文件汇总“当前版本页面导航与返工任务单修改说明.txt”之前的几次较大修改。
+不包含刚才已经单独总结的页面导航统一、NavigationManager 注册维修判定/返工任务单那一版。
+
+
+一、表格输入框 placeholderText 改造
+
+对应已有说明文件：
+placeholderText修改说明.txt
+
+整体思路：
+之前表格里的 LineEdit 输入框使用统一提示，或者只有某一列显示提示。
+本次改为根据当前列标题自动生成提示，例如：
+物料标签码列显示“请输入或扫入物料标签码”。
+物料SN列显示“请输入或扫入物料SN”。
+
+这样后续新增 LineEdit 类型输入列时，只要列标题正确，提示文字就会自动对应当前列，不需要再单独写死提示内容。
+
+修改文件与函数：
+
+1. core/lineeditdelegate.cpp
+
+修改静态函数：lineEditPlaceholderText
+修改内容：
+根据当前 QModelIndex 所在列的表头标题生成提示文字。
+如果列标题为空，则使用默认提示“请输入或扫入”。
+
+修改函数：LineEditDelegate::createEditor
+修改内容：
+创建 QLineEdit 编辑器时，设置 placeholderText。
+进入编辑状态后，输入框自身显示对应列的提示。
+
+修改函数：LineEditDelegate::paint
+修改内容：
+当单元格内容为空时，在未进入编辑状态的表格单元格中直接绘制灰色提示文字。
+当单元格有内容时，保持普通单元格显示。
+
+修改函数：LineEditDelegate::sizeHint
+修改内容：
+空输入单元格的尺寸参考 placeholderText 计算，避免提示文字过短时显示不完整。
+
+2. core/lineeditdelegate.h
+
+修改类：LineEditDelegate
+修改内容：
+声明 paint 和 sizeHint，用于支持未编辑状态下的提示绘制和尺寸计算。
+
+3. core/processstationmodel.cpp
+
+修改函数：ProcessStationModel::setMaterialCheckData
+修改内容：
+清空物料核对表中物料标签码的默认示例值，让页面打开后可以直接看到 placeholderText。
+
+修改函数：ProcessStationModel::setProcessMaterialHeader
+修改内容：
+工序物料信息中的物料SN列保持 ColumnType::LineEdit，配合 LineEditDelegate 显示“请输入或扫入物料SN”。
+
+4. ui/basepagewidget.cpp
+
+修改函数：BasePageWidget::setupColumns
+修改内容：
+对 ColumnType::LineEdit 的列统一设置 LineEditDelegate。
+切换不同表格类型时重新设置委托，避免工序物料信息切换后没有输入框提示。
+同时清理不再需要的旧委托，避免普通列残留 LineEditDelegate。
+
+修改效果：
+物料核对表、工序物料信息表中的输入列都能按当前列显示提示。
+后续新增输入列时，只需要设置 ColumnType::LineEdit 和列标题即可。
+
+
+二、FieldFilterProxyModel 搜索字段配置化
+
+对应已有说明文件：
+搜索字段配置化修改说明.txt
+
+整体思路：
+之前关键字搜索字段写死在 FieldFilterProxyModel 内部，不同页面无法按自己的业务字段配置搜索范围。
+本次将搜索字段改成外部配置：
+页面创建 proxy 时调用 addSearchFields 添加搜索字段。
+FieldFilterProxyModel 只负责按 searchFields 执行过滤。
+
+修改文件与函数：
+
+1. core/fieldfilterproxymodel.h
+
+修改类：FieldFilterProxyModel
+新增函数：addSearchFields(const QString& field)
+作用：
+添加一个需要参与关键字搜索的字段。
+
+新增变量：QStringList searchFields
+作用：
+保存当前代理模型需要搜索的字段列表。
+
+2. core/fieldfilterproxymodel.cpp
+
+新增函数：FieldFilterProxyModel::addSearchFields
+具体逻辑：
+字段为空时不添加。
+字段已经存在时不重复添加。
+添加成功后刷新过滤结果。
+
+修改函数：FieldFilterProxyModel::filterAcceptsRow
+修改内容：
+删除原来写死的搜索字段。
+改为遍历 searchFields。
+只要任意一个字段包含关键字，则该行匹配。
+
+3. ui/productiontaskpage.cpp
+
+修改函数：ProductionTaskPage::createProxy
+添加搜索字段：
+taskNo、productModel、erpCode、productName。
+
+4. ui/repairstationpage.cpp
+
+修改函数：RepairStationPage::createProxy
+添加搜索字段：
+taskNo、reworkTaskNo、exceptionHandleNo、exceptionHandleNoLink、productModel、productSN。
+
+5. ui/processstationpage.cpp
+
+修改函数：ProcessStationRightPanel::createProxy
+添加搜索字段：
+materialCode、materialName、processName。
+后续新增更换物料信息后，也扩展了 productSNCode 和 materialSN。
+
+修改效果：
+搜索逻辑不再写死在代理模型中。
+后续新增页面或新增搜索字段，只需要在对应页面的 createProxy 中调用 addSearchFields。
+
+
+三、表格宽度自适应、操作列和筛选图标处理
+
+对应已有说明文件：
+自适应宽度修改说明.txt
+表格列宽和筛选图标修改说明.txt
+
+整体思路：
+用户在不同显示器上运行时，固定宽度容易造成控件遮挡、表格内容显示不全。
+本次主要解决右侧表格自适应、生产任务操作列按钮越界、日期和优先级筛选图标拥挤等问题。
+
+修改文件与函数：
+
+1. ui/basepagewidget.cpp
+
+修改函数：BasePageWidget::setupSearchLayout
+修改内容：
+通用搜索框从固定宽度改为最小宽度加自适应策略。
+
+修改函数：BasePageWidget::setupColumns
+修改内容：
+统一处理表格列宽策略。
+行号列、复选框列、操作列、日期筛选列、优先级筛选列按内容自适应或保底。
+普通业务列自动拉伸。
+LineEdit 列设置输入框委托。
+
+修改函数：BasePageWidget::setupTableAppearance
+修改内容：
+保留横向滚动条和不省略文本的显示策略，避免内容被省略号隐藏。
+
+2. ui/basepagewidget.h
+
+修改内容：
+减少或移除窗口尺寸变化时强制手动调整列宽的旧逻辑声明，让列宽更多交给 Qt 表头策略处理。
+
+3. core/operationdelegate.h
+
+修改类：OperationDelegate
+新增函数声明：sizeHint。
+
+4. core/operationdelegate.cpp
+
+修改函数：OperationDelegate::sizeHint
+修改内容：
+给生产任务操作列提供最小尺寸提示。
+原因：
+操作列按钮是绘制出来的，不是真实 QPushButton。
+如果列宽过窄，绘制按钮会超出单元格边界。
+
+5. core/basetablemodel.cpp
+
+修改函数：BaseTableModel::headerData
+修改内容：
+日期筛选列和优先级筛选列在表头文字后预留空白。
+原因：
+右侧筛选图标需要空间，避免文字和图标挤在一起。
+
+6. ui/headeroverlaywidget.cpp
+
+修改函数：HeaderOverlayWidget::calcIconRect
+修改内容：
+调整筛选图标的位置和右侧边距。
+
+修改函数：HeaderOverlayWidget::paintEvent
+修改内容：
+筛选图标绘制位置和点击区域保持一致。
+删除调试用红框绘制。
+
+7. ui/processstationpage.cpp
+
+修改函数：ProcessStationLeftPanel::createTaskWidget
+修改内容：
+恢复工序站点左侧任务信息表原来的显示方式。
+
+修改函数：ProcessStationLeftPanel::createPassWidget
+修改内容：
+恢复扫码过站状态信息表原来的列宽策略。
+
+修改函数：ProcessStationRightPanel::setupSearchLayout
+修改内容：
+工艺信息页搜索框和产品SN下拉框改为最小宽度加自适应。
+
+修改函数：ProcessStationRightPanel::updateTableModelByTab
+修改内容：
+切换右侧表格类型后重新设置列配置，不再额外套旧的手动列宽逻辑。
+
+修改效果：
+右侧表格可以自动拉伸。
+操作列按钮不再越界。
+日期和优先级筛选图标不再挤压表头文字。
+工序站点左侧保持原样。
+
+
+四、搜索区按钮规则调整
+
+对应已有说明文件：
+搜索区按钮修改说明.txt
+
+整体思路：
+不同页面的搜索区按钮不一样，不能都沿用通用搜索按钮布局。
+本次按页面重新定义：
+生产任务：搜索框 + 导出报表按钮。
+维修站：搜索框 + 维修判定按钮 + 导出报表按钮。
+工序站点：搜索区右侧只保留保存按钮。
+
+修改文件与函数：
+
+1. ui/basepagewidget.cpp
+
+修改函数：BasePageWidget::setupSearchLayout
+修改内容：
+通用页面搜索区调整为搜索框 + 导出报表按钮。
+搜索图标按钮不再作为默认显示控件。
+
+修改函数：BasePageWidget::initConnect
+修改内容：
+保留搜索按钮点击逻辑，但增加空指针判断。
+避免子类不创建搜索按钮时出现空指针问题。
+
+2. ui/repairstationpage.h
+
+新增成员变量：m_repairJudgeBtn。
+新增函数声明：setupSearchLayout。
+新增函数声明：updateRepairJudgeButton。
+新增函数声明：rowDataFromProxyIndex。
+新增函数声明：openRepairJudgePage。
+
+3. ui/repairstationpage.cpp
+
+修改函数：RepairStationPage::RepairStationPage
+修改内容：
+连接页签切换信号，切换页签时刷新维修判定按钮状态。
+
+修改函数：RepairStationPage::setupSearchLayout
+修改内容：
+维修站搜索区改为搜索框 + 维修判定按钮 + 导出报表按钮。
+点击维修判定按钮时，读取当前表格选中行数据，再进入维修判定流程。
+
+修改函数：RepairStationPage::updateRepairJudgeButton
+修改内容：
+维修判定按钮只在待处理页可点击。
+其他页签下禁用。
+
+新增函数：RepairStationPage::rowDataFromProxyIndex
+作用：
+把表格 proxy index 映射回源模型行，拿到完整行数据。
+
+修改函数：RepairStationPage::openRepairJudgePage
+作用：
+统一处理进入维修判定页面的逻辑。
+
+4. ui/processstationpage.cpp
+
+修改函数：ProcessStationRightPanel::setupSearchLayout
+修改内容：
+工序站点右侧搜索区不显示搜索图标按钮。
+按钮文字改为“保存”。
+
+修改函数：ProcessStationRightPanel::updateSearchBarByTab
+修改内容：
+不同页签下按需要显示搜索框或产品SN筛选。
+右侧始终显示保存按钮。
+
+修改效果：
+生产任务、维修站、工序站点的搜索区按钮符合当前业务要求。
+
+
+五、全屏启动、最小化到托盘、窗口按钮处理
+
+整体思路：
+软件不再按普通小窗口启动，直接最大化显示。
+窗口没有缩小状态，只有最小化到托盘和最大化全屏。
+
+修改文件与函数：
+
+1. app/main.cpp
+
+修改函数：main
+修改内容：
+主窗口使用 showMaximized 显示。
+
+当前代码中也存在 RepairJudgePage 测试窗口 showMaximized。
+如果后续不再需要单独测试维修判定页面，可以再清理该测试窗口。
+
+2. ui/headerwidget.h
+
+新增成员变量：QSystemTrayIcon* m_trayIcon。
+
+3. ui/headerwidget.cpp
+
+修改函数：HeaderWidget::initUI
+修改内容：
+保留最小化、最大化、关闭按钮。
+最大化按钮始终执行最大化显示，不再做普通窗口还原逻辑。
+
+修改函数：HeaderWidget::initConnect
+修改内容：
+创建系统托盘图标。
+点击最小化按钮时：
+如果系统托盘可用，则隐藏主窗口到托盘。
+如果托盘不可用，则使用 showMinimized。
+
+托盘图标激活时：
+调用 showMaximized。
+调用 raise。
+调用 activateWindow。
+
+修改函数：HeaderWidget::mousePressEvent
+修改函数：HeaderWidget::mouseMoveEvent
+修改内容：
+事件 ignore，避免标题栏拖拽导致窗口变成普通尺寸。
+
+修改效果：
+程序启动后最大化显示。
+最小化按钮隐藏到托盘。
+点击托盘图标恢复为最大化。
+
+
+六、维修判定页面重构
+
+整体思路：
+维修判定页面不再是零散信息显示，而是按用户给的大框架分为：
+顶部标题和按钮。
+异常品信息。
+情况判定。
+
+情况判定中包含：
+异常处理方式 RadioButton。
+问题照片查看入口。
+TextEdit 输入区。
+提交按钮。
+
+修改文件与函数：
+
+1. ui/repairjudgepage.h
+
+新增或调整类成员：
+m_rowData：保存维修站传入的当前行数据。
+m_infoWidget：异常品信息区域容器。
+m_infoLayout：异常品信息网格布局。
+m_saveBtn：保存按钮。
+m_backBtn：返回按钮。
+m_methodGroup：异常处理方式 RadioButton 组。
+m_judgeTextEdit：情况说明输入框。
+m_submitBtn：提交按钮。
+m_contentWidget：情况判定区域容器。
+
+新增函数：
+setRepairData。
+initUI。
+rebuildInfo。
+clearInfo。
+createTitleLabel。
+createValueLabel。
+createImageButton。
+createImageLinkLabel。
+displayText。
+
+2. ui/repairjudgepage.cpp
+
+修改函数：RepairJudgePage::RepairJudgePage
+修改内容：
+设置对象名，初始化 UI，并刷新异常品信息。
+
+新增函数：RepairJudgePage::setRepairData
+作用：
+接收维修站传来的当前行数据，并调用 rebuildInfo 刷新显示。
+
+新增函数：RepairJudgePage::initUI
+作用：
+创建完整维修判定页面框架。
+
+页面结构：
+标题栏：维修判定、保存、返回。
+异常品信息区：以表单形式显示异常品数据。
+情况判定区：异常处理方式、问题照片、说明输入、提交。
+
+新增函数：RepairJudgePage::rebuildInfo
+作用：
+根据 m_rowData 重新生成异常品信息。
+字段包括异常处理单号、返工任务单号或生产任务单号、生产工艺路线、产品型号、产品SN、异常数量、异常类型、异常现象、问题照片、异常上报工序、异常上报时间、产线编码、工作站编号、上报人员等。
+
+新增函数：RepairJudgePage::clearInfo
+作用：
+刷新前清空旧的信息控件，避免多次进入页面后内容重复。
+
+新增函数：RepairJudgePage::createTitleLabel
+作用：
+创建字段标题标签。
+
+新增函数：RepairJudgePage::createValueLabel
+作用：
+创建字段值标签。
+
+新增函数：RepairJudgePage::createImageButton
+作用：
+创建图片查看按钮样式。
+
+新增函数：RepairJudgePage::createImageLinkLabel
+作用：
+创建“查看图片”链接。
+点击后输出 qDebug 调试信息。
+如果 abnormalImage 是有效本地路径，则打开 ImageViewWidget 预览图片。
+如果文件不存在，则输出 qDebug，等待后续接口返回真实图片路径。
+
+新增函数：RepairJudgePage::displayText
+作用：
+字段为空时显示“-”，否则显示真实值。
+
+重要调整：
+异常处理方式使用 tr("让步")、tr("误判")、tr("返工")、tr("报废")。
+删除了之前不好读的十六进制中文字符串。
+
+修改效果：
+维修判定页面结构清晰。
+异常品信息和情况判定分区明确。
+问题照片入口保留，并有 qDebug 方便后续调试。
+
+
+七、返工任务单界面结构改造
+
+对应已有说明文件：
+返工任务单界面修改说明.txt
+
+整体思路：
+返工任务单与工序站点页面高度相似，因此不重新复制一套完整页面，而是复用 ProcessStationPage。
+通过显示模式控制左侧是普通工序站点结构，还是返工任务单结构。
+右侧工艺信息新增更换物料信息表格。
+
+修改文件与函数：
+
+1. ui/processstationpage.h
+
+新增函数：ProcessStationPage::setReworkTaskMode
+作用：
+切换普通工序站点模式和返工任务单模式。
+
+新增枚举：ProcessStationLeftPanel::DisplayMode
+枚举值：
+NormalTask。
+ReworkTask。
+
+新增函数：ProcessStationLeftPanel::setDisplayMode
+作用：
+根据模式切换左侧显示。
+
+新增函数：ProcessStationLeftPanel::setAbnormalInfoValue
+作用：
+填充异常品信息。
+
+新增函数：ProcessStationLeftPanel::setReworkTaskStatusValue
+作用：
+填充返工任务单状态。
+
+拆分函数：
+createTaskWidget。
+createTaskTitleWidget。
+createTaskTable。
+
+新增函数：ProcessStationRightPanel::setReplacementMaterialVisible
+作用：
+后续权限接入时控制更换物料信息页签显示。
+
+新增函数：ProcessStationRightPanel::replacementMaterialTabIndex
+作用：
+统一维护更换物料信息页签下标。
+
+2. ui/processstationpage.cpp
+
+新增函数：ProcessStationPage::setReworkTaskMode
+修改内容：
+普通模式显示任务单信息 + 任务单状态。
+返工模式显示异常品信息 + 返工任务单状态。
+右侧显示更换物料信息页签。
+
+修改函数：ProcessStationLeftPanel::ProcessStationLeftPanel
+修改内容：
+增加异常品信息示例数据。
+增加返工任务单状态示例数据。
+默认仍保持普通工序站点模式。
+
+修改函数：ProcessStationLeftPanel::initUI
+修改内容：
+左侧创建三块区域：
+任务单信息。
+异常品信息。
+任务单状态。
+扫码过站保持不变。
+
+新增函数：ProcessStationLeftPanel::createTaskTitleWidget
+作用：
+创建左侧区域标题栏。
+
+新增函数：ProcessStationLeftPanel::createTaskTable
+作用：
+创建左侧两列表格。
+
+新增函数：ProcessStationLeftPanel::abnormalInfoKeys
+字段：
+异常处理单号、返工任务单号、生产工艺流程、异常上报工序、异常类型、异常数量、异常图片。
+
+新增函数：ProcessStationLeftPanel::setDisplayMode
+作用：
+普通模式隐藏异常品信息。
+返工模式隐藏任务单信息，并将状态标题改为返工任务单状态。
+
+修改函数：ProcessStationRightPanel::Tabs
+修改内容：
+新增更换物料信息页签。
+
+修改函数：ProcessStationRightPanel::createProxy
+修改内容：
+新增 productSNCode 和 materialSN 搜索字段。
+
+修改函数：ProcessStationRightPanel::updateSearchBarByTab
+修改内容：
+更换物料信息页签使用产品SN筛选区。
+
+修改函数：ProcessStationRightPanel::updateTableModelByTab
+修改内容：
+切换到更换物料信息页签时，模型类型切换为 ReplacementMaterial。
+
+3. core/processstationmodel.h
+
+修改枚举：ProcessStationModel::TableType
+新增 ReplacementMaterial。
+
+新增函数声明：
+setReplacementMaterialHeader。
+setReplacementMaterialData。
+
+4. core/processstationmodel.cpp
+
+修改函数：ProcessStationModel::setTableType
+新增 ReplacementMaterial 分支。
+
+新增函数：ProcessStationModel::setReplacementMaterialHeader
+表头：
+产品SN码、物料类型、物料SN、EPR编码、物料批次号、物料名称、物料型号。
+
+新增函数：ProcessStationModel::setReplacementMaterialData
+增加被更换物料和更换物料示例数据。
+
+修改效果：
+返工任务单页面可以复用工序站点页面。
+高级权限模式下左侧显示异常品信息和返工任务单状态。
+右侧新增更换物料信息表格。
+
+
+八、已有说明文件清单
+
+这些文件已经在项目根目录中：
+
+1. placeholderText修改说明.txt
+说明表格输入框提示文字的改造。
+
+2. 自适应宽度修改说明.txt
+说明表格和搜索区自适应宽度调整。
+
+3. 表格列宽和筛选图标修改说明.txt
+说明操作列、日期列、优先级列、筛选图标等显示问题修复。
+
+4. 搜索字段配置化修改说明.txt
+说明 FieldFilterProxyModel 搜索字段从写死改为 addSearchFields 配置。
+
+5. 搜索区按钮修改说明.txt
+说明生产任务、维修站、工序站点搜索区按钮规则调整。
+
+6. 返工任务单界面修改说明.txt
+说明返工任务单页面结构和更换物料信息表格。
+
+
+九、验证情况
+
+这些大改均已进行过 Debug 构建验证。
+构建命令：
+nmake /f Makefile.Debug
+
+构建结果：
+通过。
+
+仍存在项目原有 NMAKE U4004 警告，不是这些修改新增的问题。
