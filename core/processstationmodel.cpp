@@ -1,5 +1,6 @@
 #include "processstationmodel.h"
 #include <QMessageBox>
+#include <QDebug>
 
 ProcessStationModel::ProcessStationModel(QObject *parent)
     : BaseTableModel(parent)
@@ -32,7 +33,14 @@ void ProcessStationModel::setTableType(TableType type)
         setToolEquipmentHeader();
         setToolEquipmentData();
         break;
+
+    case ReplacementMaterial:
+        setReplacementMaterialHeader();
+        setReplacementMaterialData();
+        break;
     }
+
+    qDebug() << __FUNCTION__ << "ProcessStationModel table type:" << static_cast<int>(type);
 }
 
 ProcessStationModel::TableType ProcessStationModel::tableType() const
@@ -227,6 +235,70 @@ void ProcessStationModel::setToolEquipmentData()
     });
 
     setRows(rows);
+}
+
+void ProcessStationModel::setReplacementMaterialHeader()
+{
+    m_columns =
+        {
+            {"产品SN码",   "productSNCode", 180, true, false, false, Qt::AlignCenter, ColumnType::Normal, QHeaderView::ResizeToContents},
+            {"物料类型",   "materialType",  140, true, false, false, Qt::AlignCenter, ColumnType::Normal, QHeaderView::ResizeToContents},
+            {"物料SN",     "materialSN",    200, true, false, false, Qt::AlignCenter, ColumnType::Normal, QHeaderView::ResizeToContents},
+            {"EPR编码",    "EPR",           150, true, false, false, Qt::AlignCenter, ColumnType::Normal, QHeaderView::ResizeToContents},
+            {"物料批次号", "materialBatch", 180, true, false, false, Qt::AlignCenter, ColumnType::Normal, QHeaderView::ResizeToContents},
+            {"物料名称",   "materialName",  180, true, false, false, Qt::AlignCenter, ColumnType::Normal, QHeaderView::ResizeToContents},
+            {"物料型号",   "materialModel", 220, true, false, false, Qt::AlignCenter, ColumnType::Normal, QHeaderView::ResizeToContents}
+        };
+
+    qDebug() << __FUNCTION__ << "replacement material columns:" << m_columns.size();
+}
+
+void ProcessStationModel::setReplacementMaterialData()
+{
+    QVector<QVariantMap> rows;
+
+    rows.append({
+        {"productSNCode", "12345345678"},
+        {"materialType", "被更换物料"},
+        {"materialSN", "ZX701-2-2034012524005"},
+        {"EPR", "ZX701-2-2034"},
+        {"materialBatch", "012524"},
+        {"materialName", "微波控制板"},
+        {"materialModel", "ZXCP6H4_RF_K7FCTRL_V03_I02"}
+    });
+
+    rows.append({
+        {"productSNCode", "12345345678"},
+        {"materialType", "更换物料"},
+        {"materialSN", "ZX701-2-2034012524008"},
+        {"EPR", "ZX701-2-2034"},
+        {"materialBatch", "012524"},
+        {"materialName", "微波控制板"},
+        {"materialModel", "ZXCP6H4_RF_K7FCTRL_V03_I03"}
+    });
+
+    rows.append({
+        {"productSNCode", "12345345677"},
+        {"materialType", "被更换物料"},
+        {"materialSN", "ZX701-2-2034012524001"},
+        {"EPR", "ZX701-2-2034"},
+        {"materialBatch", "012524"},
+        {"materialName", "微波控制板"},
+        {"materialModel", "ZXCP6H4_RF_K7FCTRL_V03_I02"}
+    });
+
+    rows.append({
+        {"productSNCode", "12345345677"},
+        {"materialType", "更换物料"},
+        {"materialSN", "ZX701-2-2034012524007"},
+        {"EPR", "ZX701-2-2034"},
+        {"materialBatch", "012524"},
+        {"materialName", "微波控制板"},
+        {"materialModel", "ZXCP6H4_RF_K7FCTRL_V03_I03"}
+    });
+
+    setRows(rows);
+    qDebug() << __FUNCTION__ << "replacement material rows:" << rows.size();
 }
 
 void ProcessStationModel::requestMaterialCheckInfo(int row, const QString &labelCode)

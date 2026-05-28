@@ -12,6 +12,7 @@
 #include <QStyle>
 #include <QRadioButton>
 #include <QComboBox>
+#include <QDebug>
 
 ProcessStationPage::ProcessStationPage(QWidget *parent)
     : QWidget{parent}
@@ -42,6 +43,21 @@ void ProcessStationPage::initConnect()
             this, [=](bool isChecked){
                 m_leftPanel->setVisible(!isChecked);
             });
+}
+
+void ProcessStationPage::setReworkTaskMode(bool advancedPermission)
+{
+    if (m_leftPanel)
+    {
+        m_leftPanel->setDisplayMode(advancedPermission
+                                    ? ProcessStationLeftPanel::DisplayMode::ReworkTask
+                                    : ProcessStationLeftPanel::DisplayMode::NormalTask);
+    }
+
+    if (m_rightPanel)
+        m_rightPanel->setReplacementMaterialVisible(true);
+
+    qDebug() << __FUNCTION__ << "advanced permission:" << advancedPermission;
 }
 
 ProcessStationLeftPanel::ProcessStationLeftPanel(QWidget *parent)
@@ -76,6 +92,32 @@ ProcessStationLeftPanel::ProcessStationLeftPanel(QWidget *parent)
     // 填充表格
     setTaskInfoValue(taskInfoValues);
     setTaskStatusValue(taskStatusValues);
+
+    // 返工任务单高级权限使用的异常品信息示例数据，默认先创建并隐藏，后续接权限时直接切换显示。
+    TaskList abnormalInfoValues = {
+        "YC12352625123",          // 异常处理单号
+        "WN1K25001254005-R001",   // 返工任务单号
+        "ZX-IRLD-0292-124",       // 生产工艺流程
+        "三防冲击检查",             // 异常上报工序
+        "外观不良",                 // 异常类型
+        1,                         // 异常数量
+        tr("查看图片")              // 异常图片
+    };
+
+    TaskList reworkTaskStatusValues = {
+        0,               // 当前工序完成数量
+        0,               // 当前工序NG数量
+        "装配电检",        // 上一工序
+        "返工维修",        // 当前工序
+        "模块装配检验",     // 下一工序
+        "待更换物料",       // 物料核对状态
+        "Line1-OC-2"     // 工站编号
+    };
+
+    setAbnormalInfoValue(abnormalInfoValues);
+    setReworkTaskStatusValue(reworkTaskStatusValues);
+    setDisplayMode(DisplayMode::NormalTask);
+    qDebug() << "ProcessStationLeftPanel init, default mode NormalTask";
 }
 
 void ProcessStationLeftPanel::initUI()
@@ -84,19 +126,23 @@ void ProcessStationLeftPanel::initUI()
     mainLayout->setContentsMargins(0, 0, 0,0);
     mainLayout->setSpacing(8);
 
-    m_taskInfo = createTaskWidget(tr("任务单信息"), m_taskInfoTable);
-    m_taskStatus = createTaskWidget(tr("任务单状态"), m_taskStatusTable);
+    m_taskInfo = createTaskWidget(tr("任务单信息"), m_taskInfoTitleLabel, m_taskInfoTable);
+    m_abnormalInfo = createTaskWidget(tr("异常品信息"), m_abnormalInfoTitleLabel, m_abnormalInfoTable);
+    m_taskStatus = createTaskWidget(tr("任务单状态"), m_taskStatusTitleLabel, m_taskStatusTable);
     qDebug() << __FUNCTION__ <<"m_taskInfoTable: "<<m_taskInfoTable
+             <<"m_abnormalInfoTable:"<<m_abnormalInfoTable
              <<"m_taskStatusTable:"<<m_taskStatusTable;
     m_pass = createPassWidget(tr("扫码过站"));
 
     mainLayout->addWidget(m_taskInfo);
+    mainLayout->addWidget(m_abnormalInfo);
     mainLayout->addWidget(m_taskStatus);
     mainLayout->addWidget(m_pass);
     // 扫码区域占据剩余空间
     mainLayout->setStretch(0, 0);
     mainLayout->setStretch(1, 0);
-    mainLayout->setStretch(2, 1);
+    mainLayout->setStretch(2, 0);
+    mainLayout->setStretch(3, 1);
 }
 
 void ProcessStationLeftPanel::initConnect()
@@ -104,7 +150,7 @@ void ProcessStationLeftPanel::initConnect()
 
 }
 
-QWidget *ProcessStationLeftPanel::createTaskWidget(const QString &title, QTableWidget *&tableout)
+QWidget *ProcessStationLeftPanel::createTaskWidget(const QString &title, QLabel* &titleLabel, QTableWidget *&tableout)
 {
     QWidget* widget = new QWidget(this);
 
@@ -112,17 +158,68 @@ QWidget *ProcessStationLeftPanel::createTaskWidget(const QString &title, QTableW
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(4);
 
+    QWidget* titleWidget = createTaskTitleWidget(title, titleLabel, widget);
+    layout->addWidget(titleWidget);
+
+    QTableWidget* table = createTaskTable(widget);
+    tableout = table;
+
+    // 表格区域单独缩进，保持原左侧布局样式。
+    QHBoxLayout* tableLayout = new QHBoxLayout;
+    tableLayout->setContentsMargins(0, 0, 0, 0);
+    tableLayout->setSpacing(0);
+    tableLayout->addSpacing(28);
+    tableLayout->addWidget(table);
+
+    layout->addLayout(tableLayout);
+
+    auto toggleBtn = titleWidget->findChild<QToolButton*>();
+    if (toggleBtn)
+    {
+        connect(toggleBtn, &QToolButton::toggled,
+                this,
+                [=](bool checked)
+                {
+                    table->setVisible(checked);
+
+                    if (checked)
+                    {
+                        toggleBtn->setIcon(
+                            QIcon(":/res/common/expand.svg"));
+                        toggleBtn->setToolTip(tr("收起"));
+                    }
+                    else
+                    {
+                        toggleBtn->setIcon(
+                            QIcon(":/res/common/collapse.svg"));
+                        toggleBtn->setToolTip(tr("展开"));
+                    }
+                });
+    }
+
+    qDebug() << __FUNCTION__ << "created task widget:" << title
+             << "table:" << table;
+
+    return widget;
+}
+
+QWidget *ProcessStationLeftPanel::createTaskTitleWidget(const QString &title, QLabel* &titleLabel, QWidget *parentWidget)
+{
+    QWidget* widget = new QWidget(parentWidget);
+
     // =========================
     // 标题区域
     // =========================
 
-    QHBoxLayout* titleLayout = new QHBoxLayout;
+    QHBoxLayout* titleLayout = new QHBoxLayout(widget);
     titleLayout->setContentsMargins(0, 0, 0, 0);
 
     QLabel* icon = new QLabel(widget);
     QLabel* text = new QLabel(widget);
     icon->setPixmap(QPixmap(":res/common/rect.svg").scaled(24,24, Qt::KeepAspectRatio, Qt::SmoothTransformation));
     text->setText(title);
+    titleLabel = text;
+
     QToolButton* toggleBtn = new QToolButton(widget);
     toggleBtn->setCheckable(true);
     toggleBtn->setChecked(true);
@@ -131,6 +228,7 @@ QWidget *ProcessStationLeftPanel::createTaskWidget(const QString &title, QTableW
     toggleBtn->setFixedSize(20, 20);
     toggleBtn->setIconSize(QSize(16, 16));
     toggleBtn->setIcon(QIcon(":/res/common/expand.svg"));
+    toggleBtn->setToolTip(tr("收起"));
 
     // 去掉按钮边框和背景
     toggleBtn->setStyleSheet(R"(
@@ -140,47 +238,38 @@ QWidget *ProcessStationLeftPanel::createTaskWidget(const QString &title, QTableW
         padding: 0px;
     }
 )");
-    toggleBtn->setIcon(QIcon(":/res/common/expand.svg"));
 
     titleLayout->addWidget(icon);
     titleLayout->addWidget(text);
     titleLayout->addWidget(toggleBtn);
     titleLayout->addStretch();
 
-    layout->addLayout(titleLayout);
+    qDebug() << __FUNCTION__ << "created title:" << title;
+    return widget;
+}
 
-    // =========================
-    // 表格
-    // =========================
-
-    QTableWidget* table = new QTableWidget(7, 2, widget);
-    tableout = table;
-    qDebug() << __FUNCTION__ <<"当前表格："<<table<<"m_taskInfoTable:"<<m_taskInfoTable
-             <<"m_taskStatusTable:"<<m_taskStatusTable;
+QTableWidget *ProcessStationLeftPanel::createTaskTable(QWidget *parentWidget)
+{
+    QTableWidget* table = new QTableWidget(7, 2, parentWidget);
 
     table->horizontalHeader()->hide();
     table->verticalHeader()->hide();
-    // 基本属性
     table->setEditTriggers(QAbstractItemView::NoEditTriggers);
     table->setSelectionMode(QAbstractItemView::NoSelection);
     table->setFocusPolicy(Qt::NoFocus);
     table->setAlternatingRowColors(true);
     table->setShowGrid(true);
 
-    //table->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-    //table->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
     table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    // 设置初始比例（只有在表格第一次显示时生效，之后由 Stretch 保持比例）
     table->setColumnWidth(0, 45);
     table->setColumnWidth(1, 55);
     table->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    // 初始化单元格
+
     for (int row = 0; row < 7; ++row)
     {
         QTableWidgetItem* item0 = new QTableWidgetItem;
         QTableWidgetItem* item1 = new QTableWidgetItem;
 
-        // 设置文本水平和垂直居中
         item0->setTextAlignment(Qt::AlignCenter);
         item1->setTextAlignment(Qt::AlignCenter);
 
@@ -188,44 +277,12 @@ QWidget *ProcessStationLeftPanel::createTaskWidget(const QString &title, QTableW
         table->setItem(row, 1, item1);
     }
 
-    // 固定高度
     int height =
         table->rowCount() * table->verticalHeader()->defaultSectionSize() + 4;
     table->setFixedHeight(height);
 
-    // 替代 layout->addWidget(table);
-    QHBoxLayout* tableLayout = new QHBoxLayout;
-    tableLayout->setContentsMargins(0, 0, 0, 0);
-    tableLayout->setSpacing(0);
-    tableLayout->addSpacing(28);
-    tableLayout->addWidget(table);
-
-    layout->addLayout(tableLayout);
-
-    connect(toggleBtn, &QToolButton::toggled,
-            this,
-            [=](bool checked)
-            {
-                // checked = true  -> 展开
-                // checked = false -> 收起
-
-                table->setVisible(checked);
-
-                if (checked)
-                {
-                    toggleBtn->setIcon(
-                        QIcon(":/res/common/expand.svg"));
-                    toggleBtn->setToolTip("收起");
-                }
-                else
-                {
-                    toggleBtn->setIcon(
-                        QIcon(":/res/common/collapse.svg"));
-                    toggleBtn->setToolTip("展开");
-                }
-            });
-
-    return widget;
+    qDebug() << __FUNCTION__ << "created table:" << table;
+    return table;
 }
 
 QWidget *ProcessStationLeftPanel::createPassWidget(const QString &title)
@@ -418,6 +475,20 @@ TaskList ProcessStationLeftPanel::taskStatusKeys() const
     return keys;
 }
 
+TaskList ProcessStationLeftPanel::abnormalInfoKeys() const
+{
+    TaskList keys = {
+        tr("异常处理单号"),
+        tr("返工任务单号"),
+        tr("生产工艺流程"),
+        tr("异常上报工序"),
+        tr("异常类型"),
+        tr("异常数量"),
+        tr("异常图片")
+    };
+    return keys;
+}
+
 void ProcessStationLeftPanel::setTaskData(QTableWidget *table, const TaskList &keys, const TaskList &values)
 {
     if (!table)
@@ -458,6 +529,47 @@ void ProcessStationLeftPanel::setTaskStatusValue(TaskList &values)
     setTaskData(m_taskStatusTable, taskStatusKeys(), values);
 }
 
+void ProcessStationLeftPanel::setAbnormalInfoValue(TaskList &values)
+{
+    m_abnormalInfoValue = values;
+    setTaskData(m_abnormalInfoTable, abnormalInfoKeys(), values);
+    qDebug() << __FUNCTION__ << "rows:" << values.size();
+}
+
+void ProcessStationLeftPanel::setReworkTaskStatusValue(TaskList &values)
+{
+    m_reworkTaskStatusValue = values;
+    qDebug() << __FUNCTION__ << "rows:" << values.size();
+
+    if (m_displayMode == DisplayMode::ReworkTask)
+        setTaskData(m_taskStatusTable, taskStatusKeys(), values);
+}
+
+void ProcessStationLeftPanel::setDisplayMode(DisplayMode mode)
+{
+    m_displayMode = mode;
+
+    const bool isReworkTask = (mode == DisplayMode::ReworkTask);
+
+    if (m_taskInfo)
+        m_taskInfo->setVisible(!isReworkTask);
+
+    if (m_abnormalInfo)
+        m_abnormalInfo->setVisible(isReworkTask);
+
+    if (m_taskStatusTitleLabel)
+        m_taskStatusTitleLabel->setText(isReworkTask ? tr("返工维修任务单状态") : tr("任务单状态"));
+
+    if (isReworkTask)
+        setTaskData(m_taskStatusTable, taskStatusKeys(), m_reworkTaskStatusValue);
+    else
+        setTaskData(m_taskStatusTable, taskStatusKeys(), m_taskStatusValue);
+
+    qDebug() << __FUNCTION__ << "mode:" << (isReworkTask ? "ReworkTask" : "NormalTask")
+             << "taskInfoVisible:" << (m_taskInfo ? m_taskInfo->isVisible() : false)
+             << "abnormalInfoVisible:" << (m_abnormalInfo ? m_abnormalInfo->isVisible() : false);
+}
+
 
 ProcessStationRightPanel::ProcessStationRightPanel(QWidget *parent)
     : BasePageWidget(parent)
@@ -479,6 +591,10 @@ ProcessStationRightPanel::ProcessStationRightPanel(QWidget *parent)
 
     uploadLayout->addStretch();
     setupPage();
+    setReplacementMaterialVisible(m_replacementMaterialVisible);
+    qDebug() << "ProcessStationRightPanel init, replacement material tab visible:"
+             << m_replacementMaterialVisible;
+
     // m_tabWidget 为 BasePageWidget 中的成员
     connect(tabBar(), &QTabBar::currentChanged,
             this, &ProcessStationRightPanel::updateTableModelByTab);
@@ -488,11 +604,6 @@ ProcessStationRightPanel::ProcessStationRightPanel(QWidget *parent)
     updateTableModelByTab(tabBar()->currentIndex());
     updateSearchBarByTab(tabBar()->currentIndex());
 
-    // --------------------------------------------------------
-    // 8. 初始化显示第一个 Tab 的数据
-    // --------------------------------------------------------
-    updateTableModelByTab(tabBar()->currentIndex());
-    updateSearchBarByTab(tabBar()->currentIndex());
 }
 
 
@@ -543,6 +654,13 @@ TabConfigs ProcessStationRightPanel::Tabs() const
         QVariant::fromValue(PageDisplayType::PDF)
         , m_referencePdfPage
     });
+
+    tabs.append({
+        tr("更换物料信息"),
+        PageDisplayType::TABLE,
+        QVariant::fromValue(PageDisplayType::TABLE)
+    });
+
     return tabs;
 
 }
@@ -587,6 +705,8 @@ FieldFilterProxyModel *ProcessStationRightPanel::createProxy(const QVariant &dat
     proxy->addSearchFields("materialCode");
     proxy->addSearchFields("materialName");
     proxy->addSearchFields("processName");
+    proxy->addSearchFields("productSNCode");
+    proxy->addSearchFields("materialSN");
 
     // 使用 BasePageWidget 中创建的源模型
     proxy->setSourceModel(m_model);
@@ -616,9 +736,7 @@ void ProcessStationRightPanel::setupSearchLayout(QHBoxLayout *layout)
     m_productSnCombo->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
     m_productSnCombo->addItem(tr("全部"));
 
-    m_exportBtn = new QPushButton(tr("导出"), this);
-
-    m_exportBtn->setText(QString::fromUtf8("\xE4\xBF\x9D\xE5\xAD\x98"));
+    m_exportBtn = new QPushButton(tr("保存"), this);
 
     layout->addWidget(m_searchEdit);
     layout->addWidget(m_productSnLabel);
@@ -638,11 +756,13 @@ void ProcessStationRightPanel::updateSearchBarByTab(int index)
     if (!m_searchWidget)
         return;
 
+    const int replacementIndex = replacementMaterialTabIndex();
+
     const bool useKeywordSearch =
         index == 0 || index == 1;
 
     const bool useProductSnSearch =
-        index == 3 || index == 4;
+        index == 3 || index == 4 || index == replacementIndex;
 
     const bool showSearchControls =
         useKeywordSearch || useProductSnSearch;
@@ -682,6 +802,10 @@ void ProcessStationRightPanel::updateSearchBarByTab(int index)
 
     if (m_exportBtn)
         m_exportBtn->setVisible(true);
+
+    qDebug() << __FUNCTION__ << "tab index:" << index
+             << "keywordSearch:" << useKeywordSearch
+             << "productSnSearch:" << useProductSnSearch;
 }
 
 void ProcessStationRightPanel::updateTableModelByTab(int index)
@@ -708,9 +832,16 @@ void ProcessStationRightPanel::updateTableModelByTab(int index)
         model->setTableType(ProcessStationModel::ToolEquipment);
         break;
 
+    case 7:
+        model->setTableType(ProcessStationModel::ReplacementMaterial);
+        break;
+
     default:
         break;
     }
+
+    qDebug() << __FUNCTION__ << "tab index:" << index
+             << "table type:" << static_cast<int>(model->tableType());
 
     // 当前页面复用同一个模型，切换表格类型后需要重新设置列委托。
     auto table = qobject_cast<QTableView*>(m_stack->widget(index));
@@ -718,4 +849,24 @@ void ProcessStationRightPanel::updateTableModelByTab(int index)
     {
         setupColumns(table, table->property("tabData"));
     }
+}
+
+int ProcessStationRightPanel::replacementMaterialTabIndex() const
+{
+    return 7;
+}
+
+void ProcessStationRightPanel::setReplacementMaterialVisible(bool visible)
+{
+    m_replacementMaterialVisible = visible;
+
+    if (!tabBar())
+        return;
+
+    const int index = replacementMaterialTabIndex();
+    if (index < 0 || index >= tabBar()->count())
+        return;
+
+    tabBar()->setTabVisible(index, visible);
+    qDebug() << __FUNCTION__ << "visible:" << visible << "index:" << index;
 }

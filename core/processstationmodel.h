@@ -13,7 +13,8 @@ public:
         MaterialCheck,      // 物料核对
         ProcessRoute,       // 工艺路线
         ProcessMaterial,    // 工序物料信息
-        ToolEquipment       // 工具设备
+        ToolEquipment,      // 工具设备
+        ReplacementMaterial // 更换物料信息
     };
     Q_ENUM(TableType)
 
@@ -41,6 +42,10 @@ private:
     // 工具设备
     void setToolEquipmentHeader();
     void setToolEquipmentData();
+
+    // 更换物料信息
+    void setReplacementMaterialHeader();
+    void setReplacementMaterialData();
 
     //接口请求函数
     void requestMaterialCheckInfo(int row, const QString& labelCode);

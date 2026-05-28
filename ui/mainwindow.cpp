@@ -37,6 +37,10 @@ void MainWindow::initUI()
     m_stack->addWidget(m_pageProduction); //id = 0
 
     m_pageProcess = new ProcessStationPage(this);
+//-------------------------
+    m_pageProcess->setReworkTaskMode(false);
+    //-----------------------
+
     m_stack->addWidget(m_pageProcess);
     NavigationManager::instance()->registerPage(
         PageType::ProductionTask,
