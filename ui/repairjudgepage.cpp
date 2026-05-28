@@ -1,14 +1,19 @@
 #include "repairjudgepage.h"
+#include "imageviewwidget.h"
 
+#include <QDebug>
+#include <QFile>
 #include <QFrame>
+#include <QButtonGroup>
 #include <QGridLayout>
-#include <QGroupBox>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QPushButton>
 #include <QPixmap>
+#include <QRadioButton>
 #include <QScrollArea>
 #include <QSizePolicy>
+#include <QTextEdit>
 #include <QVBoxLayout>
 
 RepairJudgePage::RepairJudgePage(QWidget *parent)
@@ -42,14 +47,14 @@ void RepairJudgePage::initUI()
         Qt::KeepAspectRatio,
         Qt::SmoothTransformation));
 
-    auto title = new QLabel("维修判定", this);
+    auto title = new QLabel(tr("维修判定"), this);
     QFont titleFont = title->font();
     titleFont.setPointSize(14);
     titleFont.setBold(true);
     title->setFont(titleFont);
 
-    m_saveBtn = new QPushButton("保存", this);
-    m_backBtn = new QPushButton("返回", this);
+    m_saveBtn = new QPushButton(tr("保存"), this);
+    m_backBtn = new QPushButton(tr("返回"), this);
     m_saveBtn->setFixedSize(84, 32);
     m_backBtn->setFixedSize(84, 32);
 
@@ -60,18 +65,29 @@ void RepairJudgePage::initUI()
     titleLayout->addWidget(m_backBtn);
     mainLayout->addLayout(titleLayout);
 
-    auto infoGroup = new QGroupBox(this);
-    infoGroup->setTitle("");
+    auto infoGroup = new QFrame(this);
     infoGroup->setStyleSheet(
-        "QGroupBox{"
+        "QFrame{"
         "background:#ffffff;"
         "border:1px solid #dcdfe6;"
-        "margin-top:0;"
         "}");
 
     auto infoGroupLayout = new QVBoxLayout(infoGroup);
-    infoGroupLayout->setContentsMargins(12, 12, 12, 12);
+    infoGroupLayout->setContentsMargins(0, 0, 0, 0);
     infoGroupLayout->setSpacing(0);
+
+    auto infoTitle = new QLabel(tr("异常品信息"), infoGroup);
+    infoTitle->setFixedHeight(36);
+    infoTitle->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
+    infoTitle->setStyleSheet(
+        "QLabel{"
+        "padding-left:12px;"
+        "font-weight:bold;"
+        "color:#303133;"
+        "border:none;"
+        "border-bottom:1px solid #dcdfe6;"
+        "}");
+    infoGroupLayout->addWidget(infoTitle);
 
     auto scrollArea = new QScrollArea(infoGroup);
     scrollArea->setWidgetResizable(true);
@@ -92,13 +108,88 @@ void RepairJudgePage::initUI()
     mainLayout->addWidget(infoGroup);
 
     m_contentWidget = new QFrame(this);
+    m_contentWidget->setObjectName("judgePanel");
     m_contentWidget->setMinimumHeight(260);
     m_contentWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_contentWidget->setStyleSheet(
-        "QFrame{"
+        "QFrame#judgePanel{"
         "background:#ffffff;"
         "border:1px solid #dcdfe6;"
         "}");
+    auto judgeLayout = new QVBoxLayout(m_contentWidget);
+    judgeLayout->setContentsMargins(0, 0, 0, 0);
+    judgeLayout->setSpacing(0);
+
+    auto judgeTitle = new QLabel(tr("情况判定"), m_contentWidget);
+    judgeTitle->setFixedHeight(36);
+    judgeTitle->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
+    judgeTitle->setStyleSheet(
+        "QLabel{"
+        "padding-left:12px;"
+        "font-weight:bold;"
+        "color:#303133;"
+        "border:none;"
+        "border-bottom:1px solid #dcdfe6;"
+        "}");
+    judgeLayout->addWidget(judgeTitle);
+
+    auto judgeContent = new QWidget(m_contentWidget);
+    auto judgeContentLayout = new QVBoxLayout(judgeContent);
+    judgeContentLayout->setContentsMargins(12, 12, 12, 12);
+    judgeContentLayout->setSpacing(12);
+
+    auto methodLayout = new QHBoxLayout;
+    methodLayout->setContentsMargins(0, 0, 0, 0);
+    methodLayout->setSpacing(18);
+
+    auto methodLabel = new QLabel(tr("异常处理方式："), judgeContent);
+    methodLayout->addWidget(methodLabel);
+
+    m_methodGroup = new QButtonGroup(this);
+    const QStringList methods = {
+        tr("让步"),
+        tr("误判"),
+        tr("返工"),
+        tr("报废")
+    };
+
+    for (int i = 0; i < methods.size(); ++i)
+    {
+        auto radio = new QRadioButton(methods[i], judgeContent);
+        radio->setChecked(i == 0);
+        m_methodGroup->addButton(radio, i);
+        methodLayout->addWidget(radio);
+    }
+
+    methodLayout->addStretch();
+    judgeContentLayout->addLayout(methodLayout);
+
+    auto imageLayout = new QHBoxLayout;
+    imageLayout->setContentsMargins(0, 0, 0, 0);
+    imageLayout->setSpacing(8);
+
+    auto imageLabel = new QLabel(tr("问题照片："), judgeContent);
+    auto imageLink = createImageLinkLabel(judgeContent);
+
+    imageLayout->addWidget(imageLabel);
+    imageLayout->addWidget(imageLink);
+    imageLayout->addStretch();
+    judgeContentLayout->addLayout(imageLayout);
+
+    m_judgeTextEdit = new QTextEdit(judgeContent);
+    m_judgeTextEdit->setMinimumHeight(130);
+    judgeContentLayout->addWidget(m_judgeTextEdit, 1);
+
+    auto submitLayout = new QHBoxLayout;
+    submitLayout->setContentsMargins(0, 0, 0, 0);
+    submitLayout->addStretch();
+
+    m_submitBtn = new QPushButton(tr("提交"), judgeContent);
+    m_submitBtn->setFixedSize(84, 32);
+    submitLayout->addWidget(m_submitBtn);
+    judgeContentLayout->addLayout(submitLayout);
+
+    judgeLayout->addWidget(judgeContent, 1);
     mainLayout->addWidget(m_contentWidget, 1);
 }
 
@@ -189,9 +280,9 @@ QLabel* RepairJudgePage::createValueLabel(const QString& text)
     return label;
 }
 
-QPushButton* RepairJudgePage::createImageButton(const QString& text)
+QPushButton* RepairJudgePage::createImageButton(const QString& text, QWidget* parent)
 {
-    auto button = new QPushButton(text, m_infoWidget);
+    auto button = new QPushButton(text, parent ? parent : m_infoWidget);
     button->setCursor(Qt::PointingHandCursor);
     button->setFlat(true);
     button->setStyleSheet(
@@ -203,6 +294,47 @@ QPushButton* RepairJudgePage::createImageButton(const QString& text)
         "padding:0;"
         "}");
     return button;
+}
+
+QLabel* RepairJudgePage::createImageLinkLabel(QWidget* parent)
+{
+    auto label = new QLabel(parent ? parent : m_infoWidget);
+    label->setText(QString("<a href=\"open-image\" style=\"color:#409EFF;text-decoration:none;\">%1</a>")
+                       .arg(tr("查看图片")));
+    label->setTextFormat(Qt::RichText);
+    label->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
+    label->setOpenExternalLinks(false);
+    label->setCursor(Qt::PointingHandCursor);
+
+    connect(label, &QLabel::linkActivated, this, [this](const QString& link) {
+        const QString imagePath =
+            m_rowData.value("abnormalImage").toString();
+        const QString exceptionNo =
+            m_rowData.value("exceptionHandleNo").toString();
+
+        qDebug() << __FUNCTION__
+                 << "link =" << link
+                 << "exceptionHandleNo =" << exceptionNo
+                 << "abnormalImage =" << imagePath;
+
+        if (!QFile::exists(imagePath))
+        {
+            qDebug() << __FUNCTION__
+                     << "image file not exists, wait backend image path:"
+                     << imagePath;
+            return;
+        }
+
+        auto viewer = new ImageViewWidget;
+        viewer->resize(1200, 800);
+        viewer->show();
+        viewer->loadImage(imagePath);
+
+        qDebug() << __FUNCTION__
+                 << "image viewer opened:" << imagePath;
+    });
+
+    return label;
 }
 
 QString RepairJudgePage::displayText(const QString& field) const

@@ -6,7 +6,9 @@
 
 class QLabel;
 class QGridLayout;
+class QButtonGroup;
 class QPushButton;
+class QTextEdit;
 
 class RepairJudgePage : public QWidget
 {
@@ -22,7 +24,8 @@ private:
     void clearInfo();
     QLabel* createTitleLabel(const QString& text);
     QLabel* createValueLabel(const QString& text);
-    QPushButton* createImageButton(const QString& text);
+    QPushButton* createImageButton(const QString& text, QWidget* parent = nullptr);
+    QLabel* createImageLinkLabel(QWidget* parent = nullptr);
     QString displayText(const QString& field) const;
 
 private:
@@ -31,6 +34,9 @@ private:
     QGridLayout* m_infoLayout{nullptr};
     QPushButton* m_saveBtn{nullptr};
     QPushButton* m_backBtn{nullptr};
+    QButtonGroup* m_methodGroup{nullptr};
+    QTextEdit* m_judgeTextEdit{nullptr};
+    QPushButton* m_submitBtn{nullptr};
     QWidget* m_contentWidget{nullptr};
 };
 

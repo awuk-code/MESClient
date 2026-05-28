@@ -7,6 +7,8 @@
 #include <QFile>
 #include <QString>
 
+#include "repairjudgepage.h"
+
 typedef enum _LoginStatus{
     LoginFailed,
     UserExit,
@@ -71,9 +73,10 @@ int main(int argc, char *argv[])
     //     }
     // }while (status == LoginFailed);
 
+    RepairJudgePage P;
+    P.showMaximized();
     MainWindow w;
 
     w.showMaximized();
     return a.exec();
-
 }
