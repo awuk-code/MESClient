@@ -46,9 +46,7 @@ RepairStationPage::RepairStationPage(QWidget *parent)
                         if(field == "exceptionHandleNoLink" ||
                             field == "reworkTaskNo")
                         {
-                            //跳转到维修判定页面
-                            QString pageid("judge");
-                            emit sigPageSwitching(rowData, pageid);
+                            openRepairJudgePage(rowData);
                         }
                         else if(field == "abnormalImage")
                         {
@@ -119,22 +117,14 @@ void RepairStationPage::setupSearchLayout(QHBoxLayout *layout)
         if (tabBar()->currentIndex() != 0)
             return;
 
-        auto table = qobject_cast<QTableView*>(m_stack->currentWidget());
-        auto proxy = table
-            ? qobject_cast<FieldFilterProxyModel*>(table->model())
-            : nullptr;
-        auto model = qobject_cast<RepairStationModel*>(m_model);
-        if (!table || !proxy || !model)
+        auto table =
+            qobject_cast<QTableView*>(m_stack->currentWidget());
+        if (!table)
             return;
 
-        QModelIndex sourceIndex =
-            proxy->mapToSource(table->currentIndex());
-        if (!sourceIndex.isValid())
-            return;
-
-        emit sigPageSwitching(
-            model->rowData(sourceIndex.row()),
-            QStringLiteral("judge"));
+        const QVariantMap rowData =
+            rowDataFromProxyIndex(table->currentIndex());
+        openRepairJudgePage(rowData);
     });
 
     layout->addWidget(m_searchEdit);
@@ -150,6 +140,37 @@ void RepairStationPage::updateRepairJudgeButton()
 
     m_repairJudgeBtn->setEnabled(
         tabBar()->currentIndex() == 0);
+}
+
+QVariantMap RepairStationPage::rowDataFromProxyIndex(
+    const QModelIndex& proxyIndex) const
+{
+    auto proxy =
+        qobject_cast<const FieldFilterProxyModel*>(
+            proxyIndex.model());
+    auto model =
+        qobject_cast<RepairStationModel*>(m_model);
+
+    if (!proxy || !model)
+        return {};
+
+    QModelIndex sourceIndex =
+        proxy->mapToSource(proxyIndex);
+    if (!sourceIndex.isValid())
+        return {};
+
+    return model->rowData(sourceIndex.row());
+}
+
+void RepairStationPage::openRepairJudgePage(
+    const QVariantMap& rowData)
+{
+    if (rowData.isEmpty())
+        return;
+
+    emit sigPageSwitching(
+        rowData,
+        QStringLiteral("judge"));
 }
 
 bool RepairStationPage::isColumnVisibleForTab(

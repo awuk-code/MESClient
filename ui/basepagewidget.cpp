@@ -119,6 +119,7 @@ void BasePageWidget::setupSearchLayout(QHBoxLayout* layout)
     m_searchBtn->setIcon(QIcon(":/res/common/search.svg"));
 
     layout->addWidget(m_searchEdit);
+    layout->addWidget(m_searchBtn);
     layout->addStretch();
 
     m_exportBtn = new QPushButton("导出报表",this);

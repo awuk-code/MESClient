@@ -1,4 +1,5 @@
 #include "pdfviewwidget.h"
+#include "qtimer.h"
 
 #include <poppler/cpp/poppler-document.h>
 #include <poppler/cpp/poppler-page.h>
@@ -184,8 +185,8 @@ bool PdfViewWidget::loadPdf(
 
 void PdfViewWidget::renderPage()
 {
-    if (!m_document)
-        return;
+    qDebug() << __FUNCTION__ <<"开始渲染第"<<m_currentPage<<"页";
+    if (!m_document)   return;
 
     auto page =
         m_document->create_page(
@@ -193,56 +194,51 @@ void PdfViewWidget::renderPage()
 
     if (!page)
         return;
-    // 根据缩放比例提高DPI
 
-    double dpi = 150.0 * m_scaleFactor;
     poppler::page_renderer renderer;
 
+    renderer.set_render_hint(poppler::page_renderer::antialiasing, true);
+    renderer.set_render_hint(poppler::page_renderer::text_antialiasing,true);
+    renderer.set_render_hint(poppler::page_renderer::text_hinting, true);
+
+
+    // 根据缩放比例提高DPI
+    qreal dpr = devicePixelRatioF();
+    int dpi = 144.0 * m_scaleFactor * dpr;
+    qDebug() << __FUNCTION__ <<"渲染DPI："<<dpi<<"DPR:"<<dpr;
+
     auto image =renderer.render_page( page, dpi,dpi);
-    delete page;
 
     if (!image.is_valid())
-        return;
-
-    // Poppler -> QImage
-QImage qimage(image.width(),
-        image.height(),
-        QImage::Format_ARGB32);
-
-    for (int y = 0; y < image.height(); ++y)
     {
-        const uchar* src =
-            reinterpret_cast<const uchar*>(
-                image.data() +
-                y * image.bytes_per_row());
-
-        QRgb* dst =
-            reinterpret_cast<QRgb*>(
-                qimage.scanLine(y));
-
-        for (int x = 0; x < image.width(); ++x)
-        {
-            uchar b = src[x * 4 + 0];
-            uchar g = src[x * 4 + 1];
-            uchar r = src[x * 4 + 2];
-            uchar a = src[x * 4 + 3];
-
-            dst[x] = qRgba(r, g, b, a);
-        }
+        delete page;
+        return;
     }
+    qDebug() << __FUNCTION__ <<"渲染完成尺寸："<<image.width()<<image.height();
+    // Poppler -> QImage
+    QImage qimage(reinterpret_cast<const uchar*>(image.data()),
+        image.width(),
+                  image.height(),
+                  QImage::Format_ARGB32);
+
+    qimage.setDevicePixelRatio(dpr);
+
+
     m_scene->clear();
 
     m_pixmapItem =
         m_scene->addPixmap(
-            QPixmap::fromImage(qimage));
+            QPixmap::fromImage(qimage.copy()));
+    m_pixmapItem->setTransformationMode(Qt::SmoothTransformation);
+    m_pixmapItem->setShapeMode(QGraphicsPixmapItem::BoundingRectShape);
 
-    m_scene->setSceneRect(
-        m_pixmapItem->boundingRect());
+    m_view->resetTransform();
+    m_scene->setSceneRect(m_pixmapItem->boundingRect());
 
-    if (m_autoFit)
-    {
-        fitPageToView();
+    if (m_autoFit) {
+        QTimer::singleShot(0, this, &PdfViewWidget::fitPageToView);
     }
+    delete page;
 }
 
 void PdfViewWidget::updatePageLabel()
@@ -294,14 +290,14 @@ void PdfViewWidget::onNextPage()
 void PdfViewWidget::onZoomIn()
 {
     m_autoFit = false;
-    m_scaleFactor *= 1.2;
+    m_scaleFactor *= 1.1;
     renderPage();
 }
 
 void PdfViewWidget::onZoomOut()
 {
     m_autoFit = false;
-    m_scaleFactor *= 0.8;
+    m_scaleFactor *= 0.9;
     renderPage();
 }
 
