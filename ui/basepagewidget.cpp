@@ -119,7 +119,6 @@ void BasePageWidget::setupSearchLayout(QHBoxLayout* layout)
     m_searchBtn->setIcon(QIcon(":/res/common/search.svg"));
 
     layout->addWidget(m_searchEdit);
-    layout->addWidget(m_searchBtn);
     layout->addStretch();
 
     m_exportBtn = new QPushButton("导出报表",this);
@@ -252,16 +251,19 @@ void BasePageWidget::initConnect()
     connect(m_tabBar, &QTabBar::currentChanged, m_stack, &QStackedWidget::setCurrentIndex);
 
     //点击搜索
-    connect(m_searchBtn, &QPushButton::clicked, this,
-            [=]()
-            {
-                QString text = m_searchEdit->text();
-
-                for (auto proxy : std::as_const(m_proxies))
+    if (m_searchBtn)
+    {
+        connect(m_searchBtn, &QPushButton::clicked, this,
+                [=]()
                 {
-                    proxy->setKeyword(text);
-                }
-            });
+                    QString text = m_searchEdit->text();
+
+                    for (auto proxy : std::as_const(m_proxies))
+                    {
+                        proxy->setKeyword(text);
+                    }
+                });
+    }
     connect(this, &BasePageWidget::sigPageSwitching, this, &BasePageWidget::onPageLinkClicked);
     connect(this, &BasePageWidget::sigIMGView, this, &BasePageWidget::onImageLinkClicked);
 

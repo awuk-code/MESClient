@@ -6,6 +6,10 @@ RepairStationPage::RepairStationPage(QWidget *parent)
 {
     setObjectName("RepairStationPage");
     setupPage();
+    connect(tabBar(), &QTabBar::currentChanged,
+            this, &RepairStationPage::updateRepairJudgeButton);
+    updateRepairJudgeButton();
+
     auto model = qobject_cast<RepairStationModel*>(m_model);
     if(model)
     {
@@ -98,6 +102,54 @@ QString RepairStationPage::searchInfo() const
 void RepairStationPage::addWidgetToTitle(QHBoxLayout *layout)
 {
     layout->addStretch();
+}
+
+void RepairStationPage::setupSearchLayout(QHBoxLayout *layout)
+{
+    m_searchEdit = new QLineEdit(this);
+    m_searchEdit->setMinimumWidth(180);
+    m_searchEdit->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+
+    m_repairJudgeBtn =
+        new QPushButton(QString::fromUtf8("\xE7\xBB\xB4\xE4\xBF\xAE\xE5\x88\xA4\xE5\xAE\x9A"), this);
+    m_exportBtn =
+        new QPushButton(QString::fromUtf8("\xE5\xAF\xBC\xE5\x87\xBA\xE6\x8A\xA5\xE8\xA1\xA8"), this);
+
+    connect(m_repairJudgeBtn, &QPushButton::clicked, this, [this]() {
+        if (tabBar()->currentIndex() != 0)
+            return;
+
+        auto table = qobject_cast<QTableView*>(m_stack->currentWidget());
+        auto proxy = table
+            ? qobject_cast<FieldFilterProxyModel*>(table->model())
+            : nullptr;
+        auto model = qobject_cast<RepairStationModel*>(m_model);
+        if (!table || !proxy || !model)
+            return;
+
+        QModelIndex sourceIndex =
+            proxy->mapToSource(table->currentIndex());
+        if (!sourceIndex.isValid())
+            return;
+
+        emit sigPageSwitching(
+            model->rowData(sourceIndex.row()),
+            QStringLiteral("judge"));
+    });
+
+    layout->addWidget(m_searchEdit);
+    layout->addStretch();
+    layout->addWidget(m_repairJudgeBtn);
+    layout->addWidget(m_exportBtn);
+}
+
+void RepairStationPage::updateRepairJudgeButton()
+{
+    if (!m_repairJudgeBtn)
+        return;
+
+    m_repairJudgeBtn->setEnabled(
+        tabBar()->currentIndex() == 0);
 }
 
 bool RepairStationPage::isColumnVisibleForTab(

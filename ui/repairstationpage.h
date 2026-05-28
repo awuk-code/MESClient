@@ -15,11 +15,18 @@ public:
     QString pageTitle() const override;
     QString searchInfo()const override;
     void addWidgetToTitle(QHBoxLayout* layout) override;
+    void setupSearchLayout(QHBoxLayout* layout) override;
 
 protected:
     bool isColumnVisibleForTab(
         const ColumnConfig& column,
         const QVariant& tabData) const override;
+
+private:
+    void updateRepairJudgeButton();
+
+private:
+    QPushButton* m_repairJudgeBtn{nullptr};
 };
 
 #endif // REPAIRSTATIONPAGE_H

@@ -609,9 +609,6 @@ void ProcessStationRightPanel::setupSearchLayout(QHBoxLayout *layout)
     m_searchEdit->setMinimumWidth(180);
     m_searchEdit->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 
-    m_searchBtn = new QPushButton(this);
-    m_searchBtn->setIcon(QIcon(":/res/common/search.svg"));
-
     m_productSnLabel = new QLabel(tr("产品SN："), this);
 
     m_productSnCombo = new QComboBox(this);
@@ -621,8 +618,9 @@ void ProcessStationRightPanel::setupSearchLayout(QHBoxLayout *layout)
 
     m_exportBtn = new QPushButton(tr("导出"), this);
 
+    m_exportBtn->setText(QString::fromUtf8("\xE4\xBF\x9D\xE5\xAD\x98"));
+
     layout->addWidget(m_searchEdit);
-    layout->addWidget(m_searchBtn);
     layout->addWidget(m_productSnLabel);
     layout->addWidget(m_productSnCombo);
     layout->addStretch();
@@ -646,16 +644,22 @@ void ProcessStationRightPanel::updateSearchBarByTab(int index)
     const bool useProductSnSearch =
         index == 3 || index == 4;
 
-    const bool showSearchBar =
+    const bool showSearchControls =
         useKeywordSearch || useProductSnSearch;
 
-    m_searchWidget->setVisible(showSearchBar);
+    m_searchWidget->setVisible(true);
 
-    if (!showSearchBar)
+    if (!showSearchControls)
     {
         if (m_searchEdit)
+        {
             m_searchEdit->clear();
-        return;
+            m_searchEdit->setVisible(false);
+        }
+        if (m_productSnLabel)
+            m_productSnLabel->setVisible(false);
+        if (m_productSnCombo)
+            m_productSnCombo->setVisible(false);
     }
 
     if (m_searchEdit)
@@ -670,9 +674,6 @@ void ProcessStationRightPanel::updateSearchBarByTab(int index)
             m_searchEdit->clear();
     }
 
-    if (m_searchBtn)
-        m_searchBtn->setVisible(useKeywordSearch);
-
     if (m_productSnLabel)
         m_productSnLabel->setVisible(useProductSnSearch);
 
@@ -680,7 +681,7 @@ void ProcessStationRightPanel::updateSearchBarByTab(int index)
         m_productSnCombo->setVisible(useProductSnSearch);
 
     if (m_exportBtn)
-        m_exportBtn->setVisible(useKeywordSearch || useProductSnSearch);
+        m_exportBtn->setVisible(true);
 }
 
 void ProcessStationRightPanel::updateTableModelByTab(int index)
