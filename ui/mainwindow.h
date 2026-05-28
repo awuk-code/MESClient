@@ -26,6 +26,7 @@ protected:
 private:
     void initUI();
     void initConnect();
+    void updateSubHeaderNavigation(int index);
 
 
 private slots:

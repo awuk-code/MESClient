@@ -22,7 +22,8 @@ void SubHeaderWidget::initUI()
     QHBoxLayout* layout = new QHBoxLayout(this);
     layout->setContentsMargins(15,0,15,0);
 
-    m_path = new QLabel(QStringLiteral("索引 (生产任务 -> 生产任务列表)"), this);
+    m_pagePath = {QStringLiteral("生产任务"), QStringLiteral("生产任务列表")};
+    m_path = new QLabel(this);
     layout->addWidget(m_path);
     layout->addStretch();
 
@@ -39,6 +40,46 @@ void SubHeaderWidget::initUI()
     layout->addStretch();
     layout->addWidget(m_loginTime);
     layout->addWidget(m_currentTime);
+
+    updateNavigationText();
+}
+
+void SubHeaderWidget::setPageNavigation(const QStringList &pagePath)
+{
+    m_pagePath = pagePath;
+    updateNavigationText();
+    funcDebug() << "更新页面导航:" << m_pagePath.join(" -> ");
+}
+
+void SubHeaderWidget::setProcessNavigationVisible(bool visible)
+{
+    m_showProcessNavigation = visible;
+    updateNavigationText();
+    funcDebug() << "工序导航显示:" << visible;
+}
+
+void SubHeaderWidget::setCurrentProcessName(const QString &processName)
+{
+    m_currentProcessName = processName;
+    updateNavigationText();
+    funcDebug() << "当前工序:" << processName;
+}
+
+void SubHeaderWidget::updateNavigationText()
+{
+    QString text = QStringLiteral("索引 (%1)").arg(m_pagePath.join(QStringLiteral(" -> ")));
+
+    if (m_showProcessNavigation)
+    {
+        // TODO: 当前工序名称后续由接口返回后调用 setCurrentProcessName() 更新。
+        // 这里先保留工序导航占位，避免后面接接口时再调整页面结构。
+        const QString processName =
+            m_currentProcessName.isEmpty() ? QStringLiteral("--") : m_currentProcessName;
+        text += QStringLiteral("    当前工序：%1").arg(processName);
+    }
+
+    if (m_path)
+        m_path->setText(text);
 }
 
 void SubHeaderWidget::updateTime()

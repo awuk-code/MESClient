@@ -87,6 +87,7 @@ void MainWindow::initUI()
     //m_sidebar->setFixedWidth(80);
 
     setLayout(mainLayout);
+    updateSubHeaderNavigation(1);
 }
 
 void MainWindow::initConnect()
@@ -111,6 +112,43 @@ void MainWindow::onPageChanged(int index/*, QString &title*/)
 {
     funcDebug()<<"收到页面切换信号index= "<<index;
     m_stack->setCurrentIndex(index-1);
+    updateSubHeaderNavigation(index);
+}
+
+void MainWindow::updateSubHeaderNavigation(int index)
+{
+    if (!m_subHeader)
+        return;
+
+    m_subHeader->setProcessNavigationVisible(false);
+
+    switch (index)
+    {
+    case 1:
+        m_subHeader->setPageNavigation({QStringLiteral("生产任务"), QStringLiteral("生产任务列表")});
+        break;
+
+    case 2:
+        m_subHeader->setPageNavigation({QStringLiteral("工序站点")});
+        m_subHeader->setProcessNavigationVisible(true);
+        // TODO: 当前工序需要通过接口获取，接口返回后调用
+        // m_subHeader->setCurrentProcessName(processName) 刷新这里的工序导航。
+        m_subHeader->setCurrentProcessName(QString());
+        break;
+
+    case 3:
+        m_subHeader->setPageNavigation({QStringLiteral("维修站"), QStringLiteral("维修站列表")});
+        break;
+
+    default:
+        m_subHeader->setPageNavigation({QStringLiteral("未知页面")});
+        break;
+    }
+
+    // TODO: 返工任务单接入独立导航或权限跳转后，在这里设置：
+    // m_subHeader->setPageNavigation({QStringLiteral("维修站"), QStringLiteral("返工任务单")});
+    // m_subHeader->setProcessNavigationVisible(true);
+    // m_subHeader->setCurrentProcessName(processNameFromApi);
 }
 
 void MainWindow::openPage(const QString &pageId)
