@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QMap>
+#include <QVariantMap>
 
 #include "NavPageType.h"
 
@@ -19,10 +20,13 @@ public:
     void registerPage(PageType type,
         QWidget* page);
     QWidget* page(PageType type) const;
+    void setPageData(PageType type, const QVariantMap& data);
+    QVariantMap pageData(PageType type) const;
 
     bool contains(PageType type) const;
 
     void openPage(PageType type);
+    void openPage(PageType type, const QVariantMap& data);
 
     PageType currentPage() const;
 signals:
@@ -30,6 +34,7 @@ signals:
 
 private:
      QMap<PageType, QWidget*> m_pageMap;
+     QMap<PageType, QVariantMap> m_pageDataMap;
 
      PageType m_currentPage =
          PageType::Unknown;

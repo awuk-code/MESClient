@@ -1,5 +1,6 @@
 #include "repairstationpage.h"
 #include "repairstationmodel.h"
+#include "navigationmanager.h"
 
 RepairStationPage::RepairStationPage(QWidget *parent)
     : BasePageWidget(parent)
@@ -43,10 +44,13 @@ RepairStationPage::RepairStationPage(QWidget *parent)
                         QString exceptionNo =
                             rowData.value("exceptionHandleNo").toString();
 
-                        if(field == "exceptionHandleNoLink" ||
-                            field == "reworkTaskNo")
+                        if(field == "exceptionHandleNoLink")
                         {
                             openRepairJudgePage(rowData);
+                        }
+                        else if(field == "reworkTaskNo")
+                        {
+                            openReworkTaskPage(rowData);
                         }
                         else if(field == "abnormalImage")
                         {
@@ -168,9 +172,20 @@ void RepairStationPage::openRepairJudgePage(
     if (rowData.isEmpty())
         return;
 
-    emit sigPageSwitching(
-        rowData,
-        QStringLiteral("judge"));
+    NavigationManager::instance()->openPage(
+        PageType::RepairJudge,
+        rowData);
+}
+
+void RepairStationPage::openReworkTaskPage(
+    const QVariantMap& rowData)
+{
+    if (rowData.isEmpty())
+        return;
+
+    NavigationManager::instance()->openPage(
+        PageType::ReworkTask,
+        rowData);
 }
 
 bool RepairStationPage::isColumnVisibleForTab(

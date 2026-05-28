@@ -26,6 +26,7 @@ private:
     void updateRepairJudgeButton();
     QVariantMap rowDataFromProxyIndex(const QModelIndex& proxyIndex) const;
     void openRepairJudgePage(const QVariantMap& rowData);
+    void openReworkTaskPage(const QVariantMap& rowData);
 
 private:
     QPushButton* m_repairJudgeBtn{nullptr};

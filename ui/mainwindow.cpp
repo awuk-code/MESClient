@@ -37,13 +37,10 @@ void MainWindow::initUI()
     m_stack->addWidget(m_pageProduction); //id = 0
 
     m_pageProcess = new ProcessStationPage(this);
-//-------------------------
     m_pageProcess->setReworkTaskMode(false);
-    //-----------------------
-
     m_stack->addWidget(m_pageProcess);
     NavigationManager::instance()->registerPage(
-        PageType::ProductionTask,
+        PageType::ProcessStation,
         m_pageProcess);
     m_pageRepairStation = new RepairStationPage(this);
 
@@ -51,6 +48,19 @@ void MainWindow::initUI()
     NavigationManager::instance()->registerPage(
         PageType::RepairStation,
         m_pageRepairStation);
+
+    m_pageRepairJudge = new RepairJudgePage(this);
+    m_stack->addWidget(m_pageRepairJudge);
+    NavigationManager::instance()->registerPage(
+        PageType::RepairJudge,
+        m_pageRepairJudge);
+
+    m_pageReworkTask = new ProcessStationPage(this);
+    m_pageReworkTask->setReworkTaskMode(true);
+    m_stack->addWidget(m_pageReworkTask);
+    NavigationManager::instance()->registerPage(
+        PageType::ReworkTask,
+        m_pageReworkTask);
 
     m_stack->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
@@ -97,8 +107,8 @@ void MainWindow::initConnect()
 
     //   connect(ProcessStationRightPanel, &ProcessStationRightPanel::requestOpenPage, this, &MainWindow::openPage);
 
-    // connect(NavigationManager::instance(), &NavigationManager::sigOpenPage,
-    //          this, &MainWindow::onOpenPage);
+    connect(NavigationManager::instance(), &NavigationManager::sigOpenPage,
+             this, &MainWindow::onOpenPage);
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -145,10 +155,49 @@ void MainWindow::updateSubHeaderNavigation(int index)
         break;
     }
 
-    // TODO: 返工任务单接入独立导航或权限跳转后，在这里设置：
-    // m_subHeader->setPageNavigation({QStringLiteral("维修站"), QStringLiteral("返工任务单")});
-    // m_subHeader->setProcessNavigationVisible(true);
-    // m_subHeader->setCurrentProcessName(processNameFromApi);
+}
+
+void MainWindow::updateSubHeaderNavigation(PageType type)
+{
+    if (!m_subHeader)
+        return;
+
+    m_subHeader->setProcessNavigationVisible(false);
+
+    switch (type)
+    {
+    case PageType::ProductionTask:
+        m_subHeader->setPageNavigation({QStringLiteral("生产任务"), QStringLiteral("生产任务列表")});
+        break;
+
+    case PageType::ProcessStation:
+        m_subHeader->setPageNavigation({QStringLiteral("工序站点")});
+        m_subHeader->setProcessNavigationVisible(true);
+        // TODO: 当前工序需要通过接口获取，接口返回后调用
+        // m_subHeader->setCurrentProcessName(processName) 刷新这里的工序导航。
+        m_subHeader->setCurrentProcessName(QString());
+        break;
+
+    case PageType::RepairStation:
+        m_subHeader->setPageNavigation({QStringLiteral("维修站"), QStringLiteral("维修站列表")});
+        break;
+
+    case PageType::RepairJudge:
+        m_subHeader->setPageNavigation({QStringLiteral("维修站"), QStringLiteral("维修判定")});
+        break;
+
+    case PageType::ReworkTask:
+        m_subHeader->setPageNavigation({QStringLiteral("维修站"), QStringLiteral("返工任务单")});
+        m_subHeader->setProcessNavigationVisible(true);
+        // TODO: 当前工序需要通过接口获取，接口返回后调用
+        // m_subHeader->setCurrentProcessName(processName) 刷新返工任务单工序导航。
+        m_subHeader->setCurrentProcessName(QString());
+        break;
+
+    default:
+        m_subHeader->setPageNavigation({QStringLiteral("未知页面")});
+        break;
+    }
 }
 
 void MainWindow::openPage(const QString &pageId)
@@ -175,5 +224,12 @@ void MainWindow::onOpenPage(PageType type)
         return;
     }
 
+    if (type == PageType::RepairJudge && m_pageRepairJudge)
+    {
+        m_pageRepairJudge->setRepairData(
+            NavigationManager::instance()->pageData(type));
+    }
+
     m_stack->setCurrentWidget(page);
+    updateSubHeaderNavigation(type);
 }

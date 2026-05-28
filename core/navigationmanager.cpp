@@ -43,6 +43,17 @@ QWidget *NavigationManager::page(PageType type) const
     return m_pageMap.value(type, nullptr);
 }
 
+void NavigationManager::setPageData(PageType type, const QVariantMap &data)
+{
+    m_pageDataMap.insert(type, data);
+    funcDebug() << "set page data";
+}
+
+QVariantMap NavigationManager::pageData(PageType type) const
+{
+    return m_pageDataMap.value(type);
+}
+
 bool NavigationManager::contains(PageType type) const
 {
     return m_pageMap.contains(type);
@@ -69,6 +80,21 @@ void NavigationManager::openPage(PageType type)
 
     funcDebug()
         << "open page";
+}
+
+void NavigationManager::openPage(PageType type, const QVariantMap &data)
+{
+    setPageData(type, data);
+
+    if (m_currentPage == type)
+    {
+        emit sigOpenPage(type);
+        funcDebug()
+            << "refresh current page";
+        return;
+    }
+
+    openPage(type);
 }
 
 PageType NavigationManager::currentPage() const

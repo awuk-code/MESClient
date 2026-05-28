@@ -1,0 +1,483 @@
+当前版本页面导航与返工任务单修改说明
+
+一、整体修改思路
+
+本次修改的核心目标是把软件中已经完成的几个页面统一纳入页面导航体系，并为后续接口和权限接入留下明确入口。
+
+修改前的问题：
+1. NavigationManager 只是部分注册页面，没有真正参与维修判定、返工任务单等业务页面跳转。
+2. 工序站点页面注册时 PageType 写错，导致 NavigationManager 无法正确识别工序站点页面。
+3. 维修判定页面和返工任务单页面没有作为独立页面注册，页面跳转逻辑不统一。
+4. SubHeaderWidget 只能显示固定文本，不能根据当前页面显示页面导航，也没有预留当前工序显示位置。
+5. 返工任务单和工序站点页面结构相似，需要复用原来的工序站点页面组件，减少重复代码。
+
+修改后的思路：
+1. PageType 中补充维修判定和返工任务单页面类型。
+2. NavigationManager 统一负责页面注册、页面打开和页面数据传递。
+3. MainWindow 只负责创建页面、注册页面、响应 NavigationManager 的页面打开信号并切换 QStackedWidget。
+4. RepairStationPage 中的异常处理单号、维修判定按钮、返工任务单号统一通过 NavigationManager 跳转。
+5. SubHeaderWidget 增加页面导航显示函数，同时预留当前工序显示入口。
+6. 返工任务单复用 ProcessStationPage，只通过 setReworkTaskMode 切换左侧显示结构。
+
+
+二、修改文件：commFunc/NavPageType.h
+
+1. 修改 PageType 枚举。
+
+新增页面类型：
+RepairJudge：维修判定页面。
+ReworkTask：返工任务单页面。
+
+修改目的：
+让维修判定页面和返工任务单页面可以和生产任务、工序站点、维修站一样，通过统一的 PageType 进行注册和跳转。
+
+
+三、修改文件：core/navigationmanager.h
+
+1. 新增 setPageData 函数。
+
+函数作用：
+保存指定页面打开时携带的数据。
+
+使用场景：
+从维修站点击某一行进入维修判定页面时，需要把当前行数据传给维修判定页面显示。
+
+2. 新增 pageData 函数。
+
+函数作用：
+根据 PageType 获取之前保存的页面数据。
+
+使用场景：
+MainWindow 在打开 RepairJudge 页面时，通过 pageData(PageType::RepairJudge) 取出维修站传过来的行数据，然后调用 RepairJudgePage::setRepairData。
+
+3. 新增 openPage(PageType type, const QVariantMap& data) 函数。
+
+函数作用：
+打开页面的同时携带当前行数据。
+
+修改目的：
+避免页面跳转时还需要额外写一套数据传递逻辑，让 NavigationManager 同时负责“打开哪个页面”和“带什么数据过去”。
+
+4. 新增成员变量 m_pageDataMap。
+
+变量作用：
+保存每个页面对应的临时数据。
+
+
+四、修改文件：core/navigationmanager.cpp
+
+1. 新增 NavigationManager::setPageData 函数。
+
+具体修改：
+将 PageType 和 QVariantMap 保存到 m_pageDataMap 中。
+增加调试信息，方便确认页面数据是否写入。
+
+2. 新增 NavigationManager::pageData 函数。
+
+具体修改：
+从 m_pageDataMap 中按 PageType 返回页面数据。
+
+3. 新增 NavigationManager::openPage(PageType type, const QVariantMap& data) 函数。
+
+具体修改：
+先调用 setPageData 保存页面数据，再调用 openPage(type) 打开页面。
+
+特殊处理：
+如果当前页面已经是目标页面，也会重新发出 sigOpenPage(type) 信号。
+这样可以解决已经在维修判定页面时，再点击另一条异常处理单，页面不刷新的问题。
+
+
+五、修改文件：ui/mainwindow.h
+
+1. 新增 include repairjudgepage.h。
+
+修改目的：
+MainWindow 需要直接创建 RepairJudgePage 页面实例。
+
+2. 新增 updateSubHeaderNavigation(PageType type) 函数声明。
+
+函数作用：
+根据 NavigationManager 打开的 PageType 更新顶部导航。
+
+3. 新增成员变量 m_pageRepairJudge。
+
+变量作用：
+保存维修判定页面实例。
+
+4. 新增成员变量 m_pageReworkTask。
+
+变量作用：
+保存返工任务单页面实例。
+当前返工任务单复用 ProcessStationPage，通过 setReworkTaskMode(true) 显示返工任务单结构。
+
+
+六、修改文件：ui/mainwindow.cpp
+
+1. 修改 MainWindow::initUI 函数。
+
+具体修改：
+创建并注册生产任务页面：
+PageType::ProductionTask。
+
+创建并注册工序站点页面：
+PageType::ProcessStation。
+
+修复问题：
+之前工序站点页面错误注册成了 PageType::ProductionTask，现在已修正为 PageType::ProcessStation。
+
+创建并注册维修站页面：
+PageType::RepairStation。
+
+创建并注册维修判定页面：
+PageType::RepairJudge。
+
+创建并注册返工任务单页面：
+PageType::ReworkTask。
+
+返工任务单页面处理：
+使用 ProcessStationPage 创建页面，然后调用 setReworkTaskMode(true)，让页面显示返工任务单的高级权限布局。
+
+2. 修改 MainWindow::initConnect 函数。
+
+具体修改：
+打开 NavigationManager 的 sigOpenPage 信号连接。
+
+现在流程：
+NavigationManager::openPage(PageType)
+发出 sigOpenPage(PageType)
+MainWindow::onOpenPage(PageType)
+切换页面
+
+3. 修改 MainWindow::onOpenPage 函数。
+
+具体修改：
+通过 NavigationManager::page(type) 获取目标页面。
+如果目标页面是 RepairJudge，则先调用 m_pageRepairJudge->setRepairData，把维修站传过来的行数据传给维修判定页面。
+然后调用 m_stack->setCurrentWidget(page) 切换页面。
+最后调用 updateSubHeaderNavigation(type) 刷新顶部导航。
+
+4. 新增 MainWindow::updateSubHeaderNavigation(PageType type) 函数。
+
+函数作用：
+根据 PageType 更新顶部 SubHeaderWidget 的页面导航。
+
+当前显示规则：
+ProductionTask：生产任务 -> 生产任务列表。
+ProcessStation：工序站点，并显示当前工序占位。
+RepairStation：维修站 -> 维修站列表。
+RepairJudge：维修站 -> 维修判定。
+ReworkTask：维修站 -> 返工任务单，并显示当前工序占位。
+
+当前工序说明：
+工序站点和返工任务单都预留了当前工序显示。
+当前工序未来需要通过接口获取，接口返回后调用 m_subHeader->setCurrentProcessName(processName) 即可。
+
+5. 保留 MainWindow::updateSubHeaderNavigation(int index) 函数。
+
+函数作用：
+左侧菜单直接切换生产任务、工序站点、维修站时，继续根据菜单 index 更新导航。
+
+
+七、修改文件：ui/subheaderwidget.h
+
+1. 新增 setPageNavigation 函数。
+
+函数作用：
+设置页面导航路径。
+例如：生产任务 -> 生产任务列表。
+
+2. 新增 setProcessNavigationVisible 函数。
+
+函数作用：
+控制是否显示当前工序。
+
+使用场景：
+工序站点和返工任务单需要显示当前工序。
+生产任务、维修站、维修判定暂时不显示当前工序。
+
+3. 新增 setCurrentProcessName 函数。
+
+函数作用：
+设置当前工序名称。
+
+后续接口接入方式：
+接口返回当前工序后调用 setCurrentProcessName(processName)。
+
+4. 新增 updateNavigationText 函数。
+
+函数作用：
+统一刷新顶部导航文本。
+
+5. 新增成员变量 m_pagePath。
+
+变量作用：
+保存当前页面导航路径。
+
+6. 新增成员变量 m_currentProcessName。
+
+变量作用：
+保存当前工序名称。
+
+7. 新增成员变量 m_showProcessNavigation。
+
+变量作用：
+控制是否显示当前工序。
+
+
+八、修改文件：ui/subheaderwidget.cpp
+
+1. 修改 SubHeaderWidget::initUI 函数。
+
+具体修改：
+不再把 m_path 写成固定文本。
+改为初始化 m_pagePath，然后调用 updateNavigationText 统一生成导航文本。
+
+2. 新增 SubHeaderWidget::setPageNavigation 函数。
+
+具体修改：
+保存页面路径，并调用 updateNavigationText 刷新显示。
+增加调试信息，方便确认导航更新。
+
+3. 新增 SubHeaderWidget::setProcessNavigationVisible 函数。
+
+具体修改：
+设置 m_showProcessNavigation，并调用 updateNavigationText 刷新显示。
+增加调试信息，方便确认当前工序导航是否显示。
+
+4. 新增 SubHeaderWidget::setCurrentProcessName 函数。
+
+具体修改：
+保存当前工序名称，并刷新导航显示。
+增加调试信息，方便后续接口联调。
+
+5. 新增 SubHeaderWidget::updateNavigationText 函数。
+
+具体修改：
+按照 m_pagePath 生成“索引 (...)”文本。
+如果 m_showProcessNavigation 为 true，则追加“当前工序：xxx”。
+
+重要注释：
+函数中已经添加 TODO 注释：
+当前工序名称后续由接口返回后调用 setCurrentProcessName() 更新。
+
+
+九、修改文件：ui/repairstationpage.h
+
+1. 新增 openReworkTaskPage 函数声明。
+
+函数作用：
+打开返工任务单页面。
+
+修改目的：
+将“异常处理单号进入维修判定”和“返工任务单号进入返工任务单”拆开，避免两个入口都跳到同一个页面。
+
+
+十、修改文件：ui/repairstationpage.cpp
+
+1. 新增 include navigationmanager.h。
+
+修改目的：
+维修站页面需要通过 NavigationManager 打开维修判定和返工任务单页面。
+
+2. 修改 TextLinkDelegate::linkClicked 的处理逻辑。
+
+修改前：
+点击异常处理单号和返工任务单号都会调用 openRepairJudgePage。
+
+修改后：
+点击 exceptionHandleNoLink 调用 openRepairJudgePage，进入维修判定页面。
+点击 reworkTaskNo 调用 openReworkTaskPage，进入返工任务单页面。
+点击 abnormalImage 仍然保持查看图片逻辑。
+
+3. 修改 RepairStationPage::openRepairJudgePage 函数。
+
+具体修改：
+不再发 sigPageSwitching。
+改为调用 NavigationManager::instance()->openPage(PageType::RepairJudge, rowData)。
+
+作用：
+统一通过 NavigationManager 打开维修判定页面，并把当前行数据传过去。
+
+4. 新增 RepairStationPage::openReworkTaskPage 函数。
+
+具体修改：
+调用 NavigationManager::instance()->openPage(PageType::ReworkTask, rowData)。
+
+作用：
+点击待返工页的返工任务单号时，打开返工任务单页面。
+
+
+十一、修改文件：ui/processstationpage.h
+
+1. 新增 ProcessStationPage::setReworkTaskMode 函数。
+
+函数作用：
+切换当前 ProcessStationPage 是普通工序站点模式，还是返工任务单模式。
+
+2. 新增 ProcessStationLeftPanel::DisplayMode。
+
+模式说明：
+NormalTask：普通工序站点显示。
+ReworkTask：返工任务单显示。
+
+3. 新增 ProcessStationLeftPanel::setDisplayMode 函数。
+
+函数作用：
+控制左侧显示普通任务单信息，还是显示异常品信息和返工任务单状态。
+
+4. 新增 ProcessStationRightPanel::setReplacementMaterialVisible 函数。
+
+函数作用：
+后续根据权限控制右侧“更换物料信息”页签显示或隐藏。
+
+
+十二、修改文件：ui/processstationpage.cpp
+
+1. 新增 ProcessStationPage::setReworkTaskMode 函数。
+
+具体修改：
+高级返工模式时，左侧显示异常品信息和返工任务单状态。
+普通模式时，左侧显示任务单信息和任务单状态。
+右侧保持显示更换物料信息页签。
+
+2. 修改 ProcessStationLeftPanel::initUI 函数。
+
+具体修改：
+左侧由原来的两个信息区域变为三个信息区域：
+任务单信息。
+异常品信息。
+任务单状态。
+
+扫码过站区域保持不变。
+
+3. 拆分 createTaskWidget 相关逻辑。
+
+新增 createTaskTitleWidget：
+负责创建标题栏。
+
+新增 createTaskTable：
+负责创建两列表格。
+
+createTaskWidget：
+负责组合标题栏和表格。
+
+修改目的：
+后续继续新增左侧区域时，可以复用标题和表格创建逻辑，减少重复代码。
+
+4. 新增异常品信息数据函数和返工任务状态数据函数。
+
+新增 abnormalInfoKeys：
+定义异常品信息字段。
+
+新增 setAbnormalInfoValue：
+填充异常品信息。
+
+新增 setReworkTaskStatusValue：
+填充返工任务单状态。
+
+5. 修改 ProcessStationRightPanel::Tabs 函数。
+
+具体修改：
+右侧工艺信息最后新增“更换物料信息”页签。
+
+6. 修改 ProcessStationRightPanel::updateTableModelByTab 函数。
+
+具体修改：
+切换到“更换物料信息”页签时，将模型切换为 ReplacementMaterial 类型。
+
+7. 修改 ProcessStationRightPanel::updateSearchBarByTab 函数。
+
+具体修改：
+“更换物料信息”页签使用产品 SN 筛选区域。
+
+
+十三、修改文件：core/processstationmodel.h
+
+1. 修改 ProcessStationModel::TableType。
+
+新增 ReplacementMaterial 类型。
+
+2. 新增 setReplacementMaterialHeader 函数声明。
+
+作用：
+设置更换物料信息表头。
+
+3. 新增 setReplacementMaterialData 函数声明。
+
+作用：
+设置更换物料信息示例数据。
+
+
+十四、修改文件：core/processstationmodel.cpp
+
+1. 修改 ProcessStationModel::setTableType 函数。
+
+具体修改：
+新增 ReplacementMaterial 分支。
+
+2. 新增 ProcessStationModel::setReplacementMaterialHeader 函数。
+
+表格列：
+产品SN码、物料类型、物料SN、EPR编码、物料批次号、物料名称、物料型号。
+
+3. 新增 ProcessStationModel::setReplacementMaterialData 函数。
+
+具体修改：
+添加被更换物料和更换物料的示例数据。
+
+
+十五、当前页面跳转流程
+
+1. 左侧菜单点击生产任务。
+SideBarWidget 发出 sigPageChanged(1)。
+MainWindow::onPageChanged 切换到生产任务页面。
+SubHeaderWidget 显示生产任务导航。
+
+2. 左侧菜单点击工序站点。
+SideBarWidget 发出 sigPageChanged(2)。
+MainWindow::onPageChanged 切换到工序站点页面。
+SubHeaderWidget 显示工序站点导航，并显示当前工序占位。
+
+3. 左侧菜单点击维修站。
+SideBarWidget 发出 sigPageChanged(3)。
+MainWindow::onPageChanged 切换到维修站页面。
+SubHeaderWidget 显示维修站导航。
+
+4. 维修站待处理页点击维修判定按钮。
+RepairStationPage 获取当前选中行数据。
+调用 NavigationManager::openPage(PageType::RepairJudge, rowData)。
+MainWindow::onOpenPage 打开维修判定页面。
+RepairJudgePage::setRepairData 显示当前异常品数据。
+SubHeaderWidget 显示维修站 -> 维修判定。
+
+5. 维修站点击异常处理单号。
+流程同维修判定按钮。
+
+6. 维修站待返工页点击返工任务单号。
+RepairStationPage 调用 NavigationManager::openPage(PageType::ReworkTask, rowData)。
+MainWindow::onOpenPage 打开返工任务单页面。
+SubHeaderWidget 显示维修站 -> 返工任务单，并显示当前工序占位。
+
+
+十六、当前工序接口预留说明
+
+当前工序现在还没有真实接口数据。
+已经预留的位置：
+SubHeaderWidget::setCurrentProcessName。
+
+后续接口返回当前工序后，只需要调用：
+m_subHeader->setCurrentProcessName(processName);
+
+工序站点页面和返工任务单页面都会显示当前工序。
+当前没有数据时显示“--”。
+
+
+十七、构建验证
+
+已执行 Debug 构建：
+nmake /f Makefile.Debug
+
+构建结果：
+通过。
+
+当前仍然存在项目原本的 NMAKE U4004 警告，不影响本次修改验证。

@@ -11,6 +11,7 @@
 #include "sidebarwidget.h"
 #include "productiontaskpage.h"
 #include "processstationpage.h"
+#include "repairjudgepage.h"
 #include "repairstationpage.h"
 
 #include "navigationmanager.h"
@@ -27,6 +28,7 @@ private:
     void initUI();
     void initConnect();
     void updateSubHeaderNavigation(int index);
+    void updateSubHeaderNavigation(PageType type);
 
 
 private slots:
@@ -47,6 +49,8 @@ private:
     ProductionTaskPage* m_pageProduction{nullptr};
     ProcessStationPage* m_pageProcess{nullptr};
     RepairStationPage* m_pageRepairStation{nullptr};
+    RepairJudgePage* m_pageRepairJudge{nullptr};
+    ProcessStationPage* m_pageReworkTask{nullptr};
 
 
     QMap<QString, QWidget*> m_pageMap;

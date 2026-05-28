@@ -13,6 +13,10 @@ enum class PageType
     ProcessStation,
 
     RepairStation,
+
+    RepairJudge,
+
+    ReworkTask,
 };
 Q_DECLARE_METATYPE(PageType)
 
