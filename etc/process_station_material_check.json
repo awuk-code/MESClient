@@ -1,0 +1,29 @@
+[
+    {
+        "materialCode": "MAT001",
+        "materialName": "主板",
+        "singledQty": 1,
+        "actualQty": 100,
+        "materialLabelCode": "",
+        "EPR": "EPR-001",
+        "batchNo": "BATCH-001"
+    },
+    {
+        "materialCode": "MAT002",
+        "materialName": "外壳",
+        "singledQty": 1,
+        "actualQty": 100,
+        "materialLabelCode": "",
+        "EPR": "EPR-002",
+        "batchNo": "BATCH-002"
+    },
+    {
+        "materialCode": "MAT003",
+        "materialName": "显示屏",
+        "singledQty": 1,
+        "actualQty": 100,
+        "materialLabelCode": "",
+        "EPR": "EPR-003",
+        "batchNo": "BATCH-003"
+    }
+]

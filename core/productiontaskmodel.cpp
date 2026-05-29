@@ -1,4 +1,5 @@
 #include "productiontaskmodel.h"
+#include "jsondataloader.h"
 #include "operationdelegate.h"
 
 #include <QDebug>
@@ -227,95 +228,7 @@ void ProductionTaskModel::setColumnHeader()
 
 void ProductionTaskModel::setColumnData()
 {
-    // ===== 4. 模拟数据 =====
-    QVector<QVariantMap> rows;
-
-    rows.append({
-        {"taskNo", "MO20250401001"},
-        {"productModel", "XH-200"},
-        {"erpCode", "ERP-001"},
-        {"productName", "1"},
-        {"productType", "成品"},
-        {"lineNo", "LINE-01"},
-        {"workCount", 100},
-        {"isAssigned", "已分配"},
-        {"infoTaskNo", "INFO-0001"},
-        {"routeName", "装配工艺路线"},
-        {"startTime", "2026-05-08 08:00"},
-        {"finishTime", "2026-05-10 18:00"},
-        {"priority", "高"},
-
-        // ⭐ 不显示，但过滤需要
-        {"status", "未开工"},
-
-        {FIELD_LABEL_PRINTED, false},
-        {FIELD_STARTED, false},
-        {"action", ""}
-
-    });
-
-    rows.append({
-        {"taskNo", "MO20250401002"},
-        {"productModel", "XH-300"},
-        {"erpCode", "ERP-002"},
-        {"productName", "2"},
-        {"productType", "2"},
-        {"lineNo", "LINE-02"},
-        {"workCount", 200},
-        {"isAssigned", "未分配"},
-        {"infoTaskNo", "INFO-0002"},
-        {"routeName", "测试工艺路线"},
-        {"startTime", "2026-05-09 08:00"},
-        {"finishTime", "2026-05-11 18:00"},
-        {"priority", "中"},
-
-        {"status", "已开工"},
-        {FIELD_LABEL_PRINTED, true},
-        {FIELD_STARTED, true},
-        {"action", ""}
-    });
-
-    rows.append({
-        {"taskNo", "MO20250401002"},
-        {"productModel", "XH-300"},
-        {"erpCode", "ERP-002"},
-        {"productName", "3"},
-        {"productType", "3"},
-        {"lineNo", "LINE-02"},
-        {"workCount", 200},
-        {"isAssigned", "未分配"},
-        {"infoTaskNo", "INFO-0002"},
-        {"routeName", "测试工艺路线"},
-        {"startTime", "2026-05-09 08:00"},
-        {"finishTime", "2026-05-11 18:00"},
-        {"priority", "中"},
-
-        {"status", "已完工"},
-        {FIELD_LABEL_PRINTED, true},
-        {FIELD_STARTED, false},
-        {"action", ""}
-    });
-    rows.append({
-        {"taskNo", "MO20250401001"},
-        {"productModel", "XH-200"},
-        {"erpCode", "ERP-001"},
-        {"productName", "4"},
-        {"productType", "成品"},
-        {"lineNo", "LINE-01"},
-        {"workCount", 100},
-        {"isAssigned", "已分配"},
-        {"infoTaskNo", "INFO-0001"},
-        {"routeName", "装配工艺路线"},
-        {"startTime", "2026-05-08 08:00"},
-        {"finishTime", "2026-05-10 18:00"},
-        {"priority", "高"},
-
-        // ⭐ 不显示，但过滤需要
-        {"status", "已开工"},
-        {FIELD_LABEL_PRINTED, true},
-        {FIELD_STARTED, true},
-        {"action", ""}
-    });
-
-    setRows(rows);
+    // 当前阶段的列表数据从 etc/production_tasks.json 读取；
+    // 后续对接后台时，只需要把这里的数据来源替换成接口返回。
+    setRows(JsonDataLoader::loadRows("production_tasks.json"));
 }

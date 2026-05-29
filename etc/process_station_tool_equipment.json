@@ -1,0 +1,20 @@
+[
+    {
+        "productSN": "SN202605270001",
+        "equipmentName": "扭力枪",
+        "equipmentCode": "EQ001",
+        "specModel": "TQ-20"
+    },
+    {
+        "productSN": "SN202605270001",
+        "equipmentName": "条码枪",
+        "equipmentCode": "EQ002",
+        "specModel": "SCAN-2D"
+    },
+    {
+        "productSN": "SN202605270002",
+        "equipmentName": "测试工装",
+        "equipmentCode": "EQ003",
+        "specModel": "TEST-JIG-01"
+    }
+]

@@ -1,0 +1,38 @@
+[
+    {
+        "productSNCode": "12345345678",
+        "materialType": "被更换物料",
+        "materialSN": "ZX701-2-2034012524005",
+        "EPR": "ZX701-2-2034",
+        "materialBatch": "012524",
+        "materialName": "微波控制板",
+        "materialModel": "ZXCP6H4_RF_K7FCTRL_V03_I02"
+    },
+    {
+        "productSNCode": "12345345678",
+        "materialType": "更换物料",
+        "materialSN": "ZX701-2-2034012524008",
+        "EPR": "ZX701-2-2034",
+        "materialBatch": "012524",
+        "materialName": "微波控制板",
+        "materialModel": "ZXCP6H4_RF_K7FCTRL_V03_I03"
+    },
+    {
+        "productSNCode": "12345345677",
+        "materialType": "被更换物料",
+        "materialSN": "ZX701-2-2034012524001",
+        "EPR": "ZX701-2-2034",
+        "materialBatch": "012524",
+        "materialName": "微波控制板",
+        "materialModel": "ZXCP6H4_RF_K7FCTRL_V03_I02"
+    },
+    {
+        "productSNCode": "12345345677",
+        "materialType": "更换物料",
+        "materialSN": "ZX701-2-2034012524007",
+        "EPR": "ZX701-2-2034",
+        "materialBatch": "012524",
+        "materialName": "微波控制板",
+        "materialModel": "ZXCP6H4_RF_K7FCTRL_V03_I03"
+    }
+]

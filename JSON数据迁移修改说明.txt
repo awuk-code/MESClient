@@ -1,0 +1,155 @@
+本次修改目标
+
+把当前已经写在代码里的虚拟数据迁移到 etc 文件夹下的 JSON 文件中。
+界面标题、表格表头、页签名称、状态名称、跳转使用的关键字段不改变。
+后续对接后台时，可以优先替换读取 JSON 的位置，而不需要再改大量界面代码。
+
+
+一、新增公共读取工具
+
+文件：core/jsondataloader.h
+文件：core/jsondataloader.cpp
+
+新增 JsonDataLoader，用来统一读取 etc 下的 JSON 数据。
+
+主要函数：
+
+1. loadRows
+读取 JSON 数组，并转换成表格可以直接使用的行数据。
+生产任务、维修站、工序站点右侧表格都使用这个函数读取数据。
+
+2. loadObject
+读取 JSON 对象。
+工序站点左侧默认展示数据使用这个函数读取。
+
+3. resolveEtcFile
+查找 JSON 文件路径。
+优先读取运行目录或项目目录下的 etc 文件，找不到时再读取资源文件中的 etc 文件。
+这样当前阶段可以直接修改 etc 下的 JSON 文件查看效果，打包后也有资源文件兜底。
+
+
+二、生产任务数据迁移
+
+文件：core/productiontaskmodel.cpp
+函数：ProductionTaskModel::setColumnData
+
+修改内容：
+原来生产任务列表的数据直接写在函数中。
+现在改为读取 etc/production_tasks.json。
+
+保留内容：
+生产任务页签、表头、状态字段、操作列逻辑不变。
+开工按钮跳转工序站点时，仍然直接使用当前点击行的数据。
+
+
+三、维修站数据迁移
+
+文件：core/repairstationmodel.cpp
+函数：RepairStationModel::setColumnData
+
+修改内容：
+原来维修站列表的数据直接写在函数中。
+现在改为读取 etc/repair_station_rows.json。
+
+保留内容：
+待处理、审核中、待返工、已处理这些状态页签不变。
+异常处理单号、返工任务单号点击跳转逻辑不变。
+维修判定页面和返工任务单页面仍然使用点击行带过去的数据，不额外读取 JSON。
+
+
+四、工序站点右侧表格数据迁移
+
+文件：core/processstationmodel.cpp
+
+修改函数：
+
+1. ProcessStationModel::setMaterialCheckData
+读取 etc/process_station_material_check.json。
+
+2. ProcessStationModel::setProcessRouteData
+读取 etc/process_station_route.json。
+
+3. ProcessStationModel::setProcessMaterialData
+读取 etc/process_station_materials.json。
+
+4. ProcessStationModel::setToolEquipmentData
+读取 etc/process_station_tool_equipment.json。
+
+5. ProcessStationModel::setReplacementMaterialData
+读取 etc/process_station_replacement_materials.json。
+
+保留内容：
+物料核对、工艺路线、工艺文件、工序物料信息、工具设备、资料上传、引用文件、更换物料信息这些页签不变。
+表头字段和输入框列逻辑不变。
+物料标签码、物料 SN 输入后自动回填的临时逻辑不变。
+
+
+五、工序站点左侧默认数据迁移
+
+文件：ui/processstationpage.cpp
+函数：ProcessStationLeftPanel::ProcessStationLeftPanel
+
+修改内容：
+原来左侧任务单信息、任务单状态、异常品信息、返工维修任务单状态的默认显示值直接写在构造函数中。
+现在改为读取 etc/process_station_left_panel.json。
+
+保留内容：
+如果是从生产任务点击开工进入工序站点，任务单信息仍然使用生产任务当前行数据。
+如果是从维修站点击返工任务单号进入返工任务单页面，异常品信息仍然使用维修站当前行数据。
+也就是说，需要跳转才能显示的页面数据不依赖 JSON，而是继续使用点击行传递的数据。
+
+
+六、新增 JSON 文件
+
+文件：etc/production_tasks.json
+用途：生产任务列表数据。
+
+文件：etc/repair_station_rows.json
+用途：维修站列表数据。
+
+文件：etc/process_station_material_check.json
+用途：工序站点右侧物料核对表格数据。
+
+文件：etc/process_station_route.json
+用途：工序站点右侧工艺路线表格数据。
+
+文件：etc/process_station_materials.json
+用途：工序站点右侧工序物料信息表格数据。
+
+文件：etc/process_station_tool_equipment.json
+用途：工序站点右侧工具设备表格数据。
+
+文件：etc/process_station_replacement_materials.json
+用途：返工任务单右侧更换物料信息表格数据。
+
+文件：etc/process_station_left_panel.json
+用途：工序站点左侧默认展示数据。
+
+
+七、资源文件修改
+
+文件：res.qrc
+
+修改内容：
+把新增的 JSON 文件加入资源文件。
+程序运行时优先读取 etc 文件夹中的真实文件，资源文件只作为兜底。
+
+
+八、项目文件修改
+
+文件：core/core.pri
+
+修改内容：
+把新增的 jsondataloader.h 和 jsondataloader.cpp 加入编译。
+
+
+九、调试信息
+
+JsonDataLoader 读取成功时，会通过 qDebug 输出文件路径和读取到的行数或字段名。
+读取失败或 JSON 格式错误时，也会通过 qDebug 输出失败路径和错误原因。
+
+
+十、验证结果
+
+已重新运行 qmake 并编译 Debug 版本，编译通过。
+编译过程中仍有当前项目已有的警告，但不影响生成程序。

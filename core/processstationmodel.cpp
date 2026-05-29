@@ -1,4 +1,5 @@
 #include "processstationmodel.h"
+#include "jsondataloader.h"
 #include <QMessageBox>
 #include <QDebug>
 
@@ -75,42 +76,8 @@ void ProcessStationModel::setMaterialCheckHeader()
 
 void ProcessStationModel::setMaterialCheckData()
 {
-    QVector<QVariantMap> rows;
-
-    rows.append({
-        {"materialCode", "MAT001"},
-        {"materialName", "主板"},
-        {"singledQty", 1},                 // 对应 单套数量
-        {"actualQty", 100},                // 对应 生产所需数量
-        // 默认值清空，让表格直接显示输入提示。
-        {"materialLabelCode", ""},
-        {"EPR", "EPR-001"},
-        {"batchNo", "BATCH-001"}
-    });
-
-    rows.append({
-        {"materialCode", "MAT002"},
-        {"materialName", "外壳"},
-        {"singledQty", 1},
-        {"actualQty", 100},
-        // 默认值清空，让表格直接显示输入提示。
-        {"materialLabelCode", ""},
-        {"EPR", "EPR-002"},
-        {"batchNo", "BATCH-002"}
-    });
-
-    rows.append({
-        {"materialCode", "MAT003"},
-        {"materialName", "显示屏"},
-        {"singledQty", 1},
-        {"actualQty", 100},
-        // 默认值清空，让表格直接显示输入提示。
-        {"materialLabelCode", ""},
-        {"EPR", "EPR-003"},
-        {"batchNo", "BATCH-003"}
-    });
-
-    setRows(rows);
+    // 当前阶段的物料核对数据从 JSON 读取；后续对接后台时替换为接口返回即可。
+    setRows(JsonDataLoader::loadRows("process_station_material_check.json"));
 }
 
 void ProcessStationModel::setProcessRouteHeader()
@@ -127,30 +94,8 @@ void ProcessStationModel::setProcessRouteHeader()
 
 void ProcessStationModel::setProcessRouteData()
 {
-    QVector<QVariantMap> rows;
-
-    rows.append({
-        {"processCode", "OP001"},
-        {"processName", "装配"},
-        {"stationNo", "A01"},
-        {"status", "已完成"}
-    });
-
-    rows.append({
-        {"processCode", "OP002"},
-        {"processName", "测试"},
-        {"stationNo", "T01"},
-        {"status", "进行中"}
-    });
-
-    rows.append({
-        {"processCode", "OP003"},
-        {"processName", "包装"},
-        {"stationNo", "P01"},
-        {"status", "未开始"}
-    });
-
-    setRows(rows);
+    // 当前阶段的工艺路线数据从 JSON 读取；工艺路线标题和列结构仍保留在代码中。
+    setRows(JsonDataLoader::loadRows("process_station_route.json"));
 }
 void ProcessStationModel::setProcessMaterialHeader()
 {
@@ -182,25 +127,8 @@ void ProcessStationModel::setProcessMaterialHeader()
 }
 void ProcessStationModel::setProcessMaterialData()
 {
-    QVector<QVariantMap> rows;
-
-    rows.append({
-        {"materialCode", "RM001"},
-        {"materialName", "螺丝"},
-        {"unit", "PCS"},
-        {"quantity", 4},
-        {"remark", ""}
-    });
-
-    rows.append({
-        {"materialCode", "RM002"},
-        {"materialName", "标签"},
-        {"unit", "PCS"},
-        {"quantity", 1},
-        {"remark", "贴于背面"}
-    });
-
-    setRows(rows);
+    // 当前阶段的工序物料信息从 JSON 读取；物料SN仍保留为空，方便显示输入提示。
+    setRows(JsonDataLoader::loadRows("process_station_materials.json"));
 }
 
 void ProcessStationModel::setToolEquipmentHeader()
@@ -218,23 +146,8 @@ void ProcessStationModel::setToolEquipmentHeader()
 
 void ProcessStationModel::setToolEquipmentData()
 {
-    QVector<QVariantMap> rows;
-
-    rows.append({
-        {"equipmentCode", "EQ001"},
-        {"equipmentName", "扭力枪"},
-        //  {"status", "正常"},
-        {"verifyDate", "2026-05-01"}
-    });
-
-    rows.append({
-        {"equipmentCode", "EQ002"},
-        {"equipmentName", "条码枪"},
-        // {"status", "正常"},
-        {"verifyDate", "2026-04-20"}
-    });
-
-    setRows(rows);
+    // 当前阶段的工具设备数据从 JSON 读取；后续按当前工序调用后台接口替换。
+    setRows(JsonDataLoader::loadRows("process_station_tool_equipment.json"));
 }
 
 void ProcessStationModel::setReplacementMaterialHeader()
@@ -255,48 +168,9 @@ void ProcessStationModel::setReplacementMaterialHeader()
 
 void ProcessStationModel::setReplacementMaterialData()
 {
-    QVector<QVariantMap> rows;
-
-    rows.append({
-        {"productSNCode", "12345345678"},
-        {"materialType", "被更换物料"},
-        {"materialSN", "ZX701-2-2034012524005"},
-        {"EPR", "ZX701-2-2034"},
-        {"materialBatch", "012524"},
-        {"materialName", "微波控制板"},
-        {"materialModel", "ZXCP6H4_RF_K7FCTRL_V03_I02"}
-    });
-
-    rows.append({
-        {"productSNCode", "12345345678"},
-        {"materialType", "更换物料"},
-        {"materialSN", "ZX701-2-2034012524008"},
-        {"EPR", "ZX701-2-2034"},
-        {"materialBatch", "012524"},
-        {"materialName", "微波控制板"},
-        {"materialModel", "ZXCP6H4_RF_K7FCTRL_V03_I03"}
-    });
-
-    rows.append({
-        {"productSNCode", "12345345677"},
-        {"materialType", "被更换物料"},
-        {"materialSN", "ZX701-2-2034012524001"},
-        {"EPR", "ZX701-2-2034"},
-        {"materialBatch", "012524"},
-        {"materialName", "微波控制板"},
-        {"materialModel", "ZXCP6H4_RF_K7FCTRL_V03_I02"}
-    });
-
-    rows.append({
-        {"productSNCode", "12345345677"},
-        {"materialType", "更换物料"},
-        {"materialSN", "ZX701-2-2034012524007"},
-        {"EPR", "ZX701-2-2034"},
-        {"materialBatch", "012524"},
-        {"materialName", "微波控制板"},
-        {"materialModel", "ZXCP6H4_RF_K7FCTRL_V03_I03"}
-    });
-
+    // 当前阶段的更换物料信息从 JSON 读取；返工权限接入后可按任务单号重新拉取。
+    const QVector<QVariantMap> rows =
+        JsonDataLoader::loadRows("process_station_replacement_materials.json");
     setRows(rows);
     qDebug() << __FUNCTION__ << "replacement material rows:" << rows.size();
 }

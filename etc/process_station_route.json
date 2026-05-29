@@ -1,0 +1,26 @@
+[
+    {
+        "processCode": "OP001",
+        "processName": "装配",
+        "parallelStep": "否",
+        "remainingQty": 0,
+        "stationNo": "A01",
+        "status": "已完成"
+    },
+    {
+        "processCode": "OP002",
+        "processName": "测试",
+        "parallelStep": "否",
+        "remainingQty": 12,
+        "stationNo": "T01",
+        "status": "进行中"
+    },
+    {
+        "processCode": "OP003",
+        "processName": "包装",
+        "parallelStep": "否",
+        "remainingQty": 100,
+        "stationNo": "P01",
+        "status": "未开始"
+    }
+]

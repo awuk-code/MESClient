@@ -1,0 +1,42 @@
+[
+    {
+        "productSN": "SN202605270001",
+        "materialCode": "RM001",
+        "materialName": "螺丝",
+        "materialModel": "M2.5-6",
+        "quantity": 4,
+        "materialSN": "",
+        "materialBatch": "BATCH-RM001",
+        "serialNumber": ""
+    },
+    {
+        "productSN": "SN202605270001",
+        "materialCode": "RM002",
+        "materialName": "标签",
+        "materialModel": "LBL-001",
+        "quantity": 1,
+        "materialSN": "",
+        "materialBatch": "BATCH-RM002",
+        "serialNumber": ""
+    },
+    {
+        "productSN": "SN202605270002",
+        "materialCode": "RM003",
+        "materialName": "线束",
+        "materialModel": "WH-300",
+        "quantity": 2,
+        "materialSN": "",
+        "materialBatch": "BATCH-RM003",
+        "serialNumber": ""
+    },
+    {
+        "productSN": "SN202605270002",
+        "materialCode": "RM004",
+        "materialName": "电源模块",
+        "materialModel": "PWR-24V",
+        "quantity": 1,
+        "materialSN": "",
+        "materialBatch": "BATCH-RM004",
+        "serialNumber": ""
+    }
+]

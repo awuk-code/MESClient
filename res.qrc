@@ -1,6 +1,14 @@
 <RCC>
     <qresource prefix="/">
         <file>etc/config.json</file>
+        <file>etc/production_tasks.json</file>
+        <file>etc/repair_station_rows.json</file>
+        <file>etc/process_station_material_check.json</file>
+        <file>etc/process_station_route.json</file>
+        <file>etc/process_station_materials.json</file>
+        <file>etc/process_station_tool_equipment.json</file>
+        <file>etc/process_station_replacement_materials.json</file>
+        <file>etc/process_station_left_panel.json</file>
         <file>res/login/logo.svg</file>
         <file>res/login/pwd1.svg</file>
         <file>res/login/pwd2.svg</file>

@@ -1,4 +1,5 @@
 #include "processstationpage.h"
+#include "jsondataloader.h"
 #include "pdfviewwidget.h"
 #include "processstationmodel.h"
 
@@ -97,55 +98,15 @@ ProcessStationLeftPanel::ProcessStationLeftPanel(QWidget *parent)
     initUI();
     initConnect();
 
-    // 任务单信息示例数据（7项，与 taskInfoKeys() 一一对应）
-    TaskList taskInfoValues = {
-        "RW20260519001",      // 生产任务单号
-        "XK-500A",            // 产品型号
-        "ERP-2026-001",       // 产品ERP编码
-        1000,                 // 生产任务工单数量
-        "2026-05-31",         // 生产任务单完成日期
-        "V2.3",               // 配置项配套表版本
-        "LINE-01"             // 生产线编号
-    };
+    // 左侧默认展示数据从 JSON 读取；通过生产任务/返工任务跳转进来时，
+    // 任务单信息和异常品信息会被点击行数据覆盖，不再重新读 JSON。
+    const QVariantMap defaultData =
+        JsonDataLoader::loadObject("process_station_left_panel.json");
+    setTaskInfoData(defaultData.value("taskInfo").toMap());
+    setTaskStatusData(defaultData.value("taskStatus").toMap());
+    setAbnormalInfoData(defaultData.value("abnormalInfo").toMap());
+    setReworkTaskStatusData(defaultData.value("reworkTaskStatus").toMap());
 
-    // 任务单状态示例数据（7项，与 taskStatusKeys() 一一对应）
-    TaskList taskStatusValues = {
-        320,                  // 当前工序完成数量
-        5,                    // 当前工序NG数量
-        "装配",               // 上一工序
-        "测试",               // 当前工序
-        "包装",               // 下一工序
-        "已核对",             // 物料核对状态
-        "ST-001"              // 工站编号
-    };
-
-    // 填充信息区，左侧信息区现在按 QPair<显示名, 字段名> 从 QVariantMap 中取值。
-    setTaskInfoValue(taskInfoValues);
-    setTaskStatusValue(taskStatusValues);
-
-    // 返工任务单高级权限使用的异常品信息示例数据，默认先创建并隐藏，后续接权限时直接切换显示。
-    TaskList abnormalInfoValues = {
-        "YC12352625123",          // 异常处理单号
-        "WN1K25001254005-R001",   // 返工任务单号
-        "ZX-IRLD-0292-124",       // 生产工艺流程
-        "三防冲击检查",             // 异常上报工序
-        "外观不良",                 // 异常类型
-        1,                         // 异常数量
-        tr("查看图片")              // 异常图片
-    };
-
-    TaskList reworkTaskStatusValues = {
-        0,               // 当前工序完成数量
-        0,               // 当前工序NG数量
-        "装配电检",        // 上一工序
-        "返工维修",        // 当前工序
-        "模块装配检验",     // 下一工序
-        "待更换物料",       // 物料核对状态
-        "Line1-OC-2"     // 工站编号
-    };
-
-    setAbnormalInfoValue(abnormalInfoValues);
-    setReworkTaskStatusValue(reworkTaskStatusValues);
     setDisplayMode(DisplayMode::NormalTask);
     qDebug() << "ProcessStationLeftPanel init, default mode NormalTask";
 }

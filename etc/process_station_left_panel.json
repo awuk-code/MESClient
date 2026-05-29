@@ -1,0 +1,48 @@
+{
+    "taskInfo": {
+        "taskNo": "MO20250401001",
+        "productModel": "XH-200",
+        "erpCode": "ERP-001",
+        "workCount": 100,
+        "finishTime": "2026-05-10 18:00",
+        "routeName": "装配工艺路线",
+        "lineNo": "LINE-01"
+    },
+    "taskStatus": {
+        "finishedCount": 320,
+        "ngCount": 5,
+        "previousProcess": "装配",
+        "currentProcess": "测试",
+        "nextProcess": "包装",
+        "materialCheckStatus": "已核对",
+        "stationNo": "ST-001"
+    },
+    "abnormalInfo": {
+        "exceptionHandleNo": "EX20260527003",
+        "reworkTaskNo": "RW20260527001",
+        "taskNo": "MO20250401003",
+        "routeName": "返工工艺路线",
+        "productModel": "XH-200",
+        "productSN": "SN202605270003",
+        "abnormalCount": 1,
+        "abnormalType": "装配异常",
+        "abnormalPhenomenon": "螺丝漏装",
+        "abnormalImage": "查看图片",
+        "reportProcess": "终检",
+        "reportTime": "2026-05-27 11:15",
+        "lineNo": "LINE-01",
+        "stationNo": "ST-03",
+        "reporter": "王五",
+        "handleMethod": "",
+        "status": "待返工"
+    },
+    "reworkTaskStatus": {
+        "finishedCount": 0,
+        "ngCount": 0,
+        "previousProcess": "装配电检",
+        "currentProcess": "返工维修",
+        "nextProcess": "模块装配检验",
+        "materialCheckStatus": "待更换物料",
+        "stationNo": "Line1-OC-2"
+    }
+}
