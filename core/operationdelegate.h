@@ -14,6 +14,7 @@ public:
     explicit OperationDelegate(QObject *parent = nullptr);
 
      bool updateRowData(QAbstractItemModel* model,const QModelIndex& index, const QVariantMap& rowData);
+     static int minimumColumnWidth();
 
 
  signals:

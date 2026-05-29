@@ -278,29 +278,29 @@ void RepairJudgePage::rebuildInfo()
     clearInfo();
 
     QVector<QPair<QString, QString>> fields;
-    fields.append(QPair<QString, QString>("异常处理单号", "exceptionHandleNo"));
+    fields.append(QPair<QString, QString>(tr("异常处理单号"), "exceptionHandleNo"));
 
     const QString status = m_rowData.value("status").toString();
-    if (status == "待返工")
-        fields.append(QPair<QString, QString>("返工任务单号", "reworkTaskNo"));
+    if (status == tr("待返工"))
+        fields.append(QPair<QString, QString>(tr("返工任务单号"), "reworkTaskNo"));
     else
-        fields.append(QPair<QString, QString>("生产任务单号", "taskNo"));
+        fields.append(QPair<QString, QString>(tr("生产任务单号"), "taskNo"));
 
-    fields.append(QPair<QString, QString>("生产工艺路线", "routeName"));
-    fields.append(QPair<QString, QString>("产品型号", "productModel"));
-    fields.append(QPair<QString, QString>("产品SN", "productSN"));
-    fields.append(QPair<QString, QString>("异常数量", "abnormalCount"));
-    fields.append(QPair<QString, QString>("异常类型", "abnormalType"));
-    fields.append(QPair<QString, QString>("异常现象", "abnormalPhenomenon"));
-    fields.append(QPair<QString, QString>("问题照片", "abnormalImage"));
-    fields.append(QPair<QString, QString>("异常上报工序", "reportProcess"));
-    fields.append(QPair<QString, QString>("异常上报时间", "reportTime"));
-    fields.append(QPair<QString, QString>("产线编码", "lineNo"));
-    fields.append(QPair<QString, QString>("工作站编号", "stationNo"));
-    fields.append(QPair<QString, QString>("上报人员", "reporter"));
+    fields.append(QPair<QString, QString>(tr("生产工艺路线"), "routeName"));
+    fields.append(QPair<QString, QString>(tr("产品型号"), "productModel"));
+    fields.append(QPair<QString, QString>(tr("产品SN"), "productSN"));
+    fields.append(QPair<QString, QString>(tr("异常数量"), "abnormalCount"));
+    fields.append(QPair<QString, QString>(tr("异常类型"), "abnormalType"));
+    fields.append(QPair<QString, QString>(tr("异常现象"), "abnormalPhenomenon"));
+    fields.append(QPair<QString, QString>(tr("问题照片"), "abnormalImage"));
+    fields.append(QPair<QString, QString>(tr("异常上报工序"), "reportProcess"));
+    fields.append(QPair<QString, QString>(tr("异常上报时间"), "reportTime"));
+    fields.append(QPair<QString, QString>(tr("产线编码"), "lineNo"));
+    fields.append(QPair<QString, QString>(tr("工作站编号"), "stationNo"));
+    fields.append(QPair<QString, QString>(tr("上报人员"), "reporter"));
 
-    if (status == "审核中" || status == "已处理")
-        fields.append(QPair<QString, QString>("异常处理方式", "handleMethod"));
+    if (status == tr("审核中") || status == tr("已处理"))
+        fields.append(QPair<QString, QString>(tr("异常处理方式"), "handleMethod"));
 
     for (int i = 0; i < fields.size(); ++i)
     {

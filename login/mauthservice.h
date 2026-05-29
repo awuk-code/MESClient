@@ -4,9 +4,9 @@
 #include <QObject>
 #include <QString>
 
-class MAuthService
+class MAuthService : public QObject
 {
-
+    Q_OBJECT
 public:
     MAuthService();
     //virtual ~MAuthService() = default;

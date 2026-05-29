@@ -53,24 +53,22 @@ void ProcessStationModel::setMaterialCheckHeader()
 {
     m_columns =
         {
-            // title          field                width visible editable fixedWidth alignment         type                    resizeMode                   filterType        delegate
-            {"序号",           "rowNumber",          60,   true,  false,  true,      Qt::AlignCenter,  ColumnType::RowNumber,  QHeaderView::Fixed},
+            {tr("序号"),       "rowNumber", true, false, ColumnType::RowNumber},
 
-            {"物料编码",       "materialCode",      180,  true,  false,  false,     Qt::AlignCenter,  ColumnType::TextLink,     QHeaderView::ResizeToContents, FilterType::None},
+            {tr("物料编码"),   "materialCode", true, false, ColumnType::TextLink},
 
-            {"物料名称",       "materialName",      220,  true,  false,  false,     Qt::AlignCenter,  ColumnType::Normal,     QHeaderView::ResizeToContents},
+            {tr("物料名称"),   "materialName"},
 
-            {"单套数量",       "singledQty",        100,  true,  false,  false,     Qt::AlignCenter,  ColumnType::Normal,     QHeaderView::ResizeToContents},
+            {tr("单套数量"),   "singledQty"},
 
-            {"生产所需数量",   "actualQty",         120,  true,  false,  false,     Qt::AlignCenter,  ColumnType::Normal,     QHeaderView::ResizeToContents},
+            {tr("生产所需数量"), "actualQty"},
 
             // 可输入列：物料标签码
-            {"物料标签码",     "materialLabelCode", 220,  true,  true,   false,     Qt::AlignCenter,  ColumnType::LineEdit,   QHeaderView::Interactive,
-             FilterType::None},
+            {tr("物料标签码"), "materialLabelCode", true, true, ColumnType::LineEdit},
 
-            {"EPR编码",        "EPR",               130,  true,  false,  false,     Qt::AlignCenter,  ColumnType::Normal,     QHeaderView::ResizeToContents},
+            {tr("EPR编码"),    "EPR"},
 
-            {"批次号",         "batchNo",           130,  true,  false,  false,     Qt::AlignCenter,  ColumnType::Normal,     QHeaderView::ResizeToContents}
+            {tr("批次号"),     "batchNo"}
         };
 }
 
@@ -84,11 +82,11 @@ void ProcessStationModel::setProcessRouteHeader()
 {
     m_columns =
         {
-            {"序号",           "rowNumber",          60,   true,  false,  true,      Qt::AlignCenter,  ColumnType::RowNumber,  QHeaderView::Fixed},
-            {"工序编号",           "processCode",     150},
-            {"工序名称",           "processName",     180},
-            {"并行步骤",           "parallelStep",    120},
-            {"当前工序待完成数量", "remainingQty",    160}
+            {tr("序号"),                 "rowNumber", true, false, ColumnType::RowNumber},
+            {tr("工序编号"),             "processCode"},
+            {tr("工序名称"),             "processName"},
+            {tr("并行步骤"),             "parallelStep"},
+            {tr("当前工序待完成数量"),   "remainingQty"}
         };
 }
 
@@ -101,28 +99,27 @@ void ProcessStationModel::setProcessMaterialHeader()
 {
     m_columns =
         {
-            // title      field            width  visible editable fixedWidth alignment          type                    resizeMode
-            {"序号",           "rowNumber",          60,   true,  false,  true,      Qt::AlignCenter,  ColumnType::RowNumber,  QHeaderView::Fixed},
+            {tr("序号"),       "rowNumber", true, false, ColumnType::RowNumber},
 
-            {"产品SN",     "productSN",      180,  true,   false,  false,     Qt::AlignCenter,   ColumnType::Normal,     QHeaderView::ResizeToContents},
+            {tr("产品SN"),     "productSN"},
 
-            {"物料编码",   "materialCode",   180,  true,   false,  false,     Qt::AlignCenter,   ColumnType::Normal,     QHeaderView::ResizeToContents},
+            {tr("物料编码"),   "materialCode"},
 
-            {"物料名称",   "materialName",   220,  true,   false,  false,     Qt::AlignCenter,   ColumnType::Normal,     QHeaderView::ResizeToContents},
+            {tr("物料名称"),   "materialName"},
 
-            {"物料型号",   "materialModel",  180,  true,   false,  false,     Qt::AlignCenter,   ColumnType::Normal,     QHeaderView::ResizeToContents},
+            {tr("物料型号"),   "materialModel"},
 
-            {"数量",       "quantity",       100,  true,   false,  false,     Qt::AlignCenter,   ColumnType::Normal,     QHeaderView::ResizeToContents},
+            {tr("数量"),       "quantity"},
 
             // 可输入列：物料SN
             // 关键设置：
             // 1. editable = true
             // 2. type = ColumnType::LineEdit
-            {"物料SN",     "materialSN",     200,  true,   true,   false,     Qt::AlignCenter,   ColumnType::LineEdit,   QHeaderView::Interactive, FilterType::None},
+            {tr("物料SN"),     "materialSN", true, true, ColumnType::LineEdit},
 
-            {"物料批次号", "materialBatch",  180,  true,   false,  false,     Qt::AlignCenter,   ColumnType::Normal,     QHeaderView::ResizeToContents},
+            {tr("物料批次号"), "materialBatch"},
 
-            {"序列号",     "serialNumber",   180,  true,   false,  false,     Qt::AlignCenter,   ColumnType::Normal,     QHeaderView::ResizeToContents}
+            {tr("序列号"),     "serialNumber"}
         };
 }
 void ProcessStationModel::setProcessMaterialData()
@@ -135,12 +132,12 @@ void ProcessStationModel::setToolEquipmentHeader()
 {
     m_columns =
         {
-            {"序号",           "rowNumber",          60,   true,  false,  true,      Qt::AlignCenter,  ColumnType::RowNumber,  QHeaderView::Fixed},
+            {tr("序号"),       "rowNumber", true, false, ColumnType::RowNumber},
 
-            {"产品SN",   "productSN",     180},
-            {"设备名称", "equipmentName", 200},
-            {"设备编号", "equipmentCode", 180},
-            {"规格型号", "specModel",     180}
+            {tr("产品SN"),   "productSN"},
+            {tr("设备名称"), "equipmentName"},
+            {tr("设备编号"), "equipmentCode"},
+            {tr("规格型号"), "specModel"}
         };
 }
 
@@ -154,13 +151,13 @@ void ProcessStationModel::setReplacementMaterialHeader()
 {
     m_columns =
         {
-            {"产品SN码",   "productSNCode", 180, true, false, false, Qt::AlignCenter, ColumnType::Normal, QHeaderView::ResizeToContents},
-            {"物料类型",   "materialType",  140, true, false, false, Qt::AlignCenter, ColumnType::Normal, QHeaderView::ResizeToContents},
-            {"物料SN",     "materialSN",    200, true, false, false, Qt::AlignCenter, ColumnType::Normal, QHeaderView::ResizeToContents},
-            {"EPR编码",    "EPR",           150, true, false, false, Qt::AlignCenter, ColumnType::Normal, QHeaderView::ResizeToContents},
-            {"物料批次号", "materialBatch", 180, true, false, false, Qt::AlignCenter, ColumnType::Normal, QHeaderView::ResizeToContents},
-            {"物料名称",   "materialName",  180, true, false, false, Qt::AlignCenter, ColumnType::Normal, QHeaderView::ResizeToContents},
-            {"物料型号",   "materialModel", 220, true, false, false, Qt::AlignCenter, ColumnType::Normal, QHeaderView::ResizeToContents}
+            {tr("产品SN码"),   "productSNCode"},
+            {tr("物料类型"),   "materialType"},
+            {tr("物料SN"),     "materialSN"},
+            {tr("EPR编码"),    "EPR"},
+            {tr("物料批次号"), "materialBatch"},
+            {tr("物料名称"),   "materialName"},
+            {tr("物料型号"),   "materialModel"}
         };
 
     qDebug() << __FUNCTION__ << "replacement material columns:" << m_columns.size();

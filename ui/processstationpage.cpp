@@ -636,7 +636,7 @@ ProcessStationRightPanel::ProcessStationRightPanel(QWidget *parent)
         new QVBoxLayout(m_uploadPage);
 
     uploadLayout->addWidget(
-        new QLabel("资料上传页面"));
+        new QLabel(tr("资料上传页面")));
 
     uploadLayout->addStretch();
     setupPage();

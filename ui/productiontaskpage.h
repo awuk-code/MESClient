@@ -6,6 +6,7 @@
 
 class ProductionTaskPage : public BasePageWidget
 {
+    Q_OBJECT
 public:
     explicit ProductionTaskPage(QWidget *parent = nullptr);
 protected:

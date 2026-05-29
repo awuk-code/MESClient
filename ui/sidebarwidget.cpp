@@ -40,15 +40,15 @@ void SideBarWidget::initUI()
     layout->addWidget(createMenuItem(":/res/menu/menu.svg", ":/res/menu/menu.svg", QStringLiteral("menu"), QStringLiteral("hover"), 0));
     layout->addSpacing(0);
 
-    layout->addWidget(createMenuItem(":/res/menu/task1.svg", ":/res/menu/task2.svg", QStringLiteral("生产任务"), QStringLiteral("生产任务hover"), 1));
+    layout->addWidget(createMenuItem(":/res/menu/task1.svg", ":/res/menu/task2.svg", tr("生产任务"), tr("生产任务hover"), 1));
     layout->addSpacing(15);
-    layout->addWidget(createMenuItem(":/res/menu/process1.svg", ":/res/menu/process2.svg", QStringLiteral("工序站点"), QStringLiteral("工序站点hover"), 2));
+    layout->addWidget(createMenuItem(":/res/menu/process1.svg", ":/res/menu/process2.svg", tr("工序站点"), tr("工序站点hover"), 2));
     layout->addSpacing(15);
-    layout->addWidget(createMenuItem(":/res/menu/repair1.svg", ":/res/menu/repair2.svg", QStringLiteral("维修站"), QStringLiteral("维修站hover"), 3));
+    layout->addWidget(createMenuItem(":/res/menu/repair1.svg", ":/res/menu/repair2.svg", tr("维修站"), tr("维修站hover"), 3));
 
     layout->addStretch();
 
-    layout->addWidget(createMenuItem(":/res/menu/set.svg", ":/res/menu/set.svg", QStringLiteral("设置"), QStringLiteral("设置"), 19));
+    layout->addWidget(createMenuItem(":/res/menu/set.svg", ":/res/menu/set.svg", tr("设置"), tr("设置"), 19));
     layout->addSpacing(5);
     layout->addWidget(createMenuItem(":/res/menu/exit.svg", ":/res/menu/exit.svg", QStringLiteral("exit"), QStringLiteral("exit"), 20));
 
@@ -73,7 +73,7 @@ void SideBarWidget::initConnect()
             if(window())
                 window()->close();
         }
-        funcDebug() <<"点击菜单："<<m_group->id(clickedBtn);
+        funcDebug() << tr("点击菜单：") << m_group->id(clickedBtn);
 
         for(QAbstractButton* btn : m_group->buttons()){
             QString path = (btn == clickedBtn) ? ("icon_checked") : ("icon_normal");
@@ -101,7 +101,7 @@ void SideBarWidget::setCurrentPageIndex(int index)
         btn->setIcon(QIcon(btn->property(path.toStdString().c_str()).toString()));
     }
 
-    funcDebug() << "同步侧边栏选中菜单:" << index;
+    funcDebug() << tr("同步侧边栏选中菜单:") << index;
 }
 
 QWidget *SideBarWidget::createMenuItem(const QString &icon_normal, const QString &icon_checked, const QString &text, const QString &hoverText, int id)

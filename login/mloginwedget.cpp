@@ -64,7 +64,7 @@ void MLoginWedget::InitLoginUI()
     m_icon->setPixmap(QPixmap(":/res/login/logo.svg").scaled(48,48, Qt::KeepAspectRatio, Qt::SmoothTransformation));
     m_icon->setAlignment(Qt::AlignCenter);
 
-    m_title = new QLabel(QStringLiteral("生产系统"), this);
+    m_title = new QLabel(tr("生产系统"), this);
     m_title->setAlignment(Qt::AlignCenter);
 
 
@@ -73,12 +73,12 @@ void MLoginWedget::InitLoginUI()
 
     mainLayout->addSpacing(20);
 
-    m_usrName = new QLabel("用户名：", this);
+    m_usrName = new QLabel(tr("用户名："), this);
     m_usrNameEdit = new QLineEdit(this);
-    m_usrNameEdit->setPlaceholderText("输入用户名");
-    m_password = new QLabel("密码：", this);
+    m_usrNameEdit->setPlaceholderText(tr("输入用户名"));
+    m_password = new QLabel(tr("密码："), this);
     m_passwordEdit = new QLineEdit(this);
-    m_passwordEdit->setPlaceholderText("输入密码");
+    m_passwordEdit->setPlaceholderText(tr("输入密码"));
     m_passwordEdit->setEchoMode(QLineEdit::Password);
 
 
@@ -108,7 +108,7 @@ void MLoginWedget::InitLoginUI()
     mainLayout->addWidget(m_errString);
     mainLayout->addSpacing(10);
 
-    m_loginBtn = new QPushButton("登录", this);
+    m_loginBtn = new QPushButton(tr("登录"), this);
     m_loginBtn->setFixedHeight(36);
     m_loginBtn->setObjectName("LoginBtn");
     mainLayout->addWidget(m_loginBtn);
@@ -139,7 +139,7 @@ void MLoginWedget::InitConnect()
 {
     connect(m_loginBtn, &QPushButton::clicked, this, [=](){
         if(!m_authService){
-            m_errString->setText("未连接服务器，请重试！");
+            m_errString->setText(tr("未连接服务器，请重试！"));
             m_errString->setVisible(true);
             errtimer->start(3000);
             return;

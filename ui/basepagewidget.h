@@ -62,6 +62,8 @@ protected slots:
                           const  QString& pageID);
     void onImageLinkClicked(const QString& NGNumber);
 protected:
+    bool eventFilter(QObject* watched, QEvent* event) override;
+
     void updateTableResizeMode();
 protected:
     // 创建基础数据模型（通常继承自 BaseTableModel）。
@@ -108,6 +110,8 @@ protected:
 
     // 根据 BaseTableModel::columns() 设置列属性
     void setupColumns(QTableView* table, const QVariant& tabData);
+    void applyAdaptiveColumnWidths(QTableView* table);
+    int contentWidthForColumn(QTableView* table, int column) const;
 
     // 设置表格通用属性
     void setupTableAppearance(QTableView* table);

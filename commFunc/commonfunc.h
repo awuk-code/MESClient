@@ -105,17 +105,10 @@ struct ColumnConfig
     QString title;      // 列标题（显示在表头上的文字）
     QString field;      // 字段名（程序内部唯一标识，如 taskNo、priority）
 
-    int width = 120;    // 列宽（单位：像素）
-
     bool visible = true;        // 是否显示该列
     bool editable = false;      // 单元格是否允许编辑
-    bool fixedWidth = false;    // 是否固定宽度（最大化时不参与比例缩放）
 
-    Qt::Alignment alignment = Qt::AlignCenter;   // 文本对齐方式
     ColumnType type = ColumnType::Normal;        // 列类型
-
-    QHeaderView::ResizeMode resizeMode =
-        QHeaderView::ResizeToContents;
 
     FilterType filterType = FilterType::None;
 

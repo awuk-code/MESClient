@@ -4,6 +4,9 @@
 #include "qmenu.h"
 #include "qpainter.h"
 
+#include <QGuiApplication>
+#include <QScreen>
+
 HeaderOverlayWidget::HeaderOverlayWidget(QHeaderView *header, QWidget *parent)
     : QWidget{parent}, m_header(header)
 {
@@ -48,7 +51,7 @@ void HeaderOverlayWidget::setFilterFields(const QSet<QString> &fields)
     if (!baseModel)
     {
         update();
-        qDebug() << __FUNCTION__ <<"无法获取 columns() 配置，直接退出";
+        qDebug() << __FUNCTION__ << tr("无法获取 columns() 配置，直接退出");
         return;
     }
 
@@ -56,9 +59,7 @@ void HeaderOverlayWidget::setFilterFields(const QSet<QString> &fields)
     //    每个 ColumnConfig 中都包含：
     //    - title
     //    - field
-    //    - width
     //    - visible
-    //    - resizeMode
     const QVector<ColumnConfig> &columns = baseModel->columns();
     // 8. 遍历所有列，找出需要显示筛选图标的字段
     for (int i = 0; i < columns.size(); ++i)
@@ -122,10 +123,35 @@ void HeaderOverlayWidget::showDatePopup(const QRect &iconRect)
 
     popup->adjustSize();
 
-    // ⭐ 核心：贴着 icon
-    QPoint globalPos = mapToGlobal(iconRect.bottomLeft());
+    // 日期筛选弹窗默认贴着表头筛选图标显示；如果靠近屏幕边缘，则自动收回到屏幕可见区域。
+    const int margin = 5;
+    const QSize popupSize =
+        popup->sizeHint().isValid() ? popup->sizeHint() : popup->size();
+    const QPoint iconBottomLeft = mapToGlobal(iconRect.bottomLeft());
+    const QPoint iconTopLeft = mapToGlobal(iconRect.topLeft());
 
-    globalPos.setY(globalPos.y() + 5); // 微调
+    QPoint globalPos(iconBottomLeft.x(), iconBottomLeft.y() + margin);
+
+    QScreen* screen = QGuiApplication::screenAt(iconBottomLeft);
+    if (!screen)
+        screen = QGuiApplication::primaryScreen();
+
+    if (screen)
+    {
+        const QRect availableRect = screen->availableGeometry();
+
+        if (globalPos.x() + popupSize.width() > availableRect.right())
+            globalPos.setX(availableRect.right() - popupSize.width());
+
+        if (globalPos.x() < availableRect.left())
+            globalPos.setX(availableRect.left());
+
+        if (globalPos.y() + popupSize.height() > availableRect.bottom())
+            globalPos.setY(iconTopLeft.y() - popupSize.height() - margin);
+
+        if (globalPos.y() < availableRect.top())
+            globalPos.setY(availableRect.top());
+    }
 
     // QPoint pos = QCursor::pos();
     // popup->move(pos);
@@ -140,11 +166,11 @@ void HeaderOverlayWidget::showPriorityPopup(const QRect &iconRect)
     QMenu *menu = new QMenu(this);
 
 
-    QAction *noneAction = menu->addAction(QStringLiteral("无"));
+    QAction *noneAction = menu->addAction(tr("无"));
     menu->addSeparator();
-    QAction *highAction   = menu->addAction(QStringLiteral("高"));
-    QAction *mediumAction = menu->addAction(QStringLiteral("中"));
-    QAction *lowAction    = menu->addAction(QStringLiteral("低"));
+    QAction *highAction   = menu->addAction(tr("高"));
+    QAction *mediumAction = menu->addAction(tr("中"));
+    QAction *lowAction    = menu->addAction(tr("低"));
 
     // 连接菜单选择信号
     connect(menu, &QMenu::triggered,
@@ -153,7 +179,7 @@ void HeaderOverlayWidget::showPriorityPopup(const QRect &iconRect)
                 QString priority = action->text();
                 qDebug() << "selected priority:" << action->text();
 
-                if(priority == "无"){
+                if(priority == tr("无")){
                     // 清除优先级过滤
                     emit filterSelected(
                         m_currentField,

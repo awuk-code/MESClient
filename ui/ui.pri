@@ -35,3 +35,5 @@ SOURCES +=      \
     $$PWD/subheaderwidget.cpp \
     $$PWD/toggleswitchwidget.cpp
 
+FORMS +=
+

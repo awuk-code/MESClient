@@ -31,9 +31,9 @@ TabConfigs ProductionTaskPage::Tabs() const
 {
     return
         {
-            {"未开工", PageDisplayType::TABLE, QVariant::fromValue(FilterStatus::WAITWORK)},
-            {"已开工", PageDisplayType::TABLE,QVariant::fromValue(FilterStatus::ALREADY)},
-            {"已完工", PageDisplayType::TABLE,QVariant::fromValue(FilterStatus::FINISH)},
+            {tr("未开工"), PageDisplayType::TABLE, QVariant::fromValue(FilterStatus::WAITWORK)},
+            {tr("已开工"), PageDisplayType::TABLE,QVariant::fromValue(FilterStatus::ALREADY)},
+            {tr("已完工"), PageDisplayType::TABLE,QVariant::fromValue(FilterStatus::FINISH)},
         };
 }
 
@@ -54,12 +54,12 @@ FieldFilterProxyModel* ProductionTaskPage::createProxy(const QVariant& data)
 
 QString ProductionTaskPage::pageTitle() const
 {
-    return "生产任务列表";
+    return tr("生产任务列表");
 }
 
 QString ProductionTaskPage::searchInfo() const
 {
-    return "请输入表单号";
+    return tr("请输入表单号");
 }
 
 void ProductionTaskPage::addWidgetToTitle(QHBoxLayout *layout)

@@ -104,7 +104,7 @@ void ToggleSwitchWidget::paintEvent(QPaintEvent *)
         if (m_hovered)
             leftColor = hoverColor;
 
-        setToolTip(QStringLiteral("收缩左侧区域"));
+        setToolTip(tr("收缩左侧区域"));
     }
     else
     {
@@ -116,7 +116,7 @@ void ToggleSwitchWidget::paintEvent(QPaintEvent *)
         if (m_hovered)
             rightColor = hoverColor;
 
-        setToolTip(QStringLiteral("展开左侧区域"));
+        setToolTip(tr("展开左侧区域"));
     }
 
     painter.fillRect(leftRect, leftColor);

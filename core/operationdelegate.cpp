@@ -7,6 +7,13 @@ OperationDelegate::OperationDelegate(QObject *parent)
     : BaseItemDelegate{parent}
 {}
 
+int OperationDelegate::minimumColumnWidth()
+{
+    // 操作列内有“标签打印”和“开工”两个按钮：
+    // 左边距 10 + 按钮 60 + 间距 10 + 按钮 60 + 右边距 10。
+    return 150;
+}
+
 /**
  * @brief 将修改后的整行数据写回真实 SourceModel
  *
@@ -85,14 +92,14 @@ void OperationDelegate::paint(
     painter->setPen(Qt::white);
     painter->drawText(printRect,
                       Qt::AlignCenter,
-                      "标签打印");
+                      tr("标签打印"));
 
     // 开工按钮
     // 未打印：灰色
     // 已打印：绿色
     QString status =  rowData.value("status").toString();
     QColor startColor;
-    if (status != QStringLiteral("已完工"))
+    if (status != tr("已完工"))
     {
         startColor = QColor("#67C23A");
     }
@@ -108,7 +115,7 @@ void OperationDelegate::paint(
     painter->setPen(Qt::white);
     painter->drawText(startRect,
                       Qt::AlignCenter,
-                      "开工");
+                      tr("开工"));
 
     painter->restore();
 }
@@ -119,7 +126,7 @@ QSize OperationDelegate::sizeHint(const QStyleOptionViewItem &option,
     Q_UNUSED(index)
 
     QSize size = BaseItemDelegate::sizeHint(option, index);
-    size.setWidth(qMax(size.width(), 150));
+    size.setWidth(qMax(size.width(), minimumColumnWidth()));
     return size;
 }
 
@@ -178,10 +185,10 @@ bool OperationDelegate::editorEvent(
             rowData.value("status").toString();
 
         // 开工按钮只限制已完工任务不可再次开工；后续若需要恢复“必须先标签打印”，在这里加接口/状态判断。
-        if (status != QStringLiteral("已完工"))
+        if (status != tr("已完工"))
         {
             rowData[FIELD_STARTED] = true;
-            rowData["status"] = QStringLiteral("已开工");
+            rowData["status"] = tr("已开工");
 
             if (updateRowData(model, index, rowData))
             {

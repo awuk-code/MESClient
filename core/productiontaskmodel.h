@@ -8,6 +8,7 @@
 
 class ProductionTaskModel : public BaseTableModel
 {
+    Q_OBJECT
 public:
     explicit ProductionTaskModel(QObject *parent = nullptr);
 

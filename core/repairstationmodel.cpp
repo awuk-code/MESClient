@@ -22,158 +22,115 @@ void RepairStationModel::setColumnHeader()
     m_columns =
         {
             {
-                "选择",
+                tr("选择"),
                 "checked",
-                50,
                 true,
                 false,
-                true,
-                Qt::AlignCenter,
                 ColumnType::CheckBox,
-                QHeaderView::Fixed,
                 FilterType::None,
                 m_checkBoxDelegate
             },
             {
-                "序号",
+                tr("序号"),
                 "rowNumber",
-                50,
                 true,
                 false,
-                true,
-                Qt::AlignCenter,
                 ColumnType::RowNumber,
-                QHeaderView::Fixed
             },
             {
-                "异常处理单号",
+                tr("异常处理单号"),
                 "exceptionHandleNoLink",
-                170,
                 true,
                 false,
-                true,
-                Qt::AlignCenter,
                 ColumnType::TextLink,
-                QHeaderView::Fixed,
                 FilterType::Keyword,
                 m_textLinkDelegate
             },
             {
-                "异常处理单号",
+                tr("异常处理单号"),
                 "exceptionHandleNo",
-                170,
                 true,
                 false,
-                true,
-                Qt::AlignCenter,
                 ColumnType::Normal,
-                QHeaderView::Fixed,
                 FilterType::Keyword
             },
             {
-                "生产任务单号",
+                tr("生产任务单号"),
                 "taskNo",
-                180,
                 true,
                 false,
-                true,
-                Qt::AlignCenter,
                 ColumnType::Normal,
-                QHeaderView::Fixed,
                 FilterType::Keyword
             },
             {
-                "返工任务单号",
+                tr("返工任务单号"),
                 "reworkTaskNo",
-                180,
                 true,
                 false,
-                true,
-                Qt::AlignCenter,
                 ColumnType::TextLink,
-                QHeaderView::Fixed,
                 FilterType::Keyword,
                 m_textLinkDelegate
             },
             {
-                "生产工艺路线",
-                "routeName",
-                180
+                tr("生产工艺路线"),
+                "routeName"
             },
             {
-                "产品型号",
+                tr("产品型号"),
                 "productModel",
-                180,
                 true,
                 false,
-                false,
-                Qt::AlignCenter,
                 ColumnType::Normal,
-                QHeaderView::ResizeToContents,
                 FilterType::Keyword
             },
             {
-                "产品SN",
-                "productSN",
-                180
+                tr("产品SN"),
+                "productSN"
             },
             {
-                "异常数量",
-                "abnormalCount",
-                100
+                tr("异常数量"),
+                "abnormalCount"
             },
             {
-                "异常类型",
-                "abnormalType",
-                130
+                tr("异常类型"),
+                "abnormalType"
             },
             {
-                "异常现象",
-                "abnormalPhenomenon",
-                180
+                tr("异常现象"),
+                "abnormalPhenomenon"
             },
             {
-                "异常图片",
+                tr("异常图片"),
                 "abnormalImage",
-                120,
                 true,
                 false,
-                true,
-                Qt::AlignCenter,
                 ColumnType::TextLink,
-                QHeaderView::Fixed,
                 FilterType::None,
                 m_textLinkDelegate
             },
             {
-                "异常上报工序",
-                "reportProcess",
-                150
+                tr("异常上报工序"),
+                "reportProcess"
             },
             {
-                "异常上报时间",
-                "reportTime",
-                160
+                tr("异常上报时间"),
+                "reportTime"
             },
             {
-                "产线编码",
-                "lineNo",
-                130
+                tr("产线编码"),
+                "lineNo"
             },
             {
-                "工作站编号",
-                "stationNo",
-                130
+                tr("工作站编号"),
+                "stationNo"
             },
             {
-                "上报人员",
-                "reporter",
-                120
+                tr("上报人员"),
+                "reporter"
             },
             {
-                "异常处理方式",
-                "handleMethod",
-                160
+                tr("异常处理方式"),
+                "handleMethod"
             },
 
         };

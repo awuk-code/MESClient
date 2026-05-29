@@ -103,37 +103,37 @@ bool FieldFilterProxyModel::filterAcceptsRow(int srcRow, const QModelIndex &srcP
         break;
 
     case FilterStatus::WAITWORK:
-        if (status != "未开工")
+        if (status != tr("未开工"))
             return false;
         break;
 
     case FilterStatus::ALREADY:
-        if (status != "已开工")
+        if (status != tr("已开工"))
             return false;
         break;
 
     case FilterStatus::FINISH:
-        if (status != "已完工")
+        if (status != tr("已完工"))
             return false;
         break;
 
     case FilterStatus::PENDING:
-        if (status != "待处理")
+        if (status != tr("待处理"))
             return false;
         break;
 
     case FilterStatus::REVIEW:
-        if (status != "审核中")
+        if (status != tr("审核中"))
             return false;
         break;
 
     case FilterStatus::WAITRETURN:
-        if (status != "待返工")
+        if (status != tr("待返工"))
             return false;
         break;
 
     case FilterStatus::PROCESSED:
-        if (status != "已处理")
+        if (status != tr("已处理"))
             return false;
         break;
 

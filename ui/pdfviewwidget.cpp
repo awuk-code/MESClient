@@ -41,10 +41,10 @@ void PdfViewWidget::initUI()
         new QHBoxLayout;
 
     m_prevBtn =
-        new QPushButton("上一页", this);
+        new QPushButton(tr("上一页"), this);
 
     m_nextBtn =
-        new QPushButton("下一页", this);
+        new QPushButton(tr("下一页"), this);
 
     m_zoomInBtn =
         new QPushButton("+", this);
@@ -185,7 +185,7 @@ bool PdfViewWidget::loadPdf(
 
 void PdfViewWidget::renderPage()
 {
-    qDebug() << __FUNCTION__ <<"开始渲染第"<<m_currentPage<<"页";
+    qDebug() << __FUNCTION__ << tr("开始渲染第") << m_currentPage << tr("页");
     if (!m_document)   return;
 
     auto page =
@@ -205,7 +205,7 @@ void PdfViewWidget::renderPage()
     // 根据缩放比例提高DPI
     qreal dpr = devicePixelRatioF();
     int dpi = 144.0 * m_scaleFactor * dpr;
-    qDebug() << __FUNCTION__ <<"渲染DPI："<<dpi<<"DPR:"<<dpr;
+    qDebug() << __FUNCTION__ << tr("渲染DPI：") << dpi << "DPR:" << dpr;
 
     auto image =renderer.render_page( page, dpi,dpi);
 
@@ -214,7 +214,7 @@ void PdfViewWidget::renderPage()
         delete page;
         return;
     }
-    qDebug() << __FUNCTION__ <<"渲染完成尺寸："<<image.width()<<image.height();
+    qDebug() << __FUNCTION__ << tr("渲染完成尺寸：") << image.width() << image.height();
     // Poppler -> QImage
     QImage qimage(reinterpret_cast<const uchar*>(image.data()),
         image.width(),

@@ -23,7 +23,7 @@ void ProductionTaskModel::initConnect()
             this,
             [](int row)
             {
-                qDebug() << __FUNCTION__ <<"打印 row =" << row;
+                qDebug() << __FUNCTION__ << ProductionTaskModel::tr("打印 row =") << row;
             });
 
     connect(opDelegate,
@@ -31,7 +31,7 @@ void ProductionTaskModel::initConnect()
             this,
             [](int row)
             {
-                qDebug() << __FUNCTION__ << "开工 row =" << row;
+                qDebug() << __FUNCTION__ << ProductionTaskModel::tr("开工 row =") << row;
             });
 
 }
@@ -42,183 +42,137 @@ void ProductionTaskModel::setColumnHeader()
         {
             // 选择框
             {
-                "选择",                    // title
+                tr("选择"),                // title
                 "checked",                // field
-                50,                       // width
                 true,                     // visible
                 false,                    // editable
-                true,                     // fixedWidth
-                Qt::AlignCenter,          // alignment
                 ColumnType::CheckBox,     // type
-                QHeaderView::Fixed,       // resizeMode
                 FilterType::None,         // filterType
                 m_checkBoxDelegate        // delegate
             },
 
             // 序号
             {
-                "序号",
+                tr("序号"),
                 "rowNumber",
-                50,
                 true,
                 false,
-                true,
-                Qt::AlignCenter,
                 ColumnType::RowNumber,
-                QHeaderView::Fixed
             },
 
             // 生产任务单号
             {
-                "生产任务单号",
+                tr("生产任务单号"),
                 "taskNo",
-                180,
                 true,
                 false,
-                true,
-                Qt::AlignCenter,
                 ColumnType::Normal,
-                QHeaderView::Fixed,
                 FilterType::Keyword
             },
 
             // 产品型号
             {
-                "产品型号",
+                tr("产品型号"),
                 "productModel",
-                180,
                 true,
                 false,
-                false,
-                Qt::AlignCenter,
                 ColumnType::Normal,
-                QHeaderView::ResizeToContents,
                 FilterType::Keyword
             },
 
             // ERP编码
             {
-                "产品ERP编码",
+                tr("产品ERP编码"),
                 "erpCode",
-                180,
                 true,
                 false,
-                false,
-                Qt::AlignCenter,
                 ColumnType::Normal,
-                QHeaderView::ResizeToContents,
                 FilterType::Keyword
             },
 
             // 产品名称
             {
-                "产品名称",
+                tr("产品名称"),
                 "productName",
-                180,
                 true,
                 false,
-                false,
-                Qt::AlignCenter,
                 ColumnType::Normal,
-                QHeaderView::ResizeToContents,
                 FilterType::Keyword
             },
 
             // 产品类型
             {
-                "产品类型",
-                "productType",
-                120
+                tr("产品类型"),
+                "productType"
             },
 
             // 生产线编号
             {
-                "生产线编号",
-                "lineNo",
-                150
+                tr("生产线编号"),
+                "lineNo"
             },
 
             // 工单数量
             {
-                "工单数量",
-                "workCount",
-                120
+                tr("工单数量"),
+                "workCount"
             },
 
             // 是否分配
             {
-                "是否分配",
-                "isAssigned",
-                120
+                tr("是否分配"),
+                "isAssigned"
             },
 
             // info任务单号
             {
-                "info任务单号",
-                "infoTaskNo",
-                180
+                tr("info任务单号"),
+                "infoTaskNo"
             },
 
             // 工艺路线
             {
-                "生产工艺路线",
-                "routeName",
-                180
+                tr("生产工艺路线"),
+                "routeName"
             },
 
             // 计划开始时间
             {
-                "计划开始时间",
+                tr("计划开始时间"),
                 "startTime",
-                130,
                 true,
                 false,
-                true,
-                Qt::AlignCenter,
                 ColumnType::Normal,
-                QHeaderView::Fixed,
                 FilterType::Date
             },
 
             // 计划完成时间
             {
-                "计划完成时间",
+                tr("计划完成时间"),
                 "finishTime",
-                130,
                 true,
                 false,
-                true,
-                Qt::AlignCenter,
                 ColumnType::Normal,
-                QHeaderView::Fixed,
                 FilterType::Date
             },
 
             // 优先级
             {
-                "优先级",
+                tr("优先级"),
                 "priority",
-                100,
                 true,
                 false,
-                true,
-                Qt::AlignCenter,
                 ColumnType::Normal,
-                QHeaderView::Fixed,
                 FilterType::Priority
             },
 
             // 操作列
             {
-                "操作",
+                tr("操作"),
                 "action",
-                180,
                 true,
                 false,
-                true,
-                Qt::AlignCenter,
                 ColumnType::Operation,
-                QHeaderView::Fixed,
                 FilterType::None,
                 opDelegate
             }

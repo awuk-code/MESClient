@@ -70,10 +70,10 @@ TabConfigs RepairStationPage::Tabs() const
 {
     return
         {
-         {"待处理", PageDisplayType::TABLE, QVariant::fromValue(FilterStatus::PENDING)},
-         {"审核中", PageDisplayType::TABLE,QVariant::fromValue(FilterStatus::REVIEW)},
-         {"待返工", PageDisplayType::TABLE,QVariant::fromValue(FilterStatus::WAITRETURN)},
-         {"已处理", PageDisplayType::TABLE,QVariant::fromValue(FilterStatus::PROCESSED)},
+         {tr("待处理"), PageDisplayType::TABLE, QVariant::fromValue(FilterStatus::PENDING)},
+         {tr("审核中"), PageDisplayType::TABLE,QVariant::fromValue(FilterStatus::REVIEW)},
+         {tr("待返工"), PageDisplayType::TABLE,QVariant::fromValue(FilterStatus::WAITRETURN)},
+         {tr("已处理"), PageDisplayType::TABLE,QVariant::fromValue(FilterStatus::PROCESSED)},
          };
 }
 
@@ -93,12 +93,12 @@ FieldFilterProxyModel *RepairStationPage::createProxy(const QVariant &data)
 
 QString RepairStationPage::pageTitle() const
 {
-    return "维修站";
+    return tr("维修站");
 }
 
 QString RepairStationPage::searchInfo() const
 {
-    return "请输入表单号";
+    return tr("请输入表单号");
 }
 
 void RepairStationPage::addWidgetToTitle(QHBoxLayout *layout)

@@ -117,13 +117,13 @@ void MainWindow::initConnect()
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     ConfigManager::instance().saveConfig();
-    funcDebug() <<"关闭窗口写入时间";
+    funcDebug() << tr("关闭窗口写入时间");
     event->accept();
 }
 
 void MainWindow::onPageChanged(int index/*, QString &title*/)
 {
-    funcDebug()<<"收到页面切换信号index= "<<index;
+    funcDebug() << tr("收到页面切换信号index= ") << index;
     m_stack->setCurrentIndex(index-1);
     updateSubHeaderNavigation(index);
 }
@@ -138,11 +138,11 @@ void MainWindow::updateSubHeaderNavigation(int index)
     switch (index)
     {
     case 1:
-        m_subHeader->setPageNavigation({QStringLiteral("生产任务"), QStringLiteral("生产任务列表")});
+        m_subHeader->setPageNavigation({tr("生产任务"), tr("生产任务列表")});
         break;
 
     case 2:
-        m_subHeader->setPageNavigation({QStringLiteral("工序站点")});
+        m_subHeader->setPageNavigation({tr("工序站点")});
         m_subHeader->setProcessNavigationVisible(true);
         // TODO: 当前工序需要通过接口获取，接口返回后调用
         // m_subHeader->setCurrentProcessName(processName) 刷新这里的工序导航。
@@ -150,11 +150,11 @@ void MainWindow::updateSubHeaderNavigation(int index)
         break;
 
     case 3:
-        m_subHeader->setPageNavigation({QStringLiteral("维修站"), QStringLiteral("维修站列表")});
+        m_subHeader->setPageNavigation({tr("维修站"), tr("维修站列表")});
         break;
 
     default:
-        m_subHeader->setPageNavigation({QStringLiteral("未知页面")});
+        m_subHeader->setPageNavigation({tr("未知页面")});
         break;
     }
 
@@ -170,11 +170,11 @@ void MainWindow::updateSubHeaderNavigation(PageType type)
     switch (type)
     {
     case PageType::ProductionTask:
-        m_subHeader->setPageNavigation({QStringLiteral("生产任务"), QStringLiteral("生产任务列表")});
+        m_subHeader->setPageNavigation({tr("生产任务"), tr("生产任务列表")});
         break;
 
     case PageType::ProcessStation:
-        m_subHeader->setPageNavigation({QStringLiteral("工序站点")});
+        m_subHeader->setPageNavigation({tr("工序站点")});
         m_subHeader->setProcessNavigationVisible(true);
         // TODO: 当前工序需要通过接口获取，接口返回后调用
         // m_subHeader->setCurrentProcessName(processName) 刷新这里的工序导航。
@@ -182,15 +182,15 @@ void MainWindow::updateSubHeaderNavigation(PageType type)
         break;
 
     case PageType::RepairStation:
-        m_subHeader->setPageNavigation({QStringLiteral("维修站"), QStringLiteral("维修站列表")});
+        m_subHeader->setPageNavigation({tr("维修站"), tr("维修站列表")});
         break;
 
     case PageType::RepairJudge:
-        m_subHeader->setPageNavigation({QStringLiteral("维修站"), QStringLiteral("维修判定")});
+        m_subHeader->setPageNavigation({tr("维修站"), tr("维修判定")});
         break;
 
     case PageType::ReworkTask:
-        m_subHeader->setPageNavigation({QStringLiteral("维修站"), QStringLiteral("返工任务单")});
+        m_subHeader->setPageNavigation({tr("维修站"), tr("返工任务单")});
         m_subHeader->setProcessNavigationVisible(true);
         // TODO: 当前工序需要通过接口获取，接口返回后调用
         // m_subHeader->setCurrentProcessName(processName) 刷新返工任务单工序导航。
@@ -198,7 +198,7 @@ void MainWindow::updateSubHeaderNavigation(PageType type)
         break;
 
     default:
-        m_subHeader->setPageNavigation({QStringLiteral("未知页面")});
+        m_subHeader->setPageNavigation({tr("未知页面")});
         break;
     }
 }
@@ -233,14 +233,14 @@ void MainWindow::openPage(const QString &pageId)
 {
     if(!m_pageMap.contains(pageId))
     {
-        funcDebug() << "页面不存在:" << pageId;
+        funcDebug() << tr("页面不存在:") << pageId;
         return;
     }
     QWidget* page = m_pageMap.value(pageId);
 
     m_stack->setCurrentWidget(page);
 
-    funcDebug() << "打开页面:" << pageId;
+    funcDebug() << tr("打开页面:") << pageId;
 }
 
 void MainWindow::onOpenPage(PageType type)

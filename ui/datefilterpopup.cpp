@@ -13,9 +13,9 @@ DateFilterPopup::DateFilterPopup(QWidget *parent)
     layout->addWidget(m_calendar);
 
     auto btnLayout = new QHBoxLayout;
-    auto displayBtn = new QPushButton("显示全部", this);
-    auto okBtn = new QPushButton("确定", this);
-    auto cancelBtn = new QPushButton("取消", this);
+    auto displayBtn = new QPushButton(tr("显示全部"), this);
+    auto okBtn = new QPushButton(tr("确定"), this);
+    auto cancelBtn = new QPushButton(tr("取消"), this);
 
     btnLayout->addStretch();
     btnLayout->addWidget(displayBtn);

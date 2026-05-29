@@ -22,8 +22,8 @@ static QString lineEditPlaceholderText(const QModelIndex &index)
     }
 
     return columnTitle.isEmpty()
-               ? QStringLiteral("请输入或扫入")
-               : QStringLiteral("请输入或扫入%1").arg(columnTitle);
+               ? LineEditDelegate::tr("请输入或扫入")
+               : LineEditDelegate::tr("请输入或扫入%1").arg(columnTitle);
 }
 
 QWidget *LineEditDelegate::createEditor(

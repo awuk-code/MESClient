@@ -3,13 +3,17 @@
 #include "basetablemodel.h"
 #include "headeroverlaywidget.h"
 #include "imageviewwidget.h"
+#include "operationdelegate.h"
 
 #include <QDateTime>
+#include <QEvent>
 #include <QFile>
 #include <QFileDialog>
+#include <QFontMetrics>
 #include <QMessageBox>
 #include <QStandardPaths>
 #include <QScrollBar>
+#include <QTimer>
 #include <QTextStream>
 
 BasePageWidget::BasePageWidget(QWidget *parent)
@@ -33,7 +37,7 @@ void BasePageWidget::onPageLinkClicked(const QVariantMap &rowData, const QString
 void BasePageWidget::onImageLinkClicked(const QString &NGNumber)
 {
     qDebug() << __FUNCTION__ <<"clicked";
-    qDebug() << "查看图片:" << NGNumber;
+    qDebug() << tr("查看图片:") << NGNumber;
 
     // 1. 创建图片查看器
 
@@ -51,49 +55,25 @@ void BasePageWidget::onImageLinkClicked(const QString &NGNumber)
     //     viewer);
 }
 
-void BasePageWidget::updateTableResizeMode()
+bool BasePageWidget::eventFilter(QObject* watched, QEvent* event)
 {
-    return;
-/*
-    //获取基础模型
-    auto baseModel = qobject_cast<BaseTableModel*>(m_model);
-    if(!baseModel) return;
-
-    const auto& columns = baseModel->columns();
-
-    //判段window最大化
-    bool windowIsMax = window()->isMaximized();
-    //遍历表格
-    for(QTableView* table : std::as_const(m_tables)){
-        if(!table) continue;
-
-        auto header = table->horizontalHeader();
-        const QVariant tabData = table->property("tabData");
-
-        for(int i=0; i< columns.size();++i){
-            const auto &cfg = columns[i];
-
-            if(!isColumnVisibleForTab(cfg, tabData)) continue;
-
-            if(windowIsMax){
-
-                if(cfg.resizeMode == QHeaderView::Fixed){
-                    header->setSectionResizeMode(i,QHeaderView::Fixed);
-                    table->setColumnWidth(i, cfg.width);
-                }      else{
-                    header->setSectionResizeMode(i,QHeaderView::Stretch);
-                }
-            }else{
-                //普通窗口
-                header->setSectionResizeMode(i,cfg.resizeMode);
-                if(cfg.resizeMode == QHeaderView::Fixed){
-                    table->setColumnWidth(i, cfg.width);
-                }
-            }
-
+    if (event && event->type() == QEvent::Resize)
+    {
+        if (auto table = qobject_cast<QTableView*>(watched))
+        {
+            QTimer::singleShot(0, this, [this, table]() {
+                applyAdaptiveColumnWidths(table);
+            });
         }
     }
-*/
+
+    return QWidget::eventFilter(watched, event);
+}
+
+void BasePageWidget::updateTableResizeMode()
+{
+    for (QTableView* table : std::as_const(m_tables))
+        applyAdaptiveColumnWidths(table);
 }
 
 TabConfigs BasePageWidget::Tabs() const
@@ -128,7 +108,7 @@ void BasePageWidget::setupSearchLayout(QHBoxLayout* layout)
     layout->addWidget(m_searchBtn);
     layout->addStretch();
 
-    m_exportBtn = new QPushButton("导出报表",this);
+    m_exportBtn = new QPushButton(tr("导出报表"), this);
     m_exportBtn->setProperty("buttonRole", "export");
     layout->addWidget(m_exportBtn);
 }
@@ -297,7 +277,7 @@ void BasePageWidget::exportCurrentTableToExcel()
     const QString defaultDir =
         QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
     const QString defaultName =
-        QStringLiteral("%1/报表_%2.xls")
+        tr("%1/报表_%2.xls")
             .arg(defaultDir)
             .arg(QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss"));
 
@@ -427,7 +407,25 @@ QTableView *BasePageWidget::createTable(FieldFilterProxyModel *proxy, const QVar
     // 7. 设置表格外观
     setupTableAppearance(table);
 
-    // 8. 根据窗口状态调整列宽
+    table->installEventFilter(this);
+    connect(proxy, &QAbstractItemModel::modelReset, this, [=]() {
+        QTimer::singleShot(0, this, [=]() { applyAdaptiveColumnWidths(table); });
+    });
+    connect(proxy, &QAbstractItemModel::layoutChanged, this, [=]() {
+        QTimer::singleShot(0, this, [=]() { applyAdaptiveColumnWidths(table); });
+    });
+    connect(proxy, &QAbstractItemModel::rowsInserted, this, [=]() {
+        QTimer::singleShot(0, this, [=]() { applyAdaptiveColumnWidths(table); });
+    });
+    connect(proxy, &QAbstractItemModel::rowsRemoved, this, [=]() {
+        QTimer::singleShot(0, this, [=]() { applyAdaptiveColumnWidths(table); });
+    });
+    connect(proxy, &QAbstractItemModel::dataChanged, this, [=]() {
+        QTimer::singleShot(0, this, [=]() { applyAdaptiveColumnWidths(table); });
+    });
+
+    // 8. 按内容自适应列宽；空间足够时自动铺满表格区域。
+    QTimer::singleShot(0, this, [=]() { applyAdaptiveColumnWidths(table); });
     return table;
 }
 
@@ -536,18 +534,9 @@ void BasePageWidget::setupColumns(QTableView *table, const QVariant& tabData)
         // =========================
         // 2. 列宽模式
         // =========================
-        const bool contentSizedColumn =
-            cfg.type == ColumnType::RowNumber ||
-            cfg.type == ColumnType::CheckBox ||
-            cfg.type == ColumnType::Operation ||
-            cfg.filterType == FilterType::Date ||
-            cfg.filterType == FilterType::Priority;
-
-        header->setSectionResizeMode(
-            col,
-            contentSizedColumn
-                ? QHeaderView::ResizeToContents
-                : QHeaderView::Stretch);
+        // 所有列统一由 applyAdaptiveColumnWidths() 计算实际宽度：
+        // 先按内容完整显示，空间足够时再扩展铺满窗口。
+        header->setSectionResizeMode(col, QHeaderView::Interactive);
 
         // =========================
         // 3. Delegate,输入框代理创建
@@ -568,18 +557,118 @@ void BasePageWidget::setupColumns(QTableView *table, const QVariant& tabData)
             table->setItemDelegateForColumn(col, nullptr);
         }
 
-        // =========================
-        // 4. 对齐方式（补强项，建议保留）
-        // =========================
-        table->model()->setHeaderData(
-            col,
-            Qt::Horizontal,
-            // QVariant::fromValue(cfg.alignment),
-            static_cast<int>(cfg.alignment),
-            Qt::TextAlignmentRole
-            );
+        // 所有表格单元格和表头默认居中，具体返回值在 BaseTableModel::data() 中统一处理。
     }
 
+    applyAdaptiveColumnWidths(table);
+}
+
+int BasePageWidget::contentWidthForColumn(QTableView* table, int column) const
+{
+    if (!table || !table->model() || !m_model)
+        return 0;
+
+    auto baseModel = qobject_cast<BaseTableModel*>(m_model);
+    if (!baseModel)
+        return 0;
+
+    const auto& columns = baseModel->columns();
+    if (column < 0 || column >= columns.size())
+        return 0;
+
+    const auto& cfg = columns[column];
+    const int padding = 28;
+
+    QFontMetrics headerFm(table->horizontalHeader()->font());
+    const QString headerText =
+        table->model()->headerData(column, Qt::Horizontal, Qt::DisplayRole).toString();
+    int width = headerFm.horizontalAdvance(headerText) + padding;
+
+    if (cfg.filterType == FilterType::Date ||
+        cfg.filterType == FilterType::Priority)
+    {
+        width += 18;
+    }
+
+    if (cfg.type == ColumnType::CheckBox)
+    {
+        width = qMax(width, 44);
+    }
+    else if (cfg.type == ColumnType::Operation)
+    {
+        width = qMax(width, OperationDelegate::minimumColumnWidth());
+    }
+
+    QFontMetrics cellFm(table->font());
+    for (int row = 0; row < table->model()->rowCount(); ++row)
+    {
+        const QModelIndex index = table->model()->index(row, column);
+        QString text = index.data(Qt::DisplayRole).toString();
+
+        if (text.isEmpty() && cfg.type == ColumnType::LineEdit)
+            text = headerText.isEmpty() ? tr("请输入或扫入") : tr("请输入或扫入%1").arg(headerText);
+
+        width = qMax(width, cellFm.horizontalAdvance(text) + padding);
+    }
+
+    return width;
+}
+
+void BasePageWidget::applyAdaptiveColumnWidths(QTableView* table)
+{
+    if (!table || !table->model() || !m_model)
+        return;
+
+    auto baseModel = qobject_cast<BaseTableModel*>(m_model);
+    if (!baseModel)
+        return;
+
+    auto header = table->horizontalHeader();
+    if (!header)
+        return;
+
+    const auto& columns = baseModel->columns();
+    QVector<int> visibleColumns;
+    QVector<int> widths(columns.size(), 0);
+    int totalWidth = 0;
+    int stretchableCount = 0;
+
+    const QVariant tabData = table->property("tabData");
+    for (int col = 0; col < columns.size(); ++col)
+    {
+        if (table->isColumnHidden(col) || !isColumnVisibleForTab(columns[col], tabData))
+            continue;
+
+        const int width = contentWidthForColumn(table, col);
+        widths[col] = width;
+        totalWidth += width;
+        visibleColumns.append(col);
+
+        if (columns[col].type != ColumnType::Operation)
+            ++stretchableCount;
+    }
+
+    if (visibleColumns.isEmpty())
+        return;
+
+    const int availableWidth = table->viewport()->width();
+    int extraWidth = qMax(0, availableWidth - totalWidth);
+
+    for (int col : visibleColumns)
+    {
+        int finalWidth = widths[col];
+
+        // 操作列只保证按钮完整显示，不参与额外空间分配，避免按钮区域被拉得过宽。
+        if (extraWidth > 0 && columns[col].type != ColumnType::Operation && stretchableCount > 0)
+        {
+            const int addWidth = extraWidth / stretchableCount;
+            finalWidth += addWidth;
+            extraWidth -= addWidth;
+            --stretchableCount;
+        }
+
+        header->resizeSection(col, finalWidth);
+    }
 }
 
 void BasePageWidget::setupTableAppearance(QTableView *table)
