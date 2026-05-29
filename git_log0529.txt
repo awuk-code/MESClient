@@ -1,0 +1,93 @@
+﻿2e140e7 2026-05-28 23:58:35 awuk 鎻愪氦澶т慨璇存槑鏂囦欢锛屽悓鏃跺畬鎴愰櫎杩囩珯浠ュ鐨勬寜閽璁?M	app/main.cpp
+M	core/operationdelegate.cpp
+M	core/operationdelegate.h
+M	core/productiontaskmodel.cpp
+M	ui/basepagewidget.cpp
+M	ui/basepagewidget.h
+M	ui/mainwindow.cpp
+M	ui/processstationpage.cpp
+M	ui/processstationpage.h
+M	ui/productiontaskpage.cpp
+M	ui/productiontaskpage.h
+M	ui/repairjudgepage.cpp
+M	ui/repairjudgepage.h
+M	ui/repairstationpage.cpp
+A	"\345\244\247\346\224\271\344\277\256\346\224\271\350\257\264\346\230\216\346\261\207\346\200\273.txt"
+A	"\346\214\211\351\222\256\345\212\237\350\203\275\344\277\256\346\224\271\350\257\264\346\230\216.txt"
+
+3fa0a10 2026-05-28 23:19:19 awuk 瀹屽杽绯荤粺锛岃烦杞姛鑳界瓑锛屽墿浣欏嚑涓寜閽姛鑳藉皻鏈疄鐜帮紝鍏蜂綋淇℃伅鏌ョ湅'褰撳墠鐗堟湰椤甸潰瀵艰埅涓庤繑宸ヤ换鍔″崟淇敼璇存槑.txt
+M	commFunc/NavPageType.h
+M	core/navigationmanager.cpp
+M	core/navigationmanager.h
+M	ui/mainwindow.cpp
+M	ui/mainwindow.h
+M	ui/repairstationpage.cpp
+M	ui/repairstationpage.h
+A	"\345\275\223\345\211\215\347\211\210\346\234\254\351\241\265\351\235\242\345\257\274\350\210\252\344\270\216\350\277\224\345\267\245\344\273\273\345\212\241\345\215\225\344\277\256\346\224\271\350\257\264\346\230\216.txt"
+
+2602f0b 2026-05-28 22:58:47 awuk 娣诲姞瀵艰埅
+M	ui/mainwindow.cpp
+M	ui/mainwindow.h
+M	ui/subheaderwidget.cpp
+M	ui/subheaderwidget.h
+
+b4ed79e 2026-05-28 22:45:19 awuk 鏂板缁翠慨鍒ゆ柇椤甸潰鍜岃繑宸ヤ换鍔″崟椤甸潰
+M	core/processstationmodel.cpp
+M	core/processstationmodel.h
+M	ui/mainwindow.cpp
+M	ui/processstationpage.cpp
+M	ui/processstationpage.h
+A	"\350\277\224\345\267\245\344\273\273\345\212\241\345\215\225\347\225\214\351\235\242\344\277\256\346\224\271\350\257\264\346\230\216.txt"
+
+55e15db 2026-05-28 21:54:42 awuk 缁翠慨鍒ゅ畾椤甸潰
+M	app/main.cpp
+M	ui/repairjudgepage.cpp
+M	ui/repairjudgepage.h
+
+99cd1b9 2026-05-28 21:24:58 awuk 淇敼缁翠慨绔欑殑寮傚父澶勭悊鍗曞彿鐐瑰嚮鍜屾寜閽偣鍑?M	ui/basepagewidget.cpp
+M	ui/pdfviewwidget.cpp
+M	ui/repairstationpage.cpp
+M	ui/repairstationpage.h
+
+0dc6406 2026-05-28 08:29:27 awuk 鎼滅储绐楀彛鎸夐挳淇敼
+M	ui/basepagewidget.cpp
+M	ui/processstationpage.cpp
+M	ui/repairstationpage.cpp
+M	ui/repairstationpage.h
+A	"\346\220\234\347\264\242\345\214\272\346\214\211\351\222\256\344\277\256\346\224\271\350\257\264\346\230\216.txt"
+
+ae28af2 2026-05-28 02:44:03 awuk 鏄剧ず闂锛屾渶澶у寲鏈€灏忓寲
+M	app/main.cpp
+M	ui/headerwidget.cpp
+M	ui/headerwidget.h
+M	ui/mainwindow.cpp
+M	ui/mainwindow.h
+
+d429a18 2026-05-28 02:14:27 awuk 鍦‵ieldFilterProxyModel娣诲姞涓€涓嚱鏁皏oid addSearchFields锛坈onst QString& field锛夊拰涓€涓彉閲廞StringList searchFields锛岀敤鏉ユ浛鎹箣鍓嶇洿鎺ュ啓姝诲湪鍑芥暟閲岄潰鐨勬悳绱㈠叧閿瓧锛岃繖鏍峰彲浠ュ湪鍒涘缓model鏃舵墜鍔╬roxy.addSearchFields
+M	core/fieldfilterproxymodel.cpp
+M	core/fieldfilterproxymodel.h
+M	ui/processstationpage.cpp
+M	ui/productiontaskpage.cpp
+M	ui/repairstationpage.cpp
+A	"\346\220\234\347\264\242\345\255\227\346\256\265\351\205\215\347\275\256\345\214\226\344\277\256\346\224\271\350\257\264\346\230\216.txt"
+A	"\350\241\250\346\240\274\345\210\227\345\256\275\345\222\214\347\255\233\351\200\211\345\233\276\346\240\207\344\277\256\346\224\271\350\257\264\346\230\216.txt"
+
+4b11aa9 2026-05-28 01:59:45 awuk 鑷€傚簲瀹藉害淇敼
+M	core/basetablemodel.cpp
+M	core/lineeditdelegate.cpp
+M	core/lineeditdelegate.h
+M	core/operationdelegate.cpp
+M	core/operationdelegate.h
+M	ui/basepagewidget.cpp
+M	ui/basepagewidget.h
+M	ui/headeroverlaywidget.cpp
+M	ui/processstationpage.cpp
+A	"\350\207\252\351\200\202\345\272\224\345\256\275\345\272\246\344\277\256\346\224\271\350\257\264\346\230\216.txt"
+
+f82c832 2026-05-28 01:33:19 awuk 璁捐杈撳叆妗嗘偓娴彁绀?M	core/lineeditdelegate.cpp
+M	core/lineeditdelegate.h
+M	core/processstationmodel.cpp
+A	git
+A	"placeholderText\344\277\256\346\224\271\350\257\264\346\230\216.txt"
+M	ui/basepagewidget.cpp
+M	ui/processstationpage.cpp

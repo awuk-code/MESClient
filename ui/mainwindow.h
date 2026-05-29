@@ -29,6 +29,7 @@ private:
     void initConnect();
     void updateSubHeaderNavigation(int index);
     void updateSubHeaderNavigation(PageType type);
+    void updateSidebarSelection(PageType type);
 
 
 private slots:

@@ -82,6 +82,28 @@ void SideBarWidget::initConnect()
     });
 }
 
+void SideBarWidget::setCurrentPageIndex(int index)
+{
+    if (!m_group)
+        return;
+
+    auto checkedBtn = m_group->button(index);
+    if (!checkedBtn)
+        return;
+
+    checkedBtn->setChecked(true);
+
+    for (QAbstractButton* btn : m_group->buttons())
+    {
+        const QString path =
+            (btn == checkedBtn) ? QStringLiteral("icon_checked")
+                                : QStringLiteral("icon_normal");
+        btn->setIcon(QIcon(btn->property(path.toStdString().c_str()).toString()));
+    }
+
+    funcDebug() << "同步侧边栏选中菜单:" << index;
+}
+
 QWidget *SideBarWidget::createMenuItem(const QString &icon_normal, const QString &icon_checked, const QString &text, const QString &hoverText, int id)
 {
     funcDebug() <<"current Btn id = "<<id;

@@ -203,6 +203,32 @@ void MainWindow::updateSubHeaderNavigation(PageType type)
     }
 }
 
+void MainWindow::updateSidebarSelection(PageType type)
+{
+    if (!m_sidebar)
+        return;
+
+    switch (type)
+    {
+    case PageType::ProductionTask:
+        m_sidebar->setCurrentPageIndex(1);
+        break;
+
+    case PageType::ProcessStation:
+        m_sidebar->setCurrentPageIndex(2);
+        break;
+
+    case PageType::RepairStation:
+    case PageType::RepairJudge:
+    case PageType::ReworkTask:
+        m_sidebar->setCurrentPageIndex(3);
+        break;
+
+    default:
+        break;
+    }
+}
+
 void MainWindow::openPage(const QString &pageId)
 {
     if(!m_pageMap.contains(pageId))
@@ -237,7 +263,13 @@ void MainWindow::onOpenPage(PageType type)
         m_pageProcess->setProductionTaskData(
             NavigationManager::instance()->pageData(type));
     }
+    else if (type == PageType::ReworkTask && m_pageReworkTask)
+    {
+        m_pageReworkTask->setReworkTaskData(
+            NavigationManager::instance()->pageData(type));
+    }
 
     m_stack->setCurrentWidget(page);
     updateSubHeaderNavigation(type);
+    updateSidebarSelection(type);
 }

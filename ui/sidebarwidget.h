@@ -15,6 +15,7 @@ class SideBarWidget : public QWidget
     Q_OBJECT
 public:
     explicit SideBarWidget(QWidget *parent = nullptr);
+    void setCurrentPageIndex(int index);
 
 signals:
     void sigPageChanged(int index);

@@ -9,12 +9,14 @@
 #include <QTableWidget>
 #include <QList>
 #include <QVariant>
+#include <QVariantMap>
 
 #include "basepagewidget.h"
 #include "toggleswitchwidget.h"
 
 class QComboBox;
 class QLabel;
+class QGridLayout;
 
 class ProcessStationLeftPanel;
 class ProcessStationRightPanel;
@@ -26,6 +28,7 @@ public:
     explicit ProcessStationPage(QWidget *parent = nullptr);
     void setReworkTaskMode(bool advancedPermission);
     void setProductionTaskData(const QVariantMap& rowData);
+    void setReworkTaskData(const QVariantMap& rowData);
 
 private:
     void initUI();
@@ -49,12 +52,16 @@ public:
 
     explicit ProcessStationLeftPanel(QWidget* parent = nullptr);
     // 填充数据
-    void setTaskData(QTableWidget* table, const TaskList& keys, const TaskList& values);
+    void setTaskData(QGridLayout* layout, const QVector<QPair<QString, QString>>& fields, const QVariantMap& rowData, int fieldPairsPerRow = 0);
     void setTaskInfoValue(TaskList& values);
     void setTaskStatusValue(TaskList& values);
 
     void setAbnormalInfoValue(TaskList& values);
     void setReworkTaskStatusValue(TaskList& values);
+    void setTaskInfoData(const QVariantMap& rowData);
+    void setTaskStatusData(const QVariantMap& rowData);
+    void setAbnormalInfoData(const QVariantMap& rowData);
+    void setReworkTaskStatusData(const QVariantMap& rowData);
     void setDisplayMode(DisplayMode mode);
 
 
@@ -62,15 +69,18 @@ private:
     void initUI();
     void initConnect();
     // 将区域标题和表格拆开创建，后续权限切换时可以直接替换标题或显示指定区域。
-    QWidget* createTaskWidget(const QString &title, QLabel* &titleLabel, QTableWidget* &tableout);
+    QWidget* createTaskWidget(const QString &title, QLabel* &titleLabel, QGridLayout* &layoutout);
     QWidget* createTaskTitleWidget(const QString &title, QLabel* &titleLabel, QWidget* parentWidget);
-    QTableWidget* createTaskTable(QWidget* parentWidget);
+    QGridLayout* createInfoGrid(QWidget* parentWidget);
+    QLabel* createInfoTitleLabel(const QString& text, QWidget* parentWidget);
+    QLabel* createInfoValueLabel(const QString& text, QWidget* parentWidget);
     //创建扫码过站小页面
     QWidget* createPassWidget(const QString &title);
 
-    TaskList taskInfoKeys() const;
-    TaskList taskStatusKeys() const;
-    TaskList abnormalInfoKeys() const;
+    QVector<QPair<QString, QString>> taskInfoFields() const;
+    QVector<QPair<QString, QString>> taskStatusFields() const;
+    QVector<QPair<QString, QString>> abnormalInfoFields() const;
+    QVariantMap valuesToRowData(const QVector<QPair<QString, QString>>& fields, const TaskList& values) const;
 
 private:
     QWidget* m_taskInfo{nullptr};
@@ -82,14 +92,18 @@ private:
     QLabel* m_abnormalInfoTitleLabel{nullptr};
     QLabel* m_taskStatusTitleLabel{nullptr};
 
-    QTableWidget* m_taskInfoTable{nullptr};
-    QTableWidget* m_abnormalInfoTable{nullptr};
-    QTableWidget* m_taskStatusTable{nullptr};
+    QGridLayout* m_taskInfoLayout{nullptr};
+    QGridLayout* m_abnormalInfoLayout{nullptr};
+    QGridLayout* m_taskStatusLayout{nullptr};
 
     TaskList m_taskInfoValue;
     TaskList m_abnormalInfoValue;
     TaskList m_taskStatusValue;
     TaskList m_reworkTaskStatusValue;
+    QVariantMap m_taskInfoData;
+    QVariantMap m_abnormalInfoData;
+    QVariantMap m_taskStatusData;
+    QVariantMap m_reworkTaskStatusData;
     DisplayMode m_displayMode{DisplayMode::NormalTask};
 };
 
