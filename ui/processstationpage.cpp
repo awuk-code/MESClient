@@ -57,7 +57,10 @@ void ProcessStationPage::setReworkTaskMode(bool advancedPermission)
     }
 
     if (m_rightPanel)
-        m_rightPanel->setReplacementMaterialVisible(true);
+    {
+        // 普通工序站点不显示更换物料信息；维修站返工任务单入口才显示。
+        m_rightPanel->setReplacementMaterialVisible(advancedPermission);
+    }
 
     qDebug() << __FUNCTION__ << "advanced permission:" << advancedPermission;
 }
@@ -70,6 +73,11 @@ void ProcessStationPage::setProductionTaskData(const QVariantMap &rowData)
     // 生产任务点击“开工”后带入当前任务数据；左侧信息区按字段名从 rowData 中取值。
     m_leftPanel->setDisplayMode(ProcessStationLeftPanel::DisplayMode::NormalTask);
     m_leftPanel->setTaskInfoData(rowData);
+    if (m_rightPanel)
+    {
+        // 开工进入的是普通工序站点，不显示返工专用的更换物料信息页签。
+        m_rightPanel->setReplacementMaterialVisible(false);
+    }
 
     qDebug() << __FUNCTION__
              << "taskNo =" << rowData.value("taskNo").toString()
@@ -84,6 +92,11 @@ void ProcessStationPage::setReworkTaskData(const QVariantMap &rowData)
     // 返工任务单从维修站的返工任务单号进入，异常品信息直接显示该行产品的所有异常字段。
     m_leftPanel->setDisplayMode(ProcessStationLeftPanel::DisplayMode::ReworkTask);
     m_leftPanel->setAbnormalInfoData(rowData);
+    if (m_rightPanel)
+    {
+        // 只有维修站点击返工任务单号进入时，右侧才显示更换物料信息页签。
+        m_rightPanel->setReplacementMaterialVisible(true);
+    }
 
     qDebug() << __FUNCTION__
              << "reworkTaskNo =" << rowData.value("reworkTaskNo").toString()
@@ -920,6 +933,9 @@ void ProcessStationRightPanel::setReplacementMaterialVisible(bool visible)
     const int index = replacementMaterialTabIndex();
     if (index < 0 || index >= tabBar()->count())
         return;
+
+    if (!visible && tabBar()->currentIndex() == index)
+        tabBar()->setCurrentIndex(0);
 
     tabBar()->setTabVisible(index, visible);
     qDebug() << __FUNCTION__ << "visible:" << visible << "index:" << index;

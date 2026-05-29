@@ -118,17 +118,4 @@ struct ColumnConfig
 using TabConfigs    = QVector<TabConfig>;
 using ColumnConfigs = QVector<ColumnConfig>;
 
-enum class LinkType{
-    Page,
-    Image
-};
-
-struct LinkData
-{
-    LinkType type;
-    QString text;   //点击的文本
-    QString target; //跳转的目标
-};
-Q_DECLARE_METATYPE(LinkData)
-
 #endif // COMMONFUNC_H
