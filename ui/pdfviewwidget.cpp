@@ -204,7 +204,7 @@ void PdfViewWidget::renderPage()
 
     // 根据缩放比例提高DPI
     qreal dpr = devicePixelRatioF();
-    int dpi = 144.0 * m_scaleFactor * dpr;
+    int dpi = 144 * m_scaleFactor * dpr;
     qDebug() << __FUNCTION__ << tr("渲染DPI：") << dpi << "DPR:" << dpr;
 
     auto image =renderer.render_page( page, dpi,dpi);
@@ -221,23 +221,22 @@ void PdfViewWidget::renderPage()
                   image.height(),
                   QImage::Format_ARGB32);
 
-    qimage.setDevicePixelRatio(dpr);
-
+    qimage.setDevicePixelRatio(dpr); 
+    QImage qimagecopy = qimage.copy();
 
     m_scene->clear();
 
-    m_pixmapItem =
-        m_scene->addPixmap(
-            QPixmap::fromImage(qimage.copy()));
-    m_pixmapItem->setTransformationMode(Qt::SmoothTransformation);
-    m_pixmapItem->setShapeMode(QGraphicsPixmapItem::BoundingRectShape);
+    QGraphicsPixmapItem* item = m_scene->addPixmap(QPixmap::fromImage(qimage.copy()));
+
+    item->setTransformationMode(Qt::SmoothTransformation);
+    item->setShapeMode(QGraphicsPixmapItem::BoundingRectShape);
 
     m_view->resetTransform();
-    m_scene->setSceneRect(m_pixmapItem->boundingRect());
 
-    if (m_autoFit) {
-        QTimer::singleShot(0, this, &PdfViewWidget::fitPageToView);
-    }
+    QTimer::singleShot(10000, this, [=](){
+        m_view->fitInView(m_scene->itemsBoundingRect(), Qt::KeepAspectRatio);
+    });
+
     delete page;
 }
 

@@ -1,5 +1,5 @@
 #include "sidebarwidget.h"
-#include "MDebug.h"
+#include <QDebug>
 #include "configmanager.h"
 SideBarWidget::SideBarWidget(QWidget *parent)
     : QWidget{parent}
@@ -21,21 +21,7 @@ void SideBarWidget::initUI()
 
     m_group = new QButtonGroup(this);
     m_group->setExclusive(true);
-    // m_menuBtn = new QPushButton(this);
-    // m_menuBtn->setToolTip(QStringLiteral("菜单"));
-    // m_menuBtn->setIcon(QIcon(":/res/menu/menu.svg"));
-    // m_menuBtn->setIconSize(QSize(24,24));
 
-    // m_setBtn = new QPushButton(this);
-    // m_setBtn->setToolTip(QStringLiteral("设置"));
-    // m_setBtn->setIcon(QIcon(":res/menu/set.svg"));
-    // m_setBtn->setIconSize(QSize(24,24));
-
-    // m_exitBtn = new QPushButton(this);
-    // m_exitBtn->setToolTip(QStringLiteral("退出"));
-    // m_exitBtn->setIcon(QIcon(":res/menu/exit.svg"));
-    // m_exitBtn->setIconSize(QSize(24,24));
-    // layout->addWidget(m_menuBtn);
 
     layout->addWidget(createMenuItem(":/res/menu/menu.svg", ":/res/menu/menu.svg", QStringLiteral("menu"), QStringLiteral("hover"), 0));
     layout->addSpacing(0);
@@ -65,7 +51,7 @@ void SideBarWidget::initConnect()
         int id =m_group->id(clickedBtn);
 
         if(id != 0 && id <= maxMenuCnt-2){
-            funcDebug() <<"id===="<<id;
+            qDebug() << __FUNCTION__"id===="<<id;
             emit sigPageChanged(id);
         }
         if(maxMenuCnt==id){
@@ -73,7 +59,7 @@ void SideBarWidget::initConnect()
             if(window())
                 window()->close();
         }
-        funcDebug() << tr("点击菜单：") << m_group->id(clickedBtn);
+        qDebug() << __FUNCTION__ << tr("点击菜单：") << m_group->id(clickedBtn);
 
         for(QAbstractButton* btn : m_group->buttons()){
             QString path = (btn == clickedBtn) ? ("icon_checked") : ("icon_normal");
@@ -101,12 +87,12 @@ void SideBarWidget::setCurrentPageIndex(int index)
         btn->setIcon(QIcon(btn->property(path.toStdString().c_str()).toString()));
     }
 
-    funcDebug() << tr("同步侧边栏选中菜单:") << index;
+    qDebug() << __FUNCTION__ << tr("同步侧边栏选中菜单:") << index;
 }
 
 QWidget *SideBarWidget::createMenuItem(const QString &icon_normal, const QString &icon_checked, const QString &text, const QString &hoverText, int id)
 {
-    funcDebug() <<"current Btn id = "<<id;
+    qDebug() << __FUNCTION__"current Btn id = "<<id;
     QToolButton* btn = new QToolButton(this);
     btn->setObjectName("menuBtn");
     btn->setCheckable(true);

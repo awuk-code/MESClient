@@ -1,7 +1,7 @@
 #include "navigationmanager.h"
 #include <QWidget>
 
-#include "MDebug.h"
+#include <QDebug>
 
 NavigationManager *NavigationManager::instance()
 {
@@ -18,24 +18,21 @@ void NavigationManager::registerPage(
 {
     if (!page)
     {
-        funcDebug()
-        << "register page nullptr";
+        qDebug() << __FUNCTION__ << "register page nullptr";
 
         return;
     }
 
     if (m_pageMap.contains(type))
     {
-        funcDebug()
-        << "page already registered";
+        qDebug() << __FUNCTION__ << "page already registered";
 
         return;
     }
 
     m_pageMap.insert(type, page);
 
-    funcDebug()
-        << "register page success";
+    qDebug() << __FUNCTION__ << "register page success";
 }
 
 QWidget *NavigationManager::page(PageType type) const
@@ -46,7 +43,7 @@ QWidget *NavigationManager::page(PageType type) const
 void NavigationManager::setPageData(PageType type, const QVariantMap &data)
 {
     m_pageDataMap.insert(type, data);
-    funcDebug() << "set page data";
+    qDebug() << __FUNCTION__ "set page data";
 }
 
 QVariantMap NavigationManager::pageData(PageType type) const
@@ -63,8 +60,7 @@ void NavigationManager::openPage(PageType type)
 {
     if (!m_pageMap.contains(type))
     {
-        funcDebug()
-        << "page not found";
+        qDebug() << __FUNCTION__ << "page not found";
 
         return;
     }
@@ -78,8 +74,7 @@ void NavigationManager::openPage(PageType type)
 
     emit sigOpenPage(type);
 
-    funcDebug()
-        << "open page";
+    qDebug() << __FUNCTION__ << "open page";
 }
 
 void NavigationManager::openPage(PageType type, const QVariantMap &data)
@@ -89,8 +84,7 @@ void NavigationManager::openPage(PageType type, const QVariantMap &data)
     if (m_currentPage == type)
     {
         emit sigOpenPage(type);
-        funcDebug()
-            << "refresh current page";
+        qDebug() << __FUNCTION__ << "refresh current page";
         return;
     }
 

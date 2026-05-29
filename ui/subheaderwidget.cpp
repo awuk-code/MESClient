@@ -1,5 +1,5 @@
 #include "subheaderwidget.h"
-#include "MDebug.h"
+#include <QDebug>
 #include "configmanager.h"
 
 #include <QHBoxLayout>
@@ -48,21 +48,21 @@ void SubHeaderWidget::setPageNavigation(const QStringList &pagePath)
 {
     m_pagePath = pagePath;
     updateNavigationText();
-    funcDebug() << tr("更新页面导航:") << m_pagePath.join(" -> ");
+    qDebug() << __FUNCTION__ << tr("更新页面导航:") << m_pagePath.join(" -> ");
 }
 
 void SubHeaderWidget::setProcessNavigationVisible(bool visible)
 {
     m_showProcessNavigation = visible;
     updateNavigationText();
-    funcDebug() << tr("工序导航显示:") << visible;
+    qDebug() << __FUNCTION__<< tr("工序导航显示:") << visible;
 }
 
 void SubHeaderWidget::setCurrentProcessName(const QString &processName)
 {
     m_currentProcessName = processName;
     updateNavigationText();
-    funcDebug() << tr("当前工序:") << processName;
+    qDebug() << __FUNCTION__ <<tr("当前工序:") << processName;
 }
 
 void SubHeaderWidget::updateNavigationText()

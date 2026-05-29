@@ -2,7 +2,6 @@
 #include "mloginwedget.h"
 #include "mlocalauthservice.h"
 #include "configmanager.h"
-#include "MDebug.h"
 #include <QApplication>
 #include <QFile>
 #include <QString>
@@ -21,14 +20,14 @@ void loadStylSheet(void)
 
     if (!file.open(QFile::ReadOnly))
     {
-        funcDebug() << "style load failed";
+        qDebug() << __FUNCTION__ "style load failed";
         return;
     }
 
     QString styleSheet= QLatin1String(file.readAll());//读取样式表文件
     file.close();
 
-    funcDebug() << "style load ok...."<<styleSheet;
+    qDebug() << __FUNCTION__ "style load ok...."<<styleSheet;
     qApp->setStyleSheet(styleSheet);//把文件内容传参
     //        if(0 == ms)
     //        {
@@ -55,7 +54,7 @@ int main(int argc, char *argv[])
     // QString text = QString("Version: %1 | Protocol: %2")
     //                    .arg(ConfigManager::instance().softwareVersion())
     //                    .arg(ConfigManager::instance().protocolVersion());
-    // funcDebug() << text;
+    // qDebug() << __FUNCTION__ text;
     // LoginStatus status;
 
     // do{

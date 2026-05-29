@@ -31,9 +31,6 @@ private:
 
     QButtonGroup* m_group{nullptr};
 
-    // QPushButton* m_menuBtn{nullptr};
-    // QPushButton* m_setBtn{nullptr};
-    // QPushButton* m_exitBtn{nullptr};
 
     int maxMenuCnt = 20;
 };

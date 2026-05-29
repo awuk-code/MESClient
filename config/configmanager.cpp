@@ -1,5 +1,5 @@
 #include "configmanager.h"
-#include "MDebug.h"
+#include <QDebug>
 
 ConfigManager::ConfigManager(){
     m_sessionStartTime = QDateTime::currentDateTime();
@@ -16,16 +16,16 @@ void ConfigManager::loadConfig(const QString &filePath)
     m_configPath = filePath;
     QFile file(filePath);
     if(!file.open(QIODevice::ReadOnly)){
-        funcDebug() <<"open Unsucess"<<file.errorString();
+        qDebug() << __FUNCTION__"open Unsucess"<<file.errorString();
     return;
     }
-    funcDebug()<<"config load success";
+    qDebug() << __FUNCTION__"config load success";
     QByteArray data = file.readAll();
     file.close();
     QJsonDocument doc = QJsonDocument::fromJson(data);
     m_config = doc.object();
     m_historySeconds = m_config.value("total_online_seconds").toVariant().toLongLong();
-    funcDebug()<<"history time = "<<m_historySeconds;
+    qDebug() << __FUNCTION__"history time = "<<m_historySeconds;
 }
 
 void ConfigManager::saveConfig()
@@ -38,10 +38,10 @@ void ConfigManager::saveConfig()
         QJsonDocument doc(m_config);
      file.write(doc.toJson(QJsonDocument::Indented));
         file.close();
-        funcDebug() << "Config saved. Total seconds:" << m_config["total_online_seconds"].toVariant().toLongLong();
+        qDebug() << __FUNCTION__ "Config saved. Total seconds:" << m_config["total_online_seconds"].toVariant().toLongLong();
     } else {
-        funcDebug() << "Save Unsuccess:" << file.errorString();
-        funcDebug() << "Save Failed Path:" << file.fileName();
+        qDebug() << __FUNCTION__ "Save Unsuccess:" << file.errorString();
+        qDebug() << __FUNCTION__ "Save Failed Path:" << file.fileName();
     }
 }
 

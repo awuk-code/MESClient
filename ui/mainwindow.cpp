@@ -1,6 +1,6 @@
 ﻿#include "mainwindow.h"
 #include "configmanager.h"
-#include "MDebug.h"
+#include <QDebug>
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -117,13 +117,13 @@ void MainWindow::initConnect()
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     ConfigManager::instance().saveConfig();
-    funcDebug() << tr("关闭窗口写入时间");
+    qDebug() << __FUNCTION__ <<tr("关闭窗口写入时间");
     event->accept();
 }
 
 void MainWindow::onPageChanged(int index/*, QString &title*/)
 {
-    funcDebug() << tr("收到页面切换信号index= ") << index;
+    qDebug() << __FUNCTION__<< tr("收到页面切换信号index= ") << index;
     m_stack->setCurrentIndex(index-1);
     updateSubHeaderNavigation(index);
 }
@@ -233,14 +233,14 @@ void MainWindow::openPage(const QString &pageId)
 {
     if(!m_pageMap.contains(pageId))
     {
-        funcDebug() << tr("页面不存在:") << pageId;
+        qDebug() << __FUNCTION__ <<tr("页面不存在:") << pageId;
         return;
     }
     QWidget* page = m_pageMap.value(pageId);
 
     m_stack->setCurrentWidget(page);
 
-    funcDebug() << tr("打开页面:") << pageId;
+    qDebug() << __FUNCTION__<< tr("打开页面:") << pageId;
 }
 
 void MainWindow::onOpenPage(PageType type)

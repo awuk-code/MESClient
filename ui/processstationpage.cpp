@@ -823,20 +823,18 @@ void ProcessStationRightPanel::updateSearchBarByTab(int index)
     if (!m_searchWidget)
         return;
 
-    const int replacementIndex = replacementMaterialTabIndex();
+    const bool isPdfTab =
+        index == 2 || index == 6;
 
     const bool useKeywordSearch =
         index == 0 || index == 1;
 
     const bool useProductSnSearch =
-        index == 3 || index == 4 || index == replacementIndex;
+        !isPdfTab && !useKeywordSearch;
 
-    const bool showSearchControls =
-        useKeywordSearch || useProductSnSearch;
+    m_searchWidget->setVisible(!isPdfTab);
 
-    m_searchWidget->setVisible(true);
-
-    if (!showSearchControls)
+    if (isPdfTab)
     {
         if (m_searchEdit)
         {
@@ -847,6 +845,12 @@ void ProcessStationRightPanel::updateSearchBarByTab(int index)
             m_productSnLabel->setVisible(false);
         if (m_productSnCombo)
             m_productSnCombo->setVisible(false);
+        if (m_exportBtn)
+            m_exportBtn->setVisible(false);
+
+        qDebug() << __FUNCTION__ << "tab index:" << index
+                 << "pdf tab, search area hidden";
+        return;
     }
 
     if (m_searchEdit)
@@ -872,7 +876,8 @@ void ProcessStationRightPanel::updateSearchBarByTab(int index)
 
     qDebug() << __FUNCTION__ << "tab index:" << index
              << "keywordSearch:" << useKeywordSearch
-             << "productSnSearch:" << useProductSnSearch;
+             << "productSnSearch:" << useProductSnSearch
+             << "pdfTab:" << isPdfTab;
 }
 
 void ProcessStationRightPanel::updateTableModelByTab(int index)
