@@ -41,15 +41,15 @@ private:
 private:
     // 主布局
     // 标题栏
-    QLabel* m_titleLabel = nullptr;
+    QLabel* m_titleLabel{nullptr};
 
     // 内容区
-    QVBoxLayout* m_contentLayout = nullptr;
+    QVBoxLayout* m_contentLayout{nullptr};
 
     // 底部按钮区
     // 按钮
-    QPushButton* m_confirmButton = nullptr;
-    QPushButton* m_cancelButton = nullptr;
+    QPushButton* m_confirmButton{nullptr};
+    QPushButton* m_cancelButton{nullptr};
 };
 
 #endif // BASEDIALOGWIDGET_H

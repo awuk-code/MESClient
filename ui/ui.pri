@@ -9,7 +9,9 @@ HEADERS +=  \
     $$PWD/imageviewwidget.h \
     $$PWD/mainwindow.h \
     $$PWD/pdfviewwidget.h \
+    $$PWD/processstationleftpanel.h \
     $$PWD/processstationpage.h \
+    $$PWD/processstationrightpanel.h \
     $$PWD/productiontaskpage.h \
     $$PWD/repairjudgepage.h \
     $$PWD/repairstationpage.h \
@@ -27,7 +29,9 @@ SOURCES +=      \
     $$PWD/imageviewwidget.cpp \
         $$PWD/mainwindow.cpp \
     $$PWD/pdfviewwidget.cpp \
+    $$PWD/processstationleftpanel.cpp \
     $$PWD/processstationpage.cpp \
+    $$PWD/processstationrightpanel.cpp \
     $$PWD/productiontaskpage.cpp \
     $$PWD/repairjudgepage.cpp \
     $$PWD/repairstationpage.cpp \

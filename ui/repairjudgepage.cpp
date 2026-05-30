@@ -158,18 +158,6 @@ void RepairJudgePage::initUI()
     methodLayout->addStretch();
     judgeContentLayout->addLayout(methodLayout);
 
-    auto imageLayout = new QHBoxLayout;
-    imageLayout->setContentsMargins(0, 0, 0, 0);
-    imageLayout->setSpacing(8);
-
-    auto imageLabel = new QLabel(tr("问题照片："), judgeContent);
-    auto imageLink = createImageLinkLabel(judgeContent);
-
-    imageLayout->addWidget(imageLabel);
-    imageLayout->addWidget(imageLink);
-    imageLayout->addStretch();
-    judgeContentLayout->addLayout(imageLayout);
-
     m_judgeTextEdit = new QTextEdit(judgeContent);
     m_judgeTextEdit->setMinimumHeight(130);
     judgeContentLayout->addWidget(m_judgeTextEdit, 1);
