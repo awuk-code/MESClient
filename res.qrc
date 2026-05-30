@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>etc/config.json</file>
         <file>etc/production_tasks.json</file>
         <file>etc/repair_station_rows.json</file>
         <file>etc/process_station_material_check.json</file>

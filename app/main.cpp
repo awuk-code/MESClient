@@ -48,11 +48,14 @@ int main(int argc, char *argv[])
 
     GlobalEventFilter* filter = new GlobalEventFilter(&a);
     a.installEventFilter(filter);
-    ConfigManager::instance().loadConfig(":/etc/config.json");
+    // 运行配置从 exe 同目录 config/config.ini 读取；不存在时 ConfigManager 会自动生成默认配置。
+    ConfigManager::instance().loadConfig();
     MLocalAuthService authService;
-    QString text = QString("Version: %1 | Protocol: %2")
+    QString text = QString("Version: %1 | Build: %2 | Protocol: %3 | DeviceId: %4")
                        .arg(ConfigManager::instance().softwareVersion())
-                       .arg(ConfigManager::instance().protocolVersion());
+                       .arg(ConfigManager::instance().buildTime())
+                       .arg(ConfigManager::instance().protocolVersion())
+                       .arg(ConfigManager::instance().deviceId());
     qDebug() << __FUNCTION__<< text;
     LoginStatus status;
 

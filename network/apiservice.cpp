@@ -1,6 +1,7 @@
 #include "apiservice.h"
 
 #include "apidefinition.h"
+#include "configmanager.h"
 #include "usersession.h"
 
 #include <QJsonObject>
@@ -24,9 +25,14 @@ ApiService::ApiService(QObject* parent)
 void ApiService::login(const QString& userName, const QString& password)
 {
     QJsonObject body;
-    // 登录入参集中写在这里；后台字段名确定后只改 userName/password 这两个 key。
+    // 登录入参集中写在这里；后台字段名确定后只改这些 key。
+    // deviceId 用于后台判断“同一账号不能在多台电脑同时登录”；同一台电脑允许不同账号登录。
     body.insert("userName", userName);
     body.insert("password", password);
+    body.insert("deviceId", ConfigManager::instance().deviceId());
+    body.insert("clientVersion", ConfigManager::instance().softwareVersion());
+    body.insert("buildDate", ConfigManager::instance().buildTime());
+    body.insert("protocolVersion", ConfigManager::instance().protocolVersion());
 
     const QString requestId = m_httpClient.postJson(ApiDefinition::loginUrl(), body);
     m_requestTypes.insert(requestId, RequestType::Login);
