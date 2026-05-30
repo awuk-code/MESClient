@@ -119,11 +119,12 @@ void BasePageWidget::setupSearchLayout(QHBoxLayout* layout)
     m_searchEdit = new QLineEdit(this);
     m_searchEdit->setMinimumWidth(180);
     m_searchEdit->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
-    m_searchBtn = new QPushButton(this);
-    m_searchBtn->setIcon(QIcon(":/res/common/search.svg"));
+    m_searchEdit->addAction(QIcon(":/res/common/search.svg"),
+                            QLineEdit::LeadingPosition);
+
 
     layout->addWidget(m_searchEdit);
-    layout->addWidget(m_searchBtn);
+
     layout->addStretch();
 
     m_exportBtn = new QPushButton(tr("导出报表"), this);

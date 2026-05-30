@@ -4,6 +4,7 @@
 
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonValue>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QUuid>
@@ -48,6 +49,8 @@ void HttpClient::onReplyFinished(QNetworkReply* reply)
              << "success:" << response.success
              << "networkError:" << response.networkError
              << "httpStatus:" << response.httpStatus
+             << "businessCode:" << response.businessCode
+             << "businessCodeText:" << response.businessCodeText
              << "message:" << response.message;
 
     emit requestFinished(requestId, response);
@@ -99,7 +102,13 @@ ApiResponse HttpClient::parseReply(QNetworkReply* reply, const QByteArray& rawDa
 
     const QJsonObject obj = doc.object();
     // 这里兼容常见返回格式：success/code/message/data。后台格式确定后只需要集中调整解析规则。
-    response.success = obj.value("success").toBool(obj.value("code").toInt(-1) == 0);
+    const QJsonValue codeValue = obj.value("code");
+    response.businessCode = codeValue.toInt(-1);
+    response.businessCodeText =
+        codeValue.isUndefined() ? QString() : codeValue.toVariant().toString();
+
+    // 这里兼容常见返回格式：success/code/message/data。后台格式确定后只需要集中调整解析规则。
+    response.success = obj.value("success").toBool(response.businessCode == 0);
     response.message = obj.value("message").toString(obj.value("msg").toString());
     response.data = obj.value("data");
 

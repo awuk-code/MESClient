@@ -152,6 +152,45 @@ QToolButton[buttonRole="panelToggle"] {
     padding: 0px;
 }
 
+/* ============================================================
+   自定义弹窗：BaseDialogWidget 统一由标题区、内容区、按钮区三部分组成。
+   后续修改弹窗标题背景、边框、关闭按钮样式时优先改这里。
+   ============================================================ */
+
+QDialog#BaseDialogWidget {
+    background-color: #ffffff;
+    border: 1px solid #dcdfe6;
+}
+
+QDialog#BaseDialogWidget QWidget#DialogTitleBar {
+    background-color: #808;
+    border-bottom: 1px solid #6f006f;
+}
+
+QDialog#BaseDialogWidget QWidget#DialogTitleBar QLabel[labelRole="dialogTitle"] {
+    color: #ffffff;
+}
+
+QDialog#BaseDialogWidget QPushButton#DialogCloseButton {
+    background-color: transparent;
+    border: none;
+    padding: 0px;
+}
+
+QDialog#BaseDialogWidget QPushButton#DialogCloseButton:hover {
+    background-color: rgba(255, 255, 255, 45);
+    border-radius: 4px;
+}
+
+QDialog#BaseDialogWidget QWidget#DialogContent {
+    background-color: #ffffff;
+}
+
+QDialog#BaseDialogWidget QWidget#DialogButtonBar {
+    background-color: #ffffff;
+    border-top: 1px solid #ebeef5;
+}
+
 QPushButton[buttonRole="save"],
 QPushButton[buttonRole="export"],
 QPushButton[buttonRole="primary"] {

@@ -9,6 +9,7 @@ class ApiDefinition
 public:
     static QString baseUrl();
     static QUrl loginUrl();
+    static QUrl sessionCheckUrl();
 
 private:
     static QUrl buildUrl(const QString& path);

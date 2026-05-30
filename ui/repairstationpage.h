@@ -25,6 +25,7 @@ protected:
 private:
     void onRepairJudgeBtnClicked();
     void updateRepairJudgeButton();
+    void showSelectRowDialog();
     QVariantMap rowDataFromProxyIndex(const QModelIndex& proxyIndex) const;
     void openRepairJudgePage(const QVariantMap& rowData);
     void openReworkTaskPage(const QVariantMap& rowData);

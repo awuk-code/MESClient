@@ -8,6 +8,7 @@
 #include <QComboBox>
 #include <QDebug>
 #include <QHBoxLayout>
+#include <QIcon>
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
@@ -174,6 +175,8 @@ void ProcessStationRightPanel::setupSearchLayout(QHBoxLayout *layout)
     m_searchEdit = new QLineEdit(this);
     m_searchEdit->setMinimumWidth(180);
     m_searchEdit->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+    m_searchEdit->addAction(QIcon(":/res/common/search.svg"),
+                            QLineEdit::LeadingPosition);
 
     m_productSnLabel = new QLabel(tr("产品SN："), this);
 

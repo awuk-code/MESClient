@@ -10,7 +10,7 @@
 #include <QKeyEvent>
 #include <QTimer>
 
-#include "mauthservice.h"
+
 
 class MLoginWedget : public QDialog
 {
@@ -18,7 +18,7 @@ class MLoginWedget : public QDialog
 public:
     explicit MLoginWedget(QWidget *parent = nullptr);
     ~MLoginWedget();
-    void setAuthService(MAuthService* service);
+
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event)override;
@@ -34,7 +34,6 @@ private:
     void  setLoginWaiting(bool waiting);
     void  showLoginError(const QString& message);
 
-    MAuthService* m_authService = nullptr;
     QTimer *errtimer;
     QString m_pendingUserName;
     QString m_pendingPassword;

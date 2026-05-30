@@ -15,6 +15,12 @@ QUrl ApiDefinition::loginUrl()
     return buildUrl("/api/login");
 }
 
+QUrl ApiDefinition::sessionCheckUrl()
+{
+    // 会话检查接口用于旧电脑定时确认当前 token 是否仍然有效。
+    return buildUrl("/api/session/check");
+}
+
 QUrl ApiDefinition::buildUrl(const QString& path)
 {
     QString normalizedPath = path;

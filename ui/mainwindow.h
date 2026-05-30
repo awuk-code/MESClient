@@ -16,6 +16,8 @@
 
 #include "navigationmanager.h"
 
+class QTimer;
+
 class MainWindow : public QWidget
 {
     Q_OBJECT
@@ -38,6 +40,7 @@ private slots:
     //文本链接的跳转
     void openPage(const QString& pageId);
     void onOpenPage(PageType type);
+    void onForcedLoggedOut(const QString& message);
 private:
     QPoint m_dragPos;           // 记录鼠标按下时的位置
     bool m_isResizing = false;  // 是否正在拉伸
@@ -52,6 +55,7 @@ private:
     RepairStationPage* m_pageRepairStation{nullptr};
     RepairJudgePage* m_pageRepairJudge{nullptr};
     ProcessStationPage* m_pageReworkTask{nullptr};
+    QTimer* m_sessionCheckTimer{nullptr};
 
 
     QMap<QString, QWidget*> m_pageMap;

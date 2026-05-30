@@ -2,6 +2,7 @@
 #include "apiservice.h"
 
 #include <QVBoxLayout>
+#include <QDebug>
 #include <QEvent>
 #include <QPixmap>
 
@@ -25,10 +26,6 @@ MLoginWedget::MLoginWedget(QWidget *parent): QDialog(parent)
 MLoginWedget::~MLoginWedget()
 {}
 
-void MLoginWedget::setAuthService(MAuthService *service)
-{
-    m_authService = service;
-}
 
 bool MLoginWedget::eventFilter(QObject *obj, QEvent *event)
 {
@@ -157,25 +154,23 @@ void MLoginWedget::onApiLoginFinished(bool success, const QString& message, bool
 {
     setLoginWaiting(false);
 
+    qDebug() << __FUNCTION__
+             << "success:" << success
+             << "networkError:" << networkError
+             << "message:" << message;
+
     if (success)
     {
         accept();
         return;
     }
 
-    // 临时兼容旧登录：只有网络错误时才回退本地校验，避免后台未接通阶段软件无法进入。
-    // 后台登录接口稳定后，可以删除下面这段 m_authService 兜底逻辑。
-    if (networkError && m_authService)
+    if (networkError)
     {
-        QString errorMsg;
-        const bool ok = m_authService->Login(m_pendingUserName, m_pendingPassword, errorMsg);
-        if (ok)
-        {
-            accept();
-            return;
-        }
-
-        showLoginError(errorMsg);
+        // 原本这里走本地登录兜底；本地认证类删除后，网络错误必须直接提示原因。
+        showLoginError(message.isEmpty()
+                           ? tr("无法连接服务器，请检查服务器地址、端口或网络。")
+                           : message);
         return;
     }
 
@@ -192,9 +187,9 @@ void MLoginWedget::setLoginWaiting(bool waiting)
 
 void MLoginWedget::showLoginError(const QString& message)
 {
-    m_errString->setText(message);
+    m_errString->setText(message.isEmpty() ? tr("登录失败，请重试。") : message);
     m_errString->setVisible(true);
-    errtimer->start(3000);
+    errtimer->start(5000);
 }
 
 void MLoginWedget::onCloseBtnClicked()

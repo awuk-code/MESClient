@@ -1,4 +1,7 @@
 ﻿#include "mainwindow.h"
+#include "apiservice.h"
+#include "basedialogwidget.h"
+#include "usersession.h"
 #include "configmanager.h"
 #include <QDebug>
 
@@ -6,6 +9,7 @@
 #include <QHBoxLayout>
 #include <QStackedWidget>
 #include <QLabel>
+#include <QTimer>
 
 MainWindow::MainWindow(QWidget *parent)
     : QWidget{parent}
@@ -112,6 +116,17 @@ void MainWindow::initConnect()
 
     connect(NavigationManager::instance(), &NavigationManager::sigOpenPage,
              this, &MainWindow::onOpenPage);
+
+    // 后台判定当前账号已在其他电脑登录时，客户端统一清空会话并退出当前主界面。
+    connect(ApiService::instance(), &ApiService::forcedLoggedOut,
+            this, &MainWindow::onForcedLoggedOut);
+
+    m_sessionCheckTimer = new QTimer(this);
+    m_sessionCheckTimer->setInterval(30000);
+    connect(m_sessionCheckTimer, &QTimer::timeout,
+            this, []() { ApiService::instance()->checkSession(); });
+    if (UserSession::instance()->isLoggedIn())
+        m_sessionCheckTimer->start();
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -273,4 +288,30 @@ void MainWindow::onOpenPage(PageType type)
     m_stack->setCurrentWidget(page);
     updateSubHeaderNavigation(type);
     updateSidebarSelection(type);
+}
+
+void MainWindow::onForcedLoggedOut(const QString& message)
+{
+    if (m_sessionCheckTimer)
+        m_sessionCheckTimer->stop();
+
+    UserSession::instance()->clear();
+
+    BaseDialogWidget dialog(this);
+    dialog.setTitle(tr("登录已失效"));
+    dialog.cancelButton()->hide();
+    dialog.confirmButton()->setText(tr("确定"));
+
+    auto label = new QLabel(
+        message.isEmpty()
+            ? tr("账号已在其他电脑登录，本机已退出登录。")
+            : message,
+        &dialog);
+    label->setAlignment(Qt::AlignCenter);
+    label->setWordWrap(true);
+    dialog.contentLayout()->addWidget(label);
+
+    qDebug() << __FUNCTION__ << "forced logout:" << message;
+    dialog.exec();
+    close();
 }

@@ -10,6 +10,8 @@ struct ApiResponse
     bool success = false;
     bool networkError = false;
     int httpStatus = 0;
+    int businessCode = -1;
+    QString businessCodeText;
     QString message;
     QJsonValue data;
     QByteArray rawData;

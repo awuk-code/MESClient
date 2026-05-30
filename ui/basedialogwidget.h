@@ -2,11 +2,13 @@
 #define BASEDIALOGWIDGET_H
 
 #include <QDialog>
+#include <QPoint>
 
 class QLabel;
 class QPushButton;
-class QWidget;
 class QVBoxLayout;
+class QWidget;
+class QMouseEvent;
 
 class BaseDialogWidget : public QDialog
 {
@@ -16,40 +18,44 @@ public:
     explicit BaseDialogWidget(QWidget *parent = nullptr);
     virtual ~BaseDialogWidget() = default;
 
-    // 设置标题
     void setTitle(const QString &title);
 
-    // 获取中间内容布局，供子类添加控件
+    // 子类只需要向内容区添加自己的控件，标题区和按钮区由基类统一维护。
     QVBoxLayout* contentLayout() const;
 
-    // 获取按钮
     QPushButton* confirmButton() const;
     QPushButton* cancelButton() const;
 
 protected:
-    // 子类可重写，返回 true 表示关闭对话框
+    // 子类重写这个函数处理确认按钮逻辑，返回 true 表示关闭弹窗。
     virtual bool onConfirm();
+
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
 
 private slots:
     void onConfirmButtonClicked();
     void onCancelButtonClicked();
+    void onCloseButtonClicked();
 
 private:
     void initUI();
     void initConnections();
+    bool isInTitleBar(const QPoint& pos) const;
 
 private:
-    // 主布局
-    // 标题栏
+    QWidget* m_titleBar{nullptr};
     QLabel* m_titleLabel{nullptr};
+    QPushButton* m_closeButton{nullptr};
 
-    // 内容区
     QVBoxLayout* m_contentLayout{nullptr};
 
-    // 底部按钮区
-    // 按钮
     QPushButton* m_confirmButton{nullptr};
     QPushButton* m_cancelButton{nullptr};
+
+    bool m_dragging{false};
+    QPoint m_dragPos;
 };
 
 #endif // BASEDIALOGWIDGET_H

@@ -1,13 +1,18 @@
 #include "repairstationpage.h"
+#include "basedialogwidget.h"
 #include "repairstationmodel.h"
 #include "fieldfilterproxymodel.h"
 #include "navigationmanager.h"
 
+#include <QDebug>
 #include <QHBoxLayout>
+#include <QIcon>
+#include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QStackedWidget>
 #include <QTableView>
+#include <QVBoxLayout>
 
 RepairStationPage::RepairStationPage(QWidget *parent)
     : BasePageWidget(parent)
@@ -118,6 +123,8 @@ void RepairStationPage::setupSearchLayout(QHBoxLayout *layout)
     m_searchEdit = new QLineEdit(this);
     m_searchEdit->setMinimumWidth(180);
     m_searchEdit->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+    m_searchEdit->addAction(QIcon(":/res/common/search.svg"),
+                            QLineEdit::LeadingPosition);
 
     m_repairJudgeBtn =
         new QPushButton(tr("维修判定"), this);
@@ -144,8 +151,22 @@ void RepairStationPage::onRepairJudgeBtnClicked()
     if (!table)
         return;
 
+    // 维修判定按钮必须基于用户当前选中的异常品行跳转，避免没有上下文时打开空页面。
+    const auto selection = table->selectionModel();
+    if (!selection || !selection->hasSelection() || !table->currentIndex().isValid())
+    {
+        showSelectRowDialog();
+        return;
+    }
+
     const QVariantMap rowData =
         rowDataFromProxyIndex(table->currentIndex());
+    if (rowData.isEmpty())
+    {
+        showSelectRowDialog();
+        return;
+    }
+
     openRepairJudgePage(rowData);
 }
 
@@ -156,6 +177,22 @@ void RepairStationPage::updateRepairJudgeButton()
 
     m_repairJudgeBtn->setEnabled(
         tabBar()->currentIndex() == 0);
+}
+
+void RepairStationPage::showSelectRowDialog()
+{
+    BaseDialogWidget dialog(this);
+    dialog.setTitle(tr("维修判定"));
+    dialog.cancelButton()->hide();
+    dialog.confirmButton()->setText(tr("确定"));
+
+    auto label = new QLabel(tr("请先选中一条待处理的异常品记录。"), &dialog);
+    label->setAlignment(Qt::AlignCenter);
+    label->setWordWrap(true);
+    dialog.contentLayout()->addWidget(label);
+
+    qDebug() << __FUNCTION__ << "repair judge clicked without selected row";
+    dialog.exec();
 }
 
 QVariantMap RepairStationPage::rowDataFromProxyIndex(
