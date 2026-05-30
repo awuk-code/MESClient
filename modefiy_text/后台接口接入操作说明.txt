@@ -1,0 +1,254 @@
+后台接口接入操作说明
+
+一、整体原则
+
+后续页面不要直接使用 QNetworkAccessManager、QNetworkRequest、HttpClient 或接口 URL。
+
+页面只调用：
+
+ApiService::instance()->xxx();
+
+接口地址、请求参数、token、返回解析都统一放在 network 文件夹中处理。
+
+
+二、新增一个接口的固定步骤
+
+每新增一个后台接口，基本按照下面 5 步操作。
+
+
+1. 在 ApiDefinition 中添加接口地址
+
+修改文件：
+network/apidefinition.h
+network/apidefinition.cpp
+
+作用：
+集中管理所有后台接口路径。
+
+示例：
+如果要获取生产任务列表，可以在 apidefinition.h 中添加：
+
+static QUrl productionTaskListUrl();
+
+然后在 apidefinition.cpp 中实现：
+
+QUrl ApiDefinition::productionTaskListUrl()
+{
+    return buildUrl("/api/production/tasks");
+}
+
+说明：
+"/api/production/tasks" 后面替换成后台给你的真实接口路径。
+
+
+2. 在 ApiService 中添加业务函数
+
+修改文件：
+network/apiservice.h
+network/apiservice.cpp
+
+作用：
+页面通过这个函数发起业务请求。
+
+示例：
+在 apiservice.h 中添加：
+
+void getProductionTaskList();
+
+同时添加返回信号：
+
+void productionTaskListFinished(bool success,
+                                const QString& message,
+                                const QVariantList& rows);
+
+说明：
+success 表示接口是否成功。
+message 用来返回错误信息。
+rows 是解析后的表格数据。
+
+
+3. 在 RequestType 中添加请求类型
+
+修改文件：
+network/apiservice.h
+
+作用：
+因为多个接口都会通过同一个 HttpClient 返回，所以需要用 RequestType 判断当前返回的是哪个接口。
+
+示例：
+
+enum class RequestType
+{
+    Unknown,
+    Login,
+    ProductionTaskList
+};
+
+
+4. 在 ApiService 中发送请求
+
+修改文件：
+network/apiservice.cpp
+
+GET 示例：
+
+void ApiService::getProductionTaskList()
+{
+    const QString requestId =
+        m_httpClient.get(ApiDefinition::productionTaskListUrl());
+
+    m_requestTypes.insert(requestId, RequestType::ProductionTaskList);
+
+    qDebug() << __FUNCTION__ << "request sent:" << requestId;
+}
+
+POST 示例：
+
+void ApiService::getProductionTaskList(const QString& keyword)
+{
+    QJsonObject body;
+    body.insert("keyword", keyword);
+
+    const QString requestId =
+        m_httpClient.postJson(ApiDefinition::productionTaskListUrl(), body);
+
+    m_requestTypes.insert(requestId, RequestType::ProductionTaskList);
+
+    qDebug() << __FUNCTION__ << "request sent:" << requestId << keyword;
+}
+
+说明：
+如果后台要求 GET，就使用 m_httpClient.get。
+如果后台要求 POST，并且要传 JSON，就使用 m_httpClient.postJson。
+
+
+5. 在返回分发函数中处理结果
+
+修改文件：
+network/apiservice.cpp
+
+在 ApiService::onHttpRequestFinished 中添加：
+
+case RequestType::ProductionTaskList:
+    handleProductionTaskListResponse(response);
+    break;
+
+然后在 apiservice.h 中声明：
+
+void handleProductionTaskListResponse(const ApiResponse& response);
+
+在 apiservice.cpp 中实现：
+
+void ApiService::handleProductionTaskListResponse(const ApiResponse& response)
+{
+    if (!response.success)
+    {
+        emit productionTaskListFinished(false, response.message, {});
+        return;
+    }
+
+    QVariantList rows;
+
+    const QJsonArray array = response.data.toArray();
+    for (const QJsonValue& value : array)
+    {
+        rows.append(value.toObject().toVariantMap());
+    }
+
+    emit productionTaskListFinished(true, QString(), rows);
+}
+
+说明：
+这里负责把后台 JSON 数据转成页面能直接使用的数据。
+如果后台 data 不是数组，而是对象，需要按照实际返回格式修改这里。
+
+
+三、页面中怎么使用接口
+
+页面中只做两件事：
+
+1. connect ApiService 的信号。
+2. 调用 ApiService 的业务函数。
+
+示例：
+
+connect(ApiService::instance(), &ApiService::productionTaskListFinished,
+        this, [this](bool success, const QString& message, const QVariantList& rows) {
+            if (!success)
+            {
+                qDebug() << "获取任务列表失败:" << message;
+                return;
+            }
+
+            // TODO: 把 rows 填入当前页面的表格 model。
+        });
+
+ApiService::instance()->getProductionTaskList();
+
+
+四、token 怎么处理
+
+登录成功后，token 会保存到 UserSession 中。
+
+后续请求时，HttpClient 会自动从 UserSession 读取 token，并放入请求头：
+
+Authorization: Bearer token
+
+所以页面和业务接口函数都不需要手动处理 token。
+
+
+五、后台字段在哪里改
+
+1. 接口路径变化：
+修改 network/apidefinition.cpp。
+
+2. 请求参数字段变化：
+修改 network/apiservice.cpp 中对应业务函数。
+
+3. 返回数据字段变化：
+修改 network/apiservice.cpp 中对应 handleXXXResponse 函数。
+
+4. 登录返回 token、用户名、权限字段变化：
+修改 ApiService::handleLoginResponse。
+
+
+六、建议命名规则
+
+获取生产任务列表：
+getProductionTaskList
+productionTaskListFinished
+handleProductionTaskListResponse
+ProductionTaskList
+
+获取维修站列表：
+getRepairStationList
+repairStationListFinished
+handleRepairStationListResponse
+RepairStationList
+
+提交维修判定：
+submitRepairJudge
+repairJudgeSubmitted
+handleSubmitRepairJudgeResponse
+SubmitRepairJudge
+
+扫码过站：
+submitPassStation
+passStationSubmitted
+handleSubmitPassStationResponse
+SubmitPassStation
+
+
+七、调试建议
+
+1. 每个发请求的函数都打印 requestId 和关键参数。
+2. 每个返回处理函数都打印 success、message 和数据数量。
+3. 如果页面没有刷新，先看 ApiService 的 signal 是否发出。
+4. 如果 signal 没发出，检查 RequestType 是否插入正确。
+5. 如果接口失败，检查 ApiDefinition 中的接口路径和 ConfigManager 中的 server_ip、server_port。
+
+
+八、最重要的一句话
+
+页面只负责显示和用户操作。
+接口请求、返回解析、token、地址管理，都放在 network 文件夹中。

@@ -1,4 +1,6 @@
 ﻿#include "mloginwedget.h"
+#include "apiservice.h"
+
 #include <QVBoxLayout>
 #include <QEvent>
 #include <QPixmap>
@@ -124,29 +126,75 @@ void MLoginWedget::InitConnect()
     connect(m_closeBtn, &QPushButton::clicked,
             this, &MLoginWedget::onCloseBtnClicked);
     connect(m_passwordEdit, &QLineEdit::returnPressed, m_loginBtn, &QPushButton::click);
+
+    // 登录结果统一从 ApiService 返回；后续真实后台字段变化时优先修改 network/apiservice.cpp。
+    connect(ApiService::instance(), &ApiService::loginFinished,
+            this, &MLoginWedget::onApiLoginFinished);
 }
 
 void MLoginWedget::onLoginBtnClicked()
 {
-    if(!m_authService){
-        m_errString->setText(tr("未连接服务器，请重试。"));
-        m_errString->setVisible(true);
-        errtimer->start(3000);
+    m_pendingUserName = m_usrNameEdit->text().trimmed();
+    m_pendingPassword = m_passwordEdit->text();
+
+    if (m_pendingUserName.isEmpty())
+    {
+        showLoginError(tr("请输入用户名。"));
         return;
     }
 
-    QString errorMsg;
-    bool ok = m_authService->Login(m_usrNameEdit->text(),
-                                   m_passwordEdit->text(),
-                                   errorMsg);
-    if(ok){
+    if (m_pendingPassword.isEmpty())
+    {
+        showLoginError(tr("请输入密码。"));
+        return;
+    }
+
+    setLoginWaiting(true);
+    ApiService::instance()->login(m_pendingUserName, m_pendingPassword);
+}
+
+void MLoginWedget::onApiLoginFinished(bool success, const QString& message, bool networkError)
+{
+    setLoginWaiting(false);
+
+    if (success)
+    {
         accept();
+        return;
     }
-    else{
-        m_errString->setText(errorMsg);
-        m_errString->setVisible(true);
-        errtimer->start(3000);
+
+    // 临时兼容旧登录：只有网络错误时才回退本地校验，避免后台未接通阶段软件无法进入。
+    // 后台登录接口稳定后，可以删除下面这段 m_authService 兜底逻辑。
+    if (networkError && m_authService)
+    {
+        QString errorMsg;
+        const bool ok = m_authService->Login(m_pendingUserName, m_pendingPassword, errorMsg);
+        if (ok)
+        {
+            accept();
+            return;
+        }
+
+        showLoginError(errorMsg);
+        return;
     }
+
+    showLoginError(message.isEmpty() ? tr("登录失败，请重试。") : message);
+}
+
+void MLoginWedget::setLoginWaiting(bool waiting)
+{
+    m_loginBtn->setEnabled(!waiting);
+    m_usrNameEdit->setEnabled(!waiting);
+    m_passwordEdit->setEnabled(!waiting);
+    m_loginBtn->setText(waiting ? tr("登录中...") : tr("登录"));
+}
+
+void MLoginWedget::showLoginError(const QString& message)
+{
+    m_errString->setText(message);
+    m_errString->setVisible(true);
+    errtimer->start(3000);
 }
 
 void MLoginWedget::onCloseBtnClicked()

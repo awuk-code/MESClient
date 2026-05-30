@@ -13,6 +13,7 @@ include(commFunc/common.pri)
 include(ui/ui.pri)
 include(core/core.pri)
 include(tool/tool.pri)
+include(network/network.pri)
 
 INCLUDEPATH += $$PWD/thirdparty/poppler/Library/include
 LIBS += -L$$PWD/thirdparty/poppler/Library/lib -lpoppler-cpp
@@ -24,7 +25,8 @@ INCLUDEPATH +=      \
     $$PWD/commFunc  \
     $$PWD/ui        \
     $$PWD/core      \
-    $$PWD/tool
+    $$PWD/tool      \
+    $$PWD/network
 
 RESOURCES += \
     res.qrc

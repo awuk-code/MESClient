@@ -26,13 +26,18 @@ protected:
 private slots:
     void onLoginBtnClicked();
     void onCloseBtnClicked();
+    void onApiLoginFinished(bool success, const QString& message, bool networkError);
 
 private:
     void  InitLoginUI();
     void  InitConnect();
+    void  setLoginWaiting(bool waiting);
+    void  showLoginError(const QString& message);
 
     MAuthService* m_authService = nullptr;
     QTimer *errtimer;
+    QString m_pendingUserName;
+    QString m_pendingPassword;
 
     QLabel *m_title;
     QLabel *m_icon;
