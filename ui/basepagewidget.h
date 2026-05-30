@@ -135,10 +135,8 @@ protected:
     QStackedWidget* m_stack{nullptr};
 
     TabConfigs m_tabs;      //用来保存tabs
-    // 当前默认每个 Tab 对应一个 QTableView。
-    // 后续可扩展为 QWidget*，支持 PDF、表单等。
+    // 保存每个 Tab 对应的页面控件，可能是 QTableView、PDF 页面或普通表单页面。
     QVector<QWidget*> m_pages;
-    QVector<QTableView*> m_tables;
 
     QAbstractItemModel* m_model;    //基础模型
     //每个tab对于的代理模型

@@ -9,8 +9,10 @@
 #include <QEvent>
 #include <QFile>
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QFontMetrics>
 #include <QMessageBox>
+#include <QFrame>
 #include <QStandardPaths>
 #include <QScrollBar>
 #include <QTimer>
@@ -72,8 +74,11 @@ bool BasePageWidget::eventFilter(QObject* watched, QEvent* event)
 
 void BasePageWidget::updateTableResizeMode()
 {
-    for (QTableView* table : std::as_const(m_tables))
-        applyAdaptiveColumnWidths(table);
+    for (QWidget* page : std::as_const(m_pages))
+    {
+        if (auto table = qobject_cast<QTableView*>(page))
+            applyAdaptiveColumnWidths(table);
+    }
 }
 
 TabConfigs BasePageWidget::Tabs() const
@@ -122,45 +127,33 @@ void BasePageWidget::initUI()
     auto titleLayout = createTitleLayout();
     mainLayout->addLayout(titleLayout);
 
+    auto contentFrame = new QFrame(this);
+    contentFrame->setProperty("panelRole", "pageContent");
+    contentFrame->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+    auto contentLayout = new QVBoxLayout(contentFrame);
+    contentLayout->setContentsMargins(0, 0, 0, 0);
+    contentLayout->setSpacing(0);
+
     // ===== TabBar（只显示状态）=====
-    m_tabBar = new QTabBar(this);
+    m_tabBar = new QTabBar(contentFrame);
+    m_tabBar->setObjectName("BasePageTabBar");
     m_tabBar->setExpanding(false);
-    m_tabBar->setStyleSheet(R"(
-    QTabBar {
-        border-top: 1px solid #dcdfe6;
-    }
-
-    QTabBar::tab {
-        background: transparent;
-        padding: 8px 20px;
-        margin-top: 1px;
-        color: #606266;
-        border: none;
-    }
-
-    QTabBar::tab:selected {
-        color: #409EFF;
-        border-top: 2px solid #409EFF;
-    }
-
-    QTabBar::tab:hover {
-        color: #409EFF;
-    }
-)");
-    mainLayout->addWidget(m_tabBar);
+    contentLayout->addWidget(m_tabBar);
 
 
     // ===== 搜索栏 =====
-    m_searchWidget = new QWidget(this);
+    m_searchWidget = new QWidget(contentFrame);
     m_searchLayout = new QHBoxLayout(m_searchWidget);
     m_searchLayout->setContentsMargins(0, 0, 0, 0);
     setupSearchLayout(m_searchLayout);
-    mainLayout->addWidget(m_searchWidget);
+    contentLayout->addWidget(m_searchWidget);
 
     // ===== Stack（表格区域）=====
-    m_stack = new QStackedWidget(this);
+    m_stack = new QStackedWidget(contentFrame);
 
-    mainLayout->addWidget(m_stack);
+    contentLayout->addWidget(m_stack);
+    mainLayout->addWidget(contentFrame, 1);
 
     // ===== Model =====
     m_model = createModel();
@@ -203,13 +196,13 @@ void BasePageWidget::initTabs()
             //表格
             page = table;
 
-            m_tables.append(table);
             m_proxies.append(proxy);
         }
         else{
             page = tabs[i].page;
         }
         if(page){
+            m_pages.append(page);
             m_stack->addWidget(page);
         }
     }
@@ -276,20 +269,265 @@ void BasePageWidget::exportCurrentTableToExcel()
 
     const QString defaultDir =
         QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
-    const QString defaultName =
-        tr("%1/报表_%2.xls")
+    const QString baseName =
+        tr("%1/报表_%2")
             .arg(defaultDir)
             .arg(QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss"));
 
+    QString selectedFilter;
     const QString fileName = QFileDialog::getSaveFileName(
         this,
         tr("导出报表"),
-        defaultName,
-        tr("Excel 文件 (*.xls);;HTML 文件 (*.html)"));
+        baseName + ".xls",
+        tr("Excel 97-2003 文件 (*.xls);;CSV 文件 (*.csv);;Excel 工作簿 (*.xlsx)"),
+        &selectedFilter);
     if (fileName.isEmpty())
         return;
 
-    QFile file(fileName);
+    QString exportFileName = fileName;
+    QString exportType = QFileInfo(exportFileName).suffix().toLower();
+    if (exportType != "xls" && exportType != "csv" && exportType != "xlsx")
+    {
+        if (selectedFilter.contains("*.csv"))
+            exportType = "csv";
+        else if (selectedFilter.contains("*.xlsx"))
+            exportType = "xlsx";
+        else
+            exportType = "xls";
+    }
+
+    if (!exportFileName.endsWith("." + exportType, Qt::CaseInsensitive))
+        exportFileName += "." + exportType;
+
+    auto isExportColumn = [table](int col) {
+        if (table->isColumnHidden(col))
+            return false;
+
+        const QString header =
+            table->model()->headerData(col, Qt::Horizontal, Qt::DisplayRole)
+                .toString();
+
+        if (header == QObject::tr("选择"))
+            return false;
+
+        for (int row = 0; row < table->model()->rowCount(); ++row)
+        {
+            if (table->model()->index(row, col)
+                    .data(Qt::CheckStateRole)
+                    .isValid())
+                return false;
+        }
+
+        return true;
+    };
+
+    auto exportColumns = [&]() {
+        QVector<int> columns;
+        for (int col = 0; col < table->model()->columnCount(); ++col)
+        {
+            if (isExportColumn(col))
+                columns.append(col);
+        }
+        return columns;
+    };
+
+    const QVector<int> columns = exportColumns();
+
+    auto xmlText = [](const QString& text) {
+        QString value = text;
+        value.replace("&", "&amp;");
+        value.replace("<", "&lt;");
+        value.replace(">", "&gt;");
+        value.replace("\"", "&quot;");
+        value.replace("'", "&apos;");
+        return value;
+    };
+
+    auto columnName = [](int index) {
+        QString name;
+        int value = index + 1;
+        while (value > 0)
+        {
+            const int remainder = (value - 1) % 26;
+            name.prepend(QChar('A' + remainder));
+            value = (value - 1) / 26;
+        }
+        return name;
+    };
+
+    auto crc32 = [](const QByteArray& data) {
+        quint32 crc = 0xFFFFFFFFu;
+        for (uchar byte : data)
+        {
+            crc ^= byte;
+            for (int i = 0; i < 8; ++i)
+                crc = (crc >> 1) ^ (0xEDB88320u & (-(int)(crc & 1)));
+        }
+        return crc ^ 0xFFFFFFFFu;
+    };
+
+    auto append16 = [](QByteArray& data, quint16 value) {
+        data.append(char(value & 0xFF));
+        data.append(char((value >> 8) & 0xFF));
+    };
+
+    auto append32 = [](QByteArray& data, quint32 value) {
+        data.append(char(value & 0xFF));
+        data.append(char((value >> 8) & 0xFF));
+        data.append(char((value >> 16) & 0xFF));
+        data.append(char((value >> 24) & 0xFF));
+    };
+
+    auto makeXlsx = [&]() {
+        struct ZipEntry
+        {
+            QString name;
+            QByteArray data;
+            quint32 crc = 0;
+            quint32 offset = 0;
+        };
+
+        QVector<ZipEntry> entries;
+
+        auto addEntry = [&](const QString& name, const QByteArray& data) {
+            ZipEntry entry;
+            entry.name = name;
+            entry.data = data;
+            entry.crc = crc32(data);
+            entries.append(entry);
+        };
+
+        QByteArray worksheet;
+        QTextStream sheetOut(&worksheet);
+        sheetOut.setEncoding(QStringConverter::Utf8);
+        sheetOut << "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>";
+        sheetOut << "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">";
+        sheetOut << "<sheetData>";
+
+        auto writeXlsxRow = [&](int excelRow, int modelRow) {
+            sheetOut << "<row r=\"" << excelRow << "\">";
+            for (int exportCol = 0; exportCol < columns.size(); ++exportCol)
+            {
+                const int modelCol = columns[exportCol];
+                const QString cellRef = columnName(exportCol) + QString::number(excelRow);
+                const QString text =
+                    modelRow < 0
+                        ? table->model()->headerData(modelCol, Qt::Horizontal, Qt::DisplayRole).toString()
+                        : table->model()->index(modelRow, modelCol).data(Qt::DisplayRole).toString();
+                sheetOut << "<c r=\"" << cellRef << "\" t=\"inlineStr\"><is><t>"
+                         << xmlText(text)
+                         << "</t></is></c>";
+            }
+            sheetOut << "</row>";
+        };
+
+        writeXlsxRow(1, -1);
+        for (int row = 0; row < table->model()->rowCount(); ++row)
+            writeXlsxRow(row + 2, row);
+
+        sheetOut << "</sheetData></worksheet>";
+        sheetOut.flush();
+
+        addEntry("[Content_Types].xml",
+                 "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                 "<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\">"
+                 "<Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/>"
+                 "<Default Extension=\"xml\" ContentType=\"application/xml\"/>"
+                 "<Override PartName=\"/xl/workbook.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\"/>"
+                 "<Override PartName=\"/xl/worksheets/sheet1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>"
+                 "</Types>");
+        addEntry("_rels/.rels",
+                 "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                 "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">"
+                 "<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"xl/workbook.xml\"/>"
+                 "</Relationships>");
+        addEntry("xl/workbook.xml",
+                 "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                 "<workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" "
+                 "xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
+                 "<sheets><sheet name=\"Sheet1\" sheetId=\"1\" r:id=\"rId1\"/></sheets>"
+                 "</workbook>");
+        addEntry("xl/_rels/workbook.xml.rels",
+                 "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                 "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">"
+                 "<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet1.xml\"/>"
+                 "</Relationships>");
+        addEntry("xl/worksheets/sheet1.xml", worksheet);
+
+        QByteArray zip;
+        for (ZipEntry& entry : entries)
+        {
+            const QByteArray name = entry.name.toUtf8();
+            entry.offset = zip.size();
+
+            append32(zip, 0x04034b50);
+            append16(zip, 20);
+            append16(zip, 0);
+            append16(zip, 0);
+            append16(zip, 0);
+            append16(zip, 0);
+            append32(zip, entry.crc);
+            append32(zip, entry.data.size());
+            append32(zip, entry.data.size());
+            append16(zip, name.size());
+            append16(zip, 0);
+            zip.append(name);
+            zip.append(entry.data);
+        }
+
+        const quint32 centralOffset = zip.size();
+        for (const ZipEntry& entry : entries)
+        {
+            const QByteArray name = entry.name.toUtf8();
+            append32(zip, 0x02014b50);
+            append16(zip, 20);
+            append16(zip, 20);
+            append16(zip, 0);
+            append16(zip, 0);
+            append16(zip, 0);
+            append16(zip, 0);
+            append32(zip, entry.crc);
+            append32(zip, entry.data.size());
+            append32(zip, entry.data.size());
+            append16(zip, name.size());
+            append16(zip, 0);
+            append16(zip, 0);
+            append16(zip, 0);
+            append16(zip, 0);
+            append32(zip, 0);
+            append32(zip, entry.offset);
+            zip.append(name);
+        }
+
+        const quint32 centralSize = zip.size() - centralOffset;
+        append32(zip, 0x06054b50);
+        append16(zip, 0);
+        append16(zip, 0);
+        append16(zip, entries.size());
+        append16(zip, entries.size());
+        append32(zip, centralSize);
+        append32(zip, centralOffset);
+        append16(zip, 0);
+
+        return zip;
+    };
+
+    if (exportType == "xlsx")
+    {
+        QFile file(exportFileName);
+        if (!file.open(QIODevice::WriteOnly))
+        {
+            QMessageBox::warning(this, tr("导出报表"), tr("文件打开失败，无法导出。"));
+            return;
+        }
+
+        file.write(makeXlsx());
+        file.close();
+        QMessageBox::information(this, tr("导出报表"), tr("导出完成。"));
+        return;
+    }
+
+    QFile file(exportFileName);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
         QMessageBox::warning(this, tr("导出报表"), tr("文件打开失败，无法导出。"));
@@ -299,14 +537,45 @@ void BasePageWidget::exportCurrentTableToExcel()
     QTextStream out(&file);
     out.setEncoding(QStringConverter::Utf8);
 
-    // 这里使用 Excel 可直接打开的 HTML 表格格式，后续如引入 xlsx 库，可只替换本函数的写文件部分。
+    auto csvText = [](const QString& text) {
+        QString value = text;
+        value.replace("\"", "\"\"");
+        if (value.contains(',') || value.contains('"') ||
+            value.contains('\n') || value.contains('\r'))
+            value = "\"" + value + "\"";
+        return value;
+    };
+
+    auto writeCsvRow = [&](int row) {
+        QStringList values;
+        for (int col : columns)
+        {
+            const QString text =
+                row < 0
+                    ? table->model()->headerData(col, Qt::Horizontal, Qt::DisplayRole).toString()
+                    : table->model()->index(row, col).data(Qt::DisplayRole).toString();
+            values << csvText(text);
+        }
+        out << values.join(",") << "\n";
+    };
+
+    if (exportType == "csv")
+    {
+        out << QChar(0xFEFF);
+        writeCsvRow(-1);
+        for (int row = 0; row < table->model()->rowCount(); ++row)
+            writeCsvRow(row);
+
+        file.close();
+        QMessageBox::information(this, tr("导出报表"), tr("导出完成。"));
+        return;
+    }
+
+    // xls 使用 Excel 可直接打开的 HTML 表格格式。
     out << "<html><head><meta charset=\"UTF-8\"></head><body><table border=\"1\">\n";
     out << "<tr>";
-    for (int col = 0; col < table->model()->columnCount(); ++col)
+    for (int col : columns)
     {
-        if (table->isColumnHidden(col))
-            continue;
-
         const QString header =
             table->model()->headerData(col, Qt::Horizontal, Qt::DisplayRole)
                 .toString()
@@ -318,11 +587,8 @@ void BasePageWidget::exportCurrentTableToExcel()
     for (int row = 0; row < table->model()->rowCount(); ++row)
     {
         out << "<tr>";
-        for (int col = 0; col < table->model()->columnCount(); ++col)
+        for (int col : columns)
         {
-            if (table->isColumnHidden(col))
-                continue;
-
             const QString text =
                 table->model()->index(row, col)
                     .data(Qt::DisplayRole)

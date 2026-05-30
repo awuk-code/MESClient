@@ -61,6 +61,8 @@ void RepairJudgePage::initUI()
 
     m_saveBtn = new QPushButton(tr("保存"), this);
     m_backBtn = new QPushButton(tr("返回"), this);
+    m_saveBtn->setProperty("buttonRole", "save");
+    m_backBtn->setProperty("buttonRole", "secondary");
     m_saveBtn->setFixedSize(84, 32);
     m_backBtn->setFixedSize(84, 32);
 
@@ -71,12 +73,16 @@ void RepairJudgePage::initUI()
     titleLayout->addWidget(m_backBtn);
     mainLayout->addLayout(titleLayout);
 
-    auto infoGroup = new QFrame(this);
-    infoGroup->setStyleSheet(
-        "QFrame{"
-        "background:#ffffff;"
-        "border:1px solid #dcdfe6;"
-        "}");
+    auto contentFrame = new QFrame(this);
+    contentFrame->setProperty("panelRole", "pageContent");
+    contentFrame->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+    auto contentLayout = new QVBoxLayout(contentFrame);
+    contentLayout->setContentsMargins(0, 0, 0, 0);
+    contentLayout->setSpacing(12);
+
+    auto infoGroup = new QFrame(contentFrame);
+    infoGroup->setProperty("panelRole", "section");
 
     auto infoGroupLayout = new QVBoxLayout(infoGroup);
     infoGroupLayout->setContentsMargins(0, 0, 0, 0);
@@ -85,14 +91,7 @@ void RepairJudgePage::initUI()
     auto infoTitle = new QLabel(tr("异常品信息"), infoGroup);
     infoTitle->setFixedHeight(36);
     infoTitle->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-    infoTitle->setStyleSheet(
-        "QLabel{"
-        "padding-left:12px;"
-        "font-weight:bold;"
-        "color:#303133;"
-        "border:none;"
-        "border-bottom:1px solid #dcdfe6;"
-        "}");
+    infoTitle->setProperty("labelRole", "sectionTitle");
     infoGroupLayout->addWidget(infoTitle);
 
     auto scrollArea = new QScrollArea(infoGroup);
@@ -111,17 +110,13 @@ void RepairJudgePage::initUI()
 
     scrollArea->setWidget(m_infoWidget);
     infoGroupLayout->addWidget(scrollArea);
-    mainLayout->addWidget(infoGroup);
+    contentLayout->addWidget(infoGroup);
 
-    m_contentWidget = new QFrame(this);
+    m_contentWidget = new QFrame(contentFrame);
     m_contentWidget->setObjectName("judgePanel");
+    m_contentWidget->setProperty("panelRole", "section");
     m_contentWidget->setMinimumHeight(260);
     m_contentWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    m_contentWidget->setStyleSheet(
-        "QFrame#judgePanel{"
-        "background:#ffffff;"
-        "border:1px solid #dcdfe6;"
-        "}");
     auto judgeLayout = new QVBoxLayout(m_contentWidget);
     judgeLayout->setContentsMargins(0, 0, 0, 0);
     judgeLayout->setSpacing(0);
@@ -129,14 +124,7 @@ void RepairJudgePage::initUI()
     auto judgeTitle = new QLabel(tr("情况判定"), m_contentWidget);
     judgeTitle->setFixedHeight(36);
     judgeTitle->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-    judgeTitle->setStyleSheet(
-        "QLabel{"
-        "padding-left:12px;"
-        "font-weight:bold;"
-        "color:#303133;"
-        "border:none;"
-        "border-bottom:1px solid #dcdfe6;"
-        "}");
+    judgeTitle->setProperty("labelRole", "sectionTitle");
     judgeLayout->addWidget(judgeTitle);
 
     auto judgeContent = new QWidget(m_contentWidget);
@@ -191,12 +179,14 @@ void RepairJudgePage::initUI()
     submitLayout->addStretch();
 
     m_submitBtn = new QPushButton(tr("提交"), judgeContent);
+    m_submitBtn->setProperty("buttonRole", "primary");
     m_submitBtn->setFixedSize(84, 32);
     submitLayout->addWidget(m_submitBtn);
     judgeContentLayout->addLayout(submitLayout);
 
     judgeLayout->addWidget(judgeContent, 1);
-    mainLayout->addWidget(m_contentWidget, 1);
+    contentLayout->addWidget(m_contentWidget, 1);
+    mainLayout->addWidget(contentFrame, 1);
 
     connect(m_saveBtn, &QPushButton::clicked,
             this, &RepairJudgePage::saveJudgeDraft);
@@ -347,7 +337,7 @@ QLabel* RepairJudgePage::createTitleLabel(const QString& text)
     auto label = new QLabel(text, m_infoWidget);
     label->setMinimumWidth(110);
     label->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-    label->setStyleSheet("QLabel{color:#606266;}");
+    label->setProperty("labelRole", "fieldName");
     return label;
 }
 
@@ -356,7 +346,7 @@ QLabel* RepairJudgePage::createValueLabel(const QString& text)
     auto label = new QLabel(text, m_infoWidget);
     label->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     label->setWordWrap(true);
-    label->setStyleSheet("QLabel{color:#303133;}");
+    label->setProperty("labelRole", "fieldValue");
     return label;
 }
 
@@ -365,21 +355,15 @@ QPushButton* RepairJudgePage::createImageButton(const QString& text, QWidget* pa
     auto button = new QPushButton(text, parent ? parent : m_infoWidget);
     button->setCursor(Qt::PointingHandCursor);
     button->setFlat(true);
-    button->setStyleSheet(
-        "QPushButton{"
-        "color:#409EFF;"
-        "text-align:left;"
-        "border:none;"
-        "background:transparent;"
-        "padding:0;"
-        "}");
+    button->setProperty("buttonRole", "link");
     return button;
 }
 
 QLabel* RepairJudgePage::createImageLinkLabel(QWidget* parent)
 {
     auto label = new QLabel(parent ? parent : m_infoWidget);
-    label->setText(QString("<a href=\"open-image\" style=\"color:#409EFF;text-decoration:none;\">%1</a>")
+    label->setProperty("labelRole", "imageLink");
+    label->setText(QString("<a href=\"open-image\">%1</a>")
                        .arg(tr("查看图片")));
     label->setTextFormat(Qt::RichText);
     label->setTextInteractionFlags(Qt::LinksAccessibleByMouse);

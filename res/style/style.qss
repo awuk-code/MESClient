@@ -1,56 +1,193 @@
-/* 全局变量风格定义 */
+/* ============================================================
+   全局基础样式
+   说明：这里只放通用 QWidget 控件样式，页面差异通过 objectName
+   或动态属性（例如 buttonRole、labelRole、panelRole）区分。
+   ============================================================ */
+
 QPushButton {
     background-color: transparent;
     border: none;
-
 }
+
 QToolButton {
-    border:none; 
-    background:transparent;
+    border: none;
+    background: transparent;
 }
 
 QToolTip {
-    border: 1px solid #dcdcdc; /* 设置一个浅色边框 */
-    background-color: transparent;  /* 设置背景透明 */
-    color: #f10202;            /* 设置文字颜色 */
+    border: 1px solid #dcdcdc;
+    background-color: #ffffff;
+    color: #f10202;
     font-size: 12px;
     padding: 2px;
 }
-/* 顶部标题栏样式 */
+
+/* ============================================================
+   顶部栏、侧边栏、二级导航
+   ============================================================ */
+
 #HeaderWidget {
     background-color: #808;
     border-bottom: 1px solid #e8e8e8;
 }
 
-/* 侧边栏样式 */
 #SideBarWidget {
     background-color: #e0e6ed;
     border-right: 1px solid #e8edf1;
 }
+
 #SubHeaderWidget {
-    background-color: #ffffff; /* 白色背景 */
-    border-bottom: 1px solid #e8e8e8; /* 浅灰色底边框 */
+    background-color: #ffffff;
+    border-bottom: 1px solid #e8e8e8;
 }
 
 #SubHeaderWidget QLabel {
     color: #666666;
     font-size: 13px;
 }
+
 /* 侧边栏菜单按钮 */
 #menuBtn {
     background-color: transparent;
     border: none;
-    color: black; /* 字体颜色 */
-    font-size: 12px; /* 字体大小 */
-    font-weight: bold; /* 字体粗细 */
-   /* padding:0px;  */
-    /* margin:0px;  */
-    qproperty-toolButtonStyle: ToolButtonTextUnderIcon;
-    qproperty-iconSize: 24px 24px; /* 图标大小 */
+    color: #000000;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 0px;
+    border-radius: 4px;
 }
 
 #menuBtn:checked {
-    background-color: #1890ff;
-    color: red; /* 字体颜色 */
+    background-color: #eef6ff;
+    color: #1890ff;
 }
- 
+
+#menuBtn:hover {
+    background-color: #f5f7fa;
+    color: #1890ff;
+}
+
+/* ============================================================
+   通用业务页面：页签、表格、按钮、信息字段
+   ============================================================ */
+
+QTabBar#BasePageTabBar {
+    border-top: 1px solid #dcdfe6;
+}
+
+QTabBar#BasePageTabBar::tab {
+    background: transparent;
+    padding: 8px 20px;
+    margin-top: 1px;
+    color: #606266;
+    border: none;
+}
+
+QTabBar#BasePageTabBar::tab:selected {
+    color: #409EFF;
+    border-top: 2px solid #409EFF;
+}
+
+QTabBar#BasePageTabBar::tab:hover {
+    color: #409EFF;
+}
+
+QLabel[labelRole="fieldName"] {
+    color: #606266;
+}
+
+QLabel[labelRole="fieldValue"] {
+    color: #303133;
+}
+
+QLabel[labelRole="sectionTitle"] {
+    padding-left: 12px;
+    font-weight: bold;
+    color: #303133;
+    border: none;
+    border-bottom: 1px solid #dcdfe6;
+}
+
+QLabel[labelRole="imageLink"] {
+    color: #409EFF;
+}
+
+QFrame[panelRole="section"] {
+    background: #ffffff;
+    border: 1px solid #dcdfe6;
+}
+
+QFrame[panelRole="pageContent"] {
+    background: #ffffff;
+    border: 1px solid #dcdfe6;
+}
+
+QToolButton[buttonRole="panelToggle"] {
+    border: none;
+    background: transparent;
+    padding: 0px;
+}
+
+QPushButton[buttonRole="save"],
+QPushButton[buttonRole="export"],
+QPushButton[buttonRole="primary"] {
+    background-color: #409EFF;
+    color: #ffffff;
+    border-radius: 4px;
+    padding: 6px 16px;
+}
+
+QPushButton[buttonRole="save"]:hover,
+QPushButton[buttonRole="export"]:hover,
+QPushButton[buttonRole="primary"]:hover {
+    background-color: #66b1ff;
+}
+
+QPushButton[buttonRole="secondary"] {
+    background-color: #ffffff;
+    color: #303133;
+    border: 1px solid #dcdfe6;
+    border-radius: 4px;
+    padding: 6px 16px;
+}
+
+QPushButton[buttonRole="secondary"]:hover {
+    color: #409EFF;
+    border-color: #409EFF;
+}
+
+QPushButton[buttonRole="link"] {
+    color: #409EFF;
+    text-align: left;
+    border: none;
+    background: transparent;
+    padding: 0px;
+}
+
+/* ============================================================
+   登录窗口
+   ============================================================ */
+
+#MLoginWidget QLineEdit {
+    border: 1px solid #cccccc;
+    border-radius: 5px;
+    padding: 6px;
+}
+
+#MLoginWidget QLineEdit:hover {
+    border: 1px solid #409EFF;
+}
+
+#MLoginWidget QPushButton#LoginBtn {
+    background-color: #409EFF;
+    color: #ffffff;
+    border-radius: 5px;
+}
+
+#MLoginWidget QPushButton#LoginBtn:hover {
+    background-color: #66b1ff;
+}
+
+#LoginErrorLabel {
+    color: #ff0000;
+}

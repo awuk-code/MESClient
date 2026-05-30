@@ -234,15 +234,7 @@ QWidget *ProcessStationLeftPanel::createTaskTitleWidget(const QString &title, QL
     toggleBtn->setIconSize(QSize(16, 16));
     toggleBtn->setIcon(QIcon(":/res/common/expand.svg"));
     toggleBtn->setToolTip(tr("收起"));
-
-    // 去掉按钮边框和背景
-    toggleBtn->setStyleSheet(R"(
-    QToolButton {
-        border: none;
-        background: transparent;
-        padding: 0px;
-    }
-)");
+    toggleBtn->setProperty("buttonRole", "panelToggle");
 
     titleLayout->addWidget(icon);
     titleLayout->addWidget(text);
@@ -270,7 +262,7 @@ QLabel *ProcessStationLeftPanel::createInfoTitleLabel(const QString &text, QWidg
     auto label = new QLabel(text, parentWidget);
     label->setMinimumWidth(110);
     label->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-    label->setStyleSheet("QLabel{color:#606266;}");
+    label->setProperty("labelRole", "fieldName");
     return label;
 }
 
@@ -279,7 +271,7 @@ QLabel *ProcessStationLeftPanel::createInfoValueLabel(const QString &text, QWidg
     auto label = new QLabel(text, parentWidget);
     label->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     label->setWordWrap(true);
-    label->setStyleSheet("QLabel{color:#303133;}");
+    label->setProperty("labelRole", "fieldValue");
     return label;
 }
 

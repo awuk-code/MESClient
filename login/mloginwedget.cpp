@@ -101,7 +101,7 @@ void MLoginWedget::InitLoginUI()
     mainLayout->addSpacing(10);
 
     m_errString = new QLabel(this);
-    m_errString->setStyleSheet("color:red;");
+    m_errString->setObjectName("LoginErrorLabel");
     m_errString->setAlignment(Qt::AlignCenter);
     m_errString->setVisible(false);
 
@@ -114,24 +114,6 @@ void MLoginWedget::InitLoginUI()
     mainLayout->addWidget(m_loginBtn);
 
     mainLayout->setContentsMargins(40, 20, 40, 20);
-    setStyleSheet(R"(
-        QLineEdit {
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            padding: 6px;
-        }
-        QLineEdit:hover {
-            border: 1px solid #409EFF;
-        }
-        QPushButton {
-            background-color: #409EFF;
-            color: white;
-            border-radius: 5px;
-        }
-        QPushButton:hover {
-            background-color: #66b1ff;
-        }
-    )");
 
 }
 

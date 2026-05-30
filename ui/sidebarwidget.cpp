@@ -119,8 +119,6 @@ QWidget *SideBarWidget::createMenuItem(const QString &icon_normal, const QString
     }   else{
         btn->setIcon(QIcon(icon_normal));
     }
-    btn->setStyleSheet("border:none; background:transparent;");
-
     m_group->addButton(btn, id);
 
 
