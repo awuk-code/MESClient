@@ -1,4 +1,4 @@
-#include "sidebarwidget.h"
+﻿#include "sidebarwidget.h"
 #include <QDebug>
 #include "configmanager.h"
 SideBarWidget::SideBarWidget(QWidget *parent)
@@ -47,25 +47,29 @@ void SideBarWidget::initUI()
 
 void SideBarWidget::initConnect()
 {
-    connect(m_group, &QButtonGroup::buttonClicked, this, [this](QAbstractButton* clickedBtn){
-        int id =m_group->id(clickedBtn);
+    connect(m_group, &QButtonGroup::buttonClicked,
+            this, &SideBarWidget::onMenuButtonClicked);
+}
 
-        if(id != 0 && id <= maxMenuCnt-2){
-            qDebug() << __FUNCTION__"id===="<<id;
-            emit sigPageChanged(id);
-        }
-        if(maxMenuCnt==id){
-             ConfigManager::instance().saveConfig();
-            if(window())
-                window()->close();
-        }
-        qDebug() << __FUNCTION__ << tr("点击菜单：") << m_group->id(clickedBtn);
+void SideBarWidget::onMenuButtonClicked(QAbstractButton* clickedBtn)
+{
+    int id =m_group->id(clickedBtn);
 
-        for(QAbstractButton* btn : m_group->buttons()){
-            QString path = (btn == clickedBtn) ? ("icon_checked") : ("icon_normal");
-            btn->setIcon(QIcon(btn->property(path.toStdString().c_str()).toString()));
-        }
-    });
+    if(id != 0 && id <= maxMenuCnt-2){
+        qDebug() << __FUNCTION__"id===="<<id;
+        emit sigPageChanged(id);
+    }
+    if(maxMenuCnt==id){
+         ConfigManager::instance().saveConfig();
+        if(window())
+            window()->close();
+    }
+    qDebug() << __FUNCTION__ << tr("点击菜单：") << m_group->id(clickedBtn);
+
+    for(QAbstractButton* btn : m_group->buttons()){
+        QString path = (btn == clickedBtn) ? ("icon_checked") : ("icon_normal");
+        btn->setIcon(QIcon(btn->property(path.toStdString().c_str()).toString()));
+    }
 }
 
 void SideBarWidget::setCurrentPageIndex(int index)

@@ -125,24 +125,28 @@ void RepairStationPage::setupSearchLayout(QHBoxLayout *layout)
         new QPushButton(tr("导出报表"), this);
     m_exportBtn->setProperty("buttonRole", "export");
 
-    connect(m_repairJudgeBtn, &QPushButton::clicked, this, [this]() {
-        if (tabBar()->currentIndex() != 0)
-            return;
-
-        auto table =
-            qobject_cast<QTableView*>(m_stack->currentWidget());
-        if (!table)
-            return;
-
-        const QVariantMap rowData =
-            rowDataFromProxyIndex(table->currentIndex());
-        openRepairJudgePage(rowData);
-    });
+    connect(m_repairJudgeBtn, &QPushButton::clicked,
+            this, &RepairStationPage::onRepairJudgeBtnClicked);
 
     layout->addWidget(m_searchEdit);
     layout->addStretch();
     layout->addWidget(m_repairJudgeBtn);
     layout->addWidget(m_exportBtn);
+}
+
+void RepairStationPage::onRepairJudgeBtnClicked()
+{
+    if (tabBar()->currentIndex() != 0)
+        return;
+
+    auto table =
+        qobject_cast<QTableView*>(m_stack->currentWidget());
+    if (!table)
+        return;
+
+    const QVariantMap rowData =
+        rowDataFromProxyIndex(table->currentIndex());
+    openRepairJudgePage(rowData);
 }
 
 void RepairStationPage::updateRepairJudgeButton()

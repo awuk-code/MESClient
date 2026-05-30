@@ -194,6 +194,8 @@ QWidget *ProcessStationLeftPanel::createTaskTitleWidget(const QString &title, QL
     QLabel* text = new QLabel(widget);
     icon->setPixmap(QPixmap(":res/common/rect.svg").scaled(24,24, Qt::KeepAspectRatio, Qt::SmoothTransformation));
     text->setText(title);
+    // 标题等级样式入口：左侧二级标题，后续修改字体时在 QSS 的 sectionTitle 中统一设置。
+    text->setProperty("labelRole", "sectionTitle");
     titleLabel = text;
 
     QToolButton* toggleBtn = new QToolButton(widget);
@@ -259,6 +261,8 @@ QWidget *ProcessStationLeftPanel::createPassWidget(const QString &title)
     QLabel* text = new QLabel(widget);
     icon->setPixmap(QPixmap(":res/common/rect.svg").scaled(24,24, Qt::KeepAspectRatio, Qt::SmoothTransformation));
     text->setText(title);
+    // 标题等级样式入口：左侧二级标题，后续修改字体时在 QSS 的 sectionTitle 中统一设置。
+    text->setProperty("labelRole", "sectionTitle");
 
     titleLayout->addWidget(icon);
     titleLayout->addWidget(text);
@@ -420,49 +424,69 @@ void ProcessStationLeftPanel::bindPassWidgetActions()
     if (m_executeBtn)
     {
         connect(m_executeBtn, &QPushButton::clicked,
-                this, &ProcessStationLeftPanel::handlePassAction);
+                this, &ProcessStationLeftPanel::onExecuteBtnClicked);
     }
 
     if (m_scanEdit)
     {
         connect(m_scanEdit, &QLineEdit::returnPressed,
-                this, &ProcessStationLeftPanel::handlePassAction);
+                this, &ProcessStationLeftPanel::onExecuteBtnClicked);
     }
 
     if (m_pauseBtn)
     {
         connect(m_pauseBtn, &QPushButton::clicked,
-                this, [this]() { handlePauseResult(true); });
+                this, &ProcessStationLeftPanel::onPauseBtnClicked);
     }
 
     if (m_resumeBtn)
     {
         connect(m_resumeBtn, &QPushButton::clicked,
-                this, [this]() { handlePauseResult(false); });
+                this, &ProcessStationLeftPanel::onResumeBtnClicked);
     }
 }
 
-void ProcessStationLeftPanel::handlePassAction()
+void ProcessStationLeftPanel::onExecuteBtnClicked()
 {
-    const QString productSn = m_scanEdit ? m_scanEdit->text().trimmed() : QString();
-    if (!validateProductSn(productSn))
-        return;
-
     if (m_scanInRadio && m_scanInRadio->isChecked())
     {
+        const QString productSn = m_scanEdit ? m_scanEdit->text().trimmed() : QString();
+        if (!validateProductSn(productSn))
+            return;
+
         handleScanInAction(productSn);
+
+        if (m_scanEdit)
+            m_scanEdit->clear();
     }
     else if (m_passRadio && m_passRadio->isChecked())
     {
+        // PASS 针对状态信息表当前选中的产品，不再判断输入框内容。
+        const QString productSn = currentProductSnFromSelection();
+        if (!validateSelectedProductSn(productSn))
+            return;
+
         handlePassResult(productSn);
     }
     else if (m_ngRadio && m_ngRadio->isChecked())
     {
+        // NG 针对状态信息表当前选中的产品，不再判断输入框内容。
+        const QString productSn = currentProductSnFromSelection();
+        if (!validateSelectedProductSn(productSn))
+            return;
+
         handleNgResult(productSn);
     }
+}
 
-    if (m_scanEdit)
-        m_scanEdit->clear();
+void ProcessStationLeftPanel::onPauseBtnClicked()
+{
+    handlePauseResult(true);
+}
+
+void ProcessStationLeftPanel::onResumeBtnClicked()
+{
+    handlePauseResult(false);
 }
 
 void ProcessStationLeftPanel::handleScanInAction(const QString& productSn)
@@ -528,8 +552,9 @@ void ProcessStationLeftPanel::handleNgResult(const QString& productSn)
 
 void ProcessStationLeftPanel::handlePauseResult(bool paused)
 {
-    const QString productSn = currentProductSnFromInputOrSelection();
-    if (!validateProductSn(productSn))
+    // 暂停/解除暂停针对状态信息表当前选中的产品，不再判断输入框内容。
+    const QString productSn = currentProductSnFromSelection();
+    if (!validateSelectedProductSn(productSn))
         return;
 
     const int row = statusRowForProductSn(productSn);
@@ -562,6 +587,19 @@ bool ProcessStationLeftPanel::validateProductSn(const QString& productSn) const
     return false;
 }
 
+bool ProcessStationLeftPanel::validateSelectedProductSn(const QString& productSn) const
+{
+    if (!productSn.isEmpty())
+        return true;
+
+    QMessageBox::warning(
+        const_cast<ProcessStationLeftPanel*>(this),
+        tr("扫码过站"),
+        tr("请先在状态信息中选中产品SN。"));
+    qDebug() << __FUNCTION__ << "empty selected productSn";
+    return false;
+}
+
 bool ProcessStationLeftPanel::validatePassCondition(const QString& productSn) const
 {
     Q_UNUSED(productSn)
@@ -573,12 +611,8 @@ bool ProcessStationLeftPanel::validatePassCondition(const QString& productSn) co
     return true;
 }
 
-QString ProcessStationLeftPanel::currentProductSnFromInputOrSelection() const
+QString ProcessStationLeftPanel::currentProductSnFromSelection() const
 {
-    const QString inputSn = m_scanEdit ? m_scanEdit->text().trimmed() : QString();
-    if (!inputSn.isEmpty())
-        return inputSn;
-
     if (!m_statusTableView || !m_statusModel)
         return QString();
 

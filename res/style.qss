@@ -92,6 +92,22 @@ QTabBar#BasePageTabBar::tab:hover {
     color: #409EFF;
 }
 
+
+/* 标题等级：软件最大标题。以后修改系统标题字体、字号、颜色，优先改这里。 */
+QLabel[labelRole="appTitle"] {
+    font-size: 18px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+/* 标题等级：页面一级标题。以后修改页面标题字体、字号、颜色，优先改这里。 */
+QLabel[labelRole="pageTitle"],
+QLabel[labelRole="dialogTitle"] {
+    font-size: 16px;
+    font-weight: 700;
+    color: #303133;
+}
+
 QLabel[labelRole="fieldName"] {
     color: #606266;
 }
@@ -100,9 +116,11 @@ QLabel[labelRole="fieldValue"] {
     color: #303133;
 }
 
+/* 标题等级：区域二级标题。以后修改左侧标题、内容区标题字体，优先改这里。 */
 QLabel[labelRole="sectionTitle"] {
     padding-left: 12px;
-    font-weight: bold;
+    font-size: 14px;
+    font-weight: 600;
     color: #303133;
     border: none;
     border-bottom: 1px solid #dcdfe6;
@@ -110,6 +128,12 @@ QLabel[labelRole="sectionTitle"] {
 
 QLabel[labelRole="imageLink"] {
     color: #409EFF;
+}
+
+/* 表格正文样式入口：表格内容字体、颜色在这里统一设置，表头和代理绘制样式不在这里处理。 */
+QTableView {
+    font-size: 13px;
+    color: #303133;
 }
 
 QFrame[panelRole="section"] {

@@ -125,12 +125,6 @@ void MainWindow::onPageChanged(int index/*, QString &title*/)
 {
     qDebug() << __FUNCTION__<< tr("收到页面切换信号index= ") << index;
 
-    if (index == 2 && m_pageProcess)
-    {
-        // 侧边栏直接进入工序站点时，没有从生产任务行带入数据，左侧只显示字段名。
-        m_pageProcess->clearProductionTaskData();
-    }
-
     m_stack->setCurrentIndex(index-1);
     updateSubHeaderNavigation(index);
 }

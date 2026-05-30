@@ -31,8 +31,8 @@ protected:
     virtual bool onConfirm();
 
 private slots:
-    void onConfirmBtnClicked();
-    void onCancelBtnClicked();
+    void onConfirmButtonClicked();
+    void onCancelButtonClicked();
 
 private:
     void initUI();

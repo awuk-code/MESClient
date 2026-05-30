@@ -56,14 +56,17 @@ private:
     // 创建扫码过站小页面
     QWidget* createPassWidget(const QString &title);
     void bindPassWidgetActions();
-    void handlePassAction();
+    void onExecuteBtnClicked();
+    void onPauseBtnClicked();
+    void onResumeBtnClicked();
     void handleScanInAction(const QString& productSn);
     void handlePassResult(const QString& productSn);
     void handleNgResult(const QString& productSn);
     void handlePauseResult(bool paused);
     bool validateProductSn(const QString& productSn) const;
+    bool validateSelectedProductSn(const QString& productSn) const;
     bool validatePassCondition(const QString& productSn) const;
-    QString currentProductSnFromInputOrSelection() const;
+    QString currentProductSnFromSelection() const;
     int statusRowForProductSn(const QString& productSn) const;
     int appendStatusRow(const QString& productSn);
     void setStatusMark(int row, int column, bool checked, const QColor& color);

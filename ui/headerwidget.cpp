@@ -34,6 +34,8 @@ void HeaderWidget::initUI()
     m_userInfo = new QLabel("xxx121381238 ",this);
     m_userInfo->setToolTip(tr("用户信息"));
     m_title = new QLabel(tr("生产执行系统"), this);
+    // 标题等级样式入口：软件最大标题，后续修改字体时在 QSS 的 appTitle 中统一设置。
+    m_title->setProperty("labelRole", "appTitle");
 
     m_btnMin = new QPushButton(this);
     m_btnMin->setIcon(QIcon(":/res/common/min.svg"));
@@ -88,9 +90,8 @@ void HeaderWidget::initUI()
 void HeaderWidget::initConnect()
 {
 
-    connect(m_btnClose, &QPushButton::clicked, this, [this](){
-        window()->close();
-    });
+    connect(m_btnClose, &QPushButton::clicked,
+            this, &HeaderWidget::onBtnCloseClicked);
     m_trayIcon = new QSystemTrayIcon(QIcon(":/res/common/user.svg"), this);
     connect(m_trayIcon, &QSystemTrayIcon::activated, this,
             [this](QSystemTrayIcon::ActivationReason reason) {
@@ -105,15 +106,28 @@ void HeaderWidget::initConnect()
         m_trayIcon->show();
     }
 
-    connect(m_btnMin, &QPushButton::clicked, this, [this](){
-        if (m_trayIcon && QSystemTrayIcon::isSystemTrayAvailable()) {
-            window()->hide();
-            return;
-        }
-        window()->showMinimized();
-    });;
-    connect(m_btnMax, &QPushButton::clicked, this, [this](){
-        window()->showMaximized();
-        m_btnMax->setIcon(QIcon(":/res/common/max2.svg"));
-    });
+    connect(m_btnMin, &QPushButton::clicked,
+            this, &HeaderWidget::onBtnMinClicked);
+    connect(m_btnMax, &QPushButton::clicked,
+            this, &HeaderWidget::onBtnMaxClicked);
+}
+
+void HeaderWidget::onBtnCloseClicked()
+{
+    window()->close();
+}
+
+void HeaderWidget::onBtnMinClicked()
+{
+    if (m_trayIcon && QSystemTrayIcon::isSystemTrayAvailable()) {
+        window()->hide();
+        return;
+    }
+    window()->showMinimized();
+}
+
+void HeaderWidget::onBtnMaxClicked()
+{
+    window()->showMaximized();
+    m_btnMax->setIcon(QIcon(":/res/common/max2.svg"));
 }

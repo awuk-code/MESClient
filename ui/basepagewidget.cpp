@@ -106,6 +106,8 @@ QHBoxLayout *BasePageWidget::createTitleLayout()
 
     icon->setPixmap(QPixmap(":res/common/rect.svg").scaled(24,24, Qt::KeepAspectRatio, Qt::SmoothTransformation));
     text->setText(pageTitle());
+    // 标题等级样式入口：页面一级标题，后续修改字体时在 QSS 的 pageTitle 中统一设置。
+    text->setProperty("labelRole", "pageTitle");
     layout->addWidget(icon);
     layout->addWidget(text);
     addWidgetToTitle(layout);
@@ -246,26 +248,33 @@ void BasePageWidget::initConnect()
     if (m_searchBtn)
     {
         connect(m_searchBtn, &QPushButton::clicked, this,
-                [=]()
-                {
-                    QString text = m_searchEdit->text();
-
-                    for (auto proxy : std::as_const(m_proxies))
-                    {
-                        proxy->setKeyword(text);
-                    }
-                });
+                &BasePageWidget::onSearchBtnClicked);
     }
     if (m_exportBtn &&
         m_exportBtn->property("buttonRole").toString() == "export")
     {
         connect(m_exportBtn, &QPushButton::clicked, this,
-                &BasePageWidget::exportCurrentTableToExcel);
+                &BasePageWidget::onExportBtnClicked);
     }
 
     connect(this, &BasePageWidget::sigPageSwitching, this, &BasePageWidget::onPageLinkClicked);
     connect(this, &BasePageWidget::sigIMGView, this, &BasePageWidget::onImageLinkClicked);
 
+}
+
+void BasePageWidget::onSearchBtnClicked()
+{
+    QString text = m_searchEdit->text();
+
+    for (auto proxy : std::as_const(m_proxies))
+    {
+        proxy->setKeyword(text);
+    }
+}
+
+void BasePageWidget::onExportBtnClicked()
+{
+    exportCurrentTableToExcel();
 }
 
 void BasePageWidget::exportCurrentTableToExcel()

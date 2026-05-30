@@ -23,6 +23,7 @@ protected:
         const QVariant& tabData) const override;
 
 private:
+    void onRepairJudgeBtnClicked();
     void updateRepairJudgeButton();
     QVariantMap rowDataFromProxyIndex(const QModelIndex& proxyIndex) const;
     void openRepairJudgePage(const QVariantMap& rowData);

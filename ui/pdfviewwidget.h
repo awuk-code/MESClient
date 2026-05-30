@@ -34,13 +34,13 @@ private:
     void fitPageToView();
 
 private slots:
-    void onPrevPage();
+    void onPrevBtnClicked();
 
-    void onNextPage();
+    void onNextBtnClicked();
 
-    void onZoomIn();
+    void onZoomInBtnClicked();
 
-    void onZoomOut();
+    void onZoomOutBtnClicked();
 
 protected:
     void resizeEvent(QResizeEvent* event)override;

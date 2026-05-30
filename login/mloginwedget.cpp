@@ -1,4 +1,4 @@
-#include "mloginwedget.h"
+﻿#include "mloginwedget.h"
 #include <QVBoxLayout>
 #include <QEvent>
 #include <QPixmap>
@@ -119,30 +119,39 @@ void MLoginWedget::InitLoginUI()
 
 void MLoginWedget::InitConnect()
 {
-    connect(m_loginBtn, &QPushButton::clicked, this, [=](){
-        if(!m_authService){
-            m_errString->setText(tr("未连接服务器，请重试！"));
-            m_errString->setVisible(true);
-            errtimer->start(3000);
-            return;
-        }
-
-        QString errorMsg;
-        bool ok = m_authService->Login(m_usrNameEdit->text(),
-                                       m_passwordEdit->text(),
-                                       errorMsg);
-        if(ok){
-            accept();
-        }
-        else{
-            m_errString->setText(errorMsg);
-            m_errString->setVisible(true);
-            errtimer->start(3000);
-        }
-    });
-
-    connect(m_closeBtn, &QPushButton::clicked, this, &QDialog::reject);
+    connect(m_loginBtn, &QPushButton::clicked,
+            this, &MLoginWedget::onLoginBtnClicked);
+    connect(m_closeBtn, &QPushButton::clicked,
+            this, &MLoginWedget::onCloseBtnClicked);
     connect(m_passwordEdit, &QLineEdit::returnPressed, m_loginBtn, &QPushButton::click);
+}
+
+void MLoginWedget::onLoginBtnClicked()
+{
+    if(!m_authService){
+        m_errString->setText(tr("未连接服务器，请重试。"));
+        m_errString->setVisible(true);
+        errtimer->start(3000);
+        return;
+    }
+
+    QString errorMsg;
+    bool ok = m_authService->Login(m_usrNameEdit->text(),
+                                   m_passwordEdit->text(),
+                                   errorMsg);
+    if(ok){
+        accept();
+    }
+    else{
+        m_errString->setText(errorMsg);
+        m_errString->setVisible(true);
+        errtimer->start(3000);
+    }
+}
+
+void MLoginWedget::onCloseBtnClicked()
+{
+    reject();
 }
 
 void MLoginWedget::mousePressEvent(QMouseEvent *event)

@@ -1,4 +1,4 @@
-#include "datefilterpopup.h"
+﻿#include "datefilterpopup.h"
 
 DateFilterPopup::DateFilterPopup(QWidget *parent)
     : QWidget{parent}
@@ -24,15 +24,28 @@ DateFilterPopup::DateFilterPopup(QWidget *parent)
 
     layout->addLayout(btnLayout);
 
-    connect(displayBtn, &QPushButton::clicked, this, [=](){
-        emit dateSelected(QDate()); //w无效日期表示取消过滤
-        close();
-    });
-    connect(okBtn, &QPushButton::clicked, this, [=] {
-        emit dateSelected(m_calendar->selectedDate());
-        close();
-    });
+    connect(displayBtn, &QPushButton::clicked,
+            this, &DateFilterPopup::onDisplayBtnClicked);
+    connect(okBtn, &QPushButton::clicked,
+            this, &DateFilterPopup::onOkBtnClicked);
+    connect(cancelBtn, &QPushButton::clicked,
+            this, &DateFilterPopup::onCancelBtnClicked);
 
-    connect(cancelBtn, &QPushButton::clicked, this, &QWidget::close);
+}
 
+void DateFilterPopup::onDisplayBtnClicked()
+{
+    emit dateSelected(QDate()); //无效日期表示取消过滤
+    close();
+}
+
+void DateFilterPopup::onOkBtnClicked()
+{
+    emit dateSelected(m_calendar->selectedDate());
+    close();
+}
+
+void DateFilterPopup::onCancelBtnClicked()
+{
+    close();
 }

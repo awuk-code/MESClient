@@ -54,10 +54,8 @@ void RepairJudgePage::initUI()
         Qt::SmoothTransformation));
 
     auto title = new QLabel(tr("维修判定"), this);
-    QFont titleFont = title->font();
-    titleFont.setPointSize(14);
-    titleFont.setBold(true);
-    title->setFont(titleFont);
+    // 标题等级样式入口：页面一级标题，后续修改字体时在 QSS 的 pageTitle 中统一设置。
+    title->setProperty("labelRole", "pageTitle");
 
     m_saveBtn = new QPushButton(tr("保存"), this);
     m_backBtn = new QPushButton(tr("返回"), this);
@@ -91,6 +89,7 @@ void RepairJudgePage::initUI()
     auto infoTitle = new QLabel(tr("异常品信息"), infoGroup);
     infoTitle->setFixedHeight(36);
     infoTitle->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
+    // 标题等级样式入口：左侧/内容区二级标题，后续修改字体时在 QSS 的 sectionTitle 中统一设置。
     infoTitle->setProperty("labelRole", "sectionTitle");
     infoGroupLayout->addWidget(infoTitle);
 
@@ -124,6 +123,7 @@ void RepairJudgePage::initUI()
     auto judgeTitle = new QLabel(tr("情况判定"), m_contentWidget);
     judgeTitle->setFixedHeight(36);
     judgeTitle->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
+    // 标题等级样式入口：左侧/内容区二级标题，后续修改字体时在 QSS 的 sectionTitle 中统一设置。
     judgeTitle->setProperty("labelRole", "sectionTitle");
     judgeLayout->addWidget(judgeTitle);
 
@@ -177,11 +177,11 @@ void RepairJudgePage::initUI()
     mainLayout->addWidget(contentFrame, 1);
 
     connect(m_saveBtn, &QPushButton::clicked,
-            this, &RepairJudgePage::saveJudgeDraft);
+            this, &RepairJudgePage::onSaveBtnClicked);
     connect(m_backBtn, &QPushButton::clicked,
-            this, &RepairJudgePage::backToRepairStation);
+            this, &RepairJudgePage::onBackBtnClicked);
     connect(m_submitBtn, &QPushButton::clicked,
-            this, &RepairJudgePage::submitJudgeResult);
+            this, &RepairJudgePage::onSubmitBtnClicked);
 }
 
 QVariantMap RepairJudgePage::judgeData() const
@@ -199,7 +199,7 @@ QVariantMap RepairJudgePage::judgeData() const
     return data;
 }
 
-void RepairJudgePage::saveJudgeDraft()
+void RepairJudgePage::onSaveBtnClicked()
 {
     const QVariantMap data = judgeData();
     const QString dirPath =
@@ -231,7 +231,7 @@ void RepairJudgePage::saveJudgeDraft()
     QMessageBox::information(this, tr("保存"), tr("维修判定内容已临时保存。"));
 }
 
-void RepairJudgePage::submitJudgeResult()
+void RepairJudgePage::onSubmitBtnClicked()
 {
     const QVariantMap data = judgeData();
 
@@ -245,7 +245,7 @@ void RepairJudgePage::submitJudgeResult()
     QMessageBox::information(this, tr("提交"), tr("提交接口待接入，当前仅保留调试输出。"));
 }
 
-void RepairJudgePage::backToRepairStation()
+void RepairJudgePage::onBackBtnClicked()
 {
     // 返回按钮只负责回到维修站页面，不清空当前内容，方便用户再次进入时继续查看。
     NavigationManager::instance()->openPage(PageType::RepairStation);

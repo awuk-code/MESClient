@@ -53,7 +53,7 @@ bool BaseDialogWidget::onConfirm()
     return true;
 }
 
-void BaseDialogWidget::onConfirmBtnClicked()
+void BaseDialogWidget::onConfirmButtonClicked()
 {
     // 先执行子类逻辑
     if (onConfirm())
@@ -62,7 +62,7 @@ void BaseDialogWidget::onConfirmBtnClicked()
     }
 }
 
-void BaseDialogWidget::onCancelBtnClicked()
+void BaseDialogWidget::onCancelButtonClicked()
 {
     reject();
 }
@@ -82,11 +82,9 @@ void BaseDialogWidget::initUI()
     m_titleLabel = new QLabel(this);
     m_titleLabel->setAlignment(Qt::AlignCenter);
     m_titleLabel->setMinimumHeight(30);
+    // 标题等级样式入口：弹窗一级标题，后续修改字体时在 QSS 的 dialogTitle 中统一设置。
+    m_titleLabel->setProperty("labelRole", "dialogTitle");
 
-    QFont titleFont;
-    titleFont.setPointSize(14);
-    titleFont.setBold(true);
-    m_titleLabel->setFont(titleFont);
 
     mainLayout->addWidget(m_titleLabel);
 
@@ -134,8 +132,8 @@ void BaseDialogWidget::initUI()
 void BaseDialogWidget::initConnections()
 {
     connect(m_confirmButton, &QPushButton::clicked,
-            this, &BaseDialogWidget::onConfirmBtnClicked);
+            this, &BaseDialogWidget::onConfirmButtonClicked);
 
     connect(m_cancelButton, &QPushButton::clicked,
-            this, &BaseDialogWidget::onCancelBtnClicked);
+            this, &BaseDialogWidget::onCancelButtonClicked);
 }

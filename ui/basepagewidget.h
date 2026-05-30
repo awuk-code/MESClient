@@ -19,28 +19,7 @@ class QTabBar;
 class QTableView;
 class QEvent;
 
-// 通用业务页面基类。
-//
-// 主要功能：
-// 1. 页面标题区
-// 2. 查询区（关键字搜索 + 导出）
-// 3. Tab 页签区
-// 4. 内容区（当前默认使用 QTableView）
-// 5. 表头筛选（日期、优先级等）
-// 6. 最大化时按比例调整列宽
-//
-// 子类通常只需要实现：
-// 1. createModel()      -> 创建数据模型
-// 2. tabs()             -> 定义所有 Tab
-// 3. createProxy()      -> 为每个 Tab 创建过滤代理模型
-// 4. pageTitle()        -> 页面标题
-// 5. searchInfo()       -> 搜索框提示文字
-//
-// 典型子类：
-// - ProductionTaskPage
-// - RepairStationPage
-// - ProcessStationPage
-// -
+
 class BasePageWidget : public QWidget
 {
     Q_OBJECT
@@ -59,6 +38,8 @@ protected slots:
     void onPageLinkClicked(const QVariantMap& rowData,
                           const  QString& pageID);
     void onImageLinkClicked(const QString& NGNumber);
+    void onSearchBtnClicked();
+    void onExportBtnClicked();
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
 

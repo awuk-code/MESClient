@@ -30,6 +30,7 @@ protected:
     void setCurrentSearchInfo(const QString& info);
 
 private:
+    void onSaveBtnClicked();
     void updateTableModelByTab(int index);
     void updateSearchBarByTab(int index);
     int replacementMaterialTabIndex() const;
@@ -39,10 +40,7 @@ private:
     QString m_currentSearchInfo;
     QLabel* m_productSnLabel{nullptr};
     QComboBox* m_productSnCombo{nullptr};
-    //pdf
-    // m_processPdfPage
-    //m_referencePdfPage
-    //normal
+
     PdfViewWidget* m_processPdfPage{nullptr};
     PdfViewWidget* m_referencePdfPage{nullptr};
 

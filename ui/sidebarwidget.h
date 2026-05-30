@@ -10,6 +10,8 @@
 #include <QLabel>
 #include <QStyle>
 
+class QAbstractButton;
+
 class SideBarWidget : public QWidget
 {
     Q_OBJECT
@@ -23,6 +25,7 @@ signals:
 private:
     void initUI();
     void initConnect();
+    void onMenuButtonClicked(QAbstractButton* clickedBtn);
     QWidget* createMenuItem(const QString &icon_normal,
                             const QString &icon_checked,
                             const QString &text,

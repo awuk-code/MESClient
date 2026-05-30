@@ -25,6 +25,9 @@ protected:
 private:
     void initUI();
     void initConnect();
+    void onBtnCloseClicked();
+    void onBtnMinClicked();
+    void onBtnMaxClicked();
 
 private:
     QLabel *m_title{nullptr};

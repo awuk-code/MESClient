@@ -24,6 +24,8 @@ protected:
     bool eventFilter(QObject *obj, QEvent *event)override;
 
 private slots:
+    void onLoginBtnClicked();
+    void onCloseBtnClicked();
 
 private:
     void  InitLoginUI();

@@ -1,4 +1,4 @@
-#include "processstationrightpanel.h"
+﻿#include "processstationrightpanel.h"
 
 #include "fieldfilterproxymodel.h"
 #include "pdfviewwidget.h"
@@ -184,16 +184,20 @@ void ProcessStationRightPanel::setupSearchLayout(QHBoxLayout *layout)
 
     m_exportBtn = new QPushButton(tr("保存"), this);
     m_exportBtn->setProperty("buttonRole", "save");
-    connect(m_exportBtn, &QPushButton::clicked, this, []() {
-        // TODO: 保存按钮逻辑待定，后续接口或本地保存规则确定后在这里补充。
-        qDebug() << "ProcessStationRightPanel save clicked, wait implementation";
-    });
+    connect(m_exportBtn, &QPushButton::clicked,
+            this, &ProcessStationRightPanel::onSaveBtnClicked);
 
     layout->addWidget(m_searchEdit);
     layout->addWidget(m_productSnLabel);
     layout->addWidget(m_productSnCombo);
     layout->addStretch();
     layout->addWidget(m_exportBtn);
+}
+
+void ProcessStationRightPanel::onSaveBtnClicked()
+{
+    // TODO: 保存按钮逻辑待定，后续接口或本地保存规则确定后在这里补充。
+    qDebug() << "ProcessStationRightPanel save clicked, wait implementation";
 }
 
 void ProcessStationRightPanel::setCurrentSearchInfo(const QString &info)

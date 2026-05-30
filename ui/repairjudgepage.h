@@ -23,9 +23,9 @@ private:
     void rebuildInfo();
     void clearInfo();
     QVariantMap judgeData() const;
-    void saveJudgeDraft();
-    void submitJudgeResult();
-    void backToRepairStation();
+    void onSaveBtnClicked();
+    void onSubmitBtnClicked();
+    void onBackBtnClicked();
     QLabel* createTitleLabel(const QString& text);
     QLabel* createValueLabel(const QString& text);
     QPushButton* createImageButton(const QString& text, QWidget* parent = nullptr);

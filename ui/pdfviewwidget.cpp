@@ -115,25 +115,25 @@ void PdfViewWidget::initUI()
         m_prevBtn,
         &QPushButton::clicked,
         this,
-        &PdfViewWidget::onPrevPage);
+        &PdfViewWidget::onPrevBtnClicked);
 
     connect(
         m_nextBtn,
         &QPushButton::clicked,
         this,
-        &PdfViewWidget::onNextPage);
+        &PdfViewWidget::onNextBtnClicked);
 
     connect(
         m_zoomInBtn,
         &QPushButton::clicked,
         this,
-        &PdfViewWidget::onZoomIn);
+        &PdfViewWidget::onZoomInBtnClicked);
 
     connect(
         m_zoomOutBtn,
         &QPushButton::clicked,
         this,
-        &PdfViewWidget::onZoomOut);
+        &PdfViewWidget::onZoomOutBtnClicked);
 }
 
 
@@ -256,7 +256,7 @@ void PdfViewWidget::updatePageLabel()
 }
 
 
-void PdfViewWidget::onPrevPage()
+void PdfViewWidget::onPrevBtnClicked()
 {
     if (!m_document)
         return;
@@ -271,7 +271,7 @@ void PdfViewWidget::onPrevPage()
     updatePageLabel();
 }
 
-void PdfViewWidget::onNextPage()
+void PdfViewWidget::onNextBtnClicked()
 {
     if (!m_document)
         return;
@@ -286,14 +286,14 @@ void PdfViewWidget::onNextPage()
     updatePageLabel();
 }
 
-void PdfViewWidget::onZoomIn()
+void PdfViewWidget::onZoomInBtnClicked()
 {
     m_autoFit = false;
     m_scaleFactor *= 1.1;
     renderPage();
 }
 
-void PdfViewWidget::onZoomOut()
+void PdfViewWidget::onZoomOutBtnClicked()
 {
     m_autoFit = false;
     m_scaleFactor *= 0.9;
