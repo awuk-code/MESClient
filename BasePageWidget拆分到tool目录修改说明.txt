@@ -1,0 +1,109 @@
+BasePageWidget拆分到tool目录修改说明
+
+一、当前状态
+
+本次按照要求，已经取消 tool/tableviewtool.h 和 tool/tableviewtool.cpp 这部分拆分。
+
+也就是说：
+1. 表格外观设置逻辑仍然放在 BasePageWidget 中。
+2. 表格列宽自适应逻辑仍然放在 BasePageWidget 中。
+3. 表格勾选框点击后选中整行的逻辑仍然放在 BasePageWidget 中。
+4. tool 目录现在只保留导出报表工具 ReportExporter。
+
+
+二、保留的拆分
+
+1. tool/tool.pri
+
+作用：
+将 tool 目录中的工具类加入 qmake 工程。
+
+当前只包含：
+reportexporter.h
+reportexporter.cpp
+
+
+2. tool/reportexporter.h
+3. tool/reportexporter.cpp
+
+类名：
+ReportExporter
+
+作用：
+负责表格导出报表功能。
+
+当前支持导出格式：
+xls
+csv
+xlsx
+
+导出规则：
+1. 导出当前页面正在显示的表格。
+2. 导出时跳过勾选框列。
+3. csv 使用 UTF-8 BOM，方便 Excel 正常打开中文。
+4. xlsx 使用简单的 OpenXML 文件结构生成。
+
+
+三、恢复回 BasePageWidget 的内容
+
+1. ui/basepagewidget.h
+
+恢复内容：
+新增 BaseTableModel 前置声明。
+
+新增函数声明：
+contentWidthForColumn(...)
+
+该函数用于计算某一列表头和内容需要的最小显示宽度。
+
+
+2. ui/basepagewidget.cpp
+
+恢复函数：
+setupTableAppearance(...)
+
+作用：
+设置表格通用显示属性，例如编辑触发方式、隔行颜色、横向滚动方式、文本不省略显示等。
+
+
+恢复函数：
+applyAdaptiveColumnWidths(...)
+
+作用：
+按照表头和单元格内容计算列宽。
+如果表格剩余空间足够，则将多余宽度分配给非操作列，让表格尽量铺满窗口。
+操作列仍然保留按钮完整显示所需的最小宽度。
+
+
+恢复函数：
+setupCheckBoxSelection(...)
+
+作用：
+当点击表格中的勾选框列时，同步选中或取消选中整行。
+
+
+恢复函数：
+contentWidthForColumn(...)
+
+作用：
+计算单列需要的内容宽度。
+计算范围包括表头文字、筛选图标预留宽度、输入框提示文字、操作按钮最小宽度、普通单元格显示文字。
+
+
+四、删除的拆分文件
+
+已经删除：
+tool/tableviewtool.h
+tool/tableviewtool.cpp
+
+同时已经从 tool/tool.pri 中移除这两个文件，避免 qmake 工程继续引用。
+
+
+五、修改思路
+
+这次只取消 TableViewTool 的拆分，不影响 ReportExporter。
+
+原因是：
+导出报表功能和页面结构关系较弱，适合继续保留在 tool 目录。
+
+表格外观、列宽、勾选框这些逻辑目前仍然和 BasePageWidget 的列配置、Tab 显示规则、子类虚函数 isColumnVisibleForTab(...) 联系比较紧密，所以先恢复到 BasePageWidget 中，后续如果要继续拆分，可以再等接口稳定后处理。

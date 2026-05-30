@@ -7,7 +7,6 @@ class QLabel;
 class QPushButton;
 class QWidget;
 class QVBoxLayout;
-class QHBoxLayout;
 
 class BaseDialogWidget : public QDialog
 {
@@ -32,8 +31,8 @@ protected:
     virtual bool onConfirm();
 
 private slots:
-    void handleConfirm();
-    void handleCancel();
+    void onConfirmBtnClicked();
+    void onCancelBtnClicked();
 
 private:
     void initUI();
@@ -41,19 +40,13 @@ private:
 
 private:
     // 主布局
-    QVBoxLayout* m_mainLayout = nullptr;
-
     // 标题栏
     QLabel* m_titleLabel = nullptr;
 
     // 内容区
-    QWidget* m_contentWidget = nullptr;
     QVBoxLayout* m_contentLayout = nullptr;
 
     // 底部按钮区
-    QWidget* m_buttonWidget = nullptr;
-    QHBoxLayout* m_buttonLayout = nullptr;
-
     // 按钮
     QPushButton* m_confirmButton = nullptr;
     QPushButton* m_cancelButton = nullptr;

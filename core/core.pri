@@ -9,7 +9,6 @@ HEADERS += \
     $$PWD/lineeditdelegate.h \
     $$PWD/navigationmanager.h \
     $$PWD/operationdelegate.h \
-    $$PWD/operationdelegate.h \
     $$PWD/processstationmodel.h \
     $$PWD/productiontaskmodel.h \
     $$PWD/repairstationmodel.h \

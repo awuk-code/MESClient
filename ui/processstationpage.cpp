@@ -2,6 +2,7 @@
 #include "jsondataloader.h"
 #include "pdfviewwidget.h"
 #include "processstationmodel.h"
+#include "fieldfilterproxymodel.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -15,6 +16,8 @@
 #include <QRadioButton>
 #include <QComboBox>
 #include <QDebug>
+#include <QStackedWidget>
+#include <QStandardItemModel>
 
 ProcessStationPage::ProcessStationPage(QWidget *parent)
     : QWidget{parent}

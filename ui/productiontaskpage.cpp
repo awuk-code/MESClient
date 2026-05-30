@@ -4,6 +4,8 @@
 #include "navigationmanager.h"
 #include "toggleswitchwidget.h"
 
+#include <QHBoxLayout>
+#include <QStackedWidget>
 #include <QTableView>
 #include <QDebug>
 

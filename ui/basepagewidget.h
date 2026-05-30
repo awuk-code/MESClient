@@ -3,23 +3,21 @@
 
 #include <QWidget>
 #include <QVector>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QLabel>
-#include <QLineEdit>
-#include <QPushButton>
-#include <QTabWidget>
-#include <QTabBar>
-#include <QStackedWidget>
-#include <QTableView>
-#include <QAbstractItemModel>
-#include <QHeaderView>
-#include <QStandardItemModel>
-#include <QResizeEvent>
+#include <QSet>
+#include <QVariantMap>
 
-#include "fieldfilterproxymodel.h"
 #include "commonfunc.h"
-#include "lineeditdelegate.h"
+
+class BaseTableModel;
+class FieldFilterProxyModel;
+class QAbstractItemModel;
+class QHBoxLayout;
+class QLineEdit;
+class QPushButton;
+class QStackedWidget;
+class QTabBar;
+class QTableView;
+class QEvent;
 
 // 通用业务页面基类。
 //
@@ -111,7 +109,6 @@ protected:
     // 根据 BaseTableModel::columns() 设置列属性
     void setupColumns(QTableView* table, const QVariant& tabData);
     void applyAdaptiveColumnWidths(QTableView* table);
-    int contentWidthForColumn(QTableView* table, int column) const;
 
     // 设置表格通用属性
     void setupTableAppearance(QTableView* table);
@@ -119,6 +116,10 @@ protected:
 
     // 绑定复选框点击时的整行选中逻辑
     void setupCheckBoxSelection(QTableView* table, const QVariant& tabData);
+    int contentWidthForColumn(
+        QTableView* table,
+        const BaseTableModel* model,
+        int column) const;
     void exportCurrentTableToExcel();
     //--------------------------------
 protected:

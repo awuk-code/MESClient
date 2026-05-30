@@ -53,7 +53,7 @@ bool BaseDialogWidget::onConfirm()
     return true;
 }
 
-void BaseDialogWidget::handleConfirm()
+void BaseDialogWidget::onConfirmBtnClicked()
 {
     // 先执行子类逻辑
     if (onConfirm())
@@ -62,7 +62,7 @@ void BaseDialogWidget::handleConfirm()
     }
 }
 
-void BaseDialogWidget::handleCancel()
+void BaseDialogWidget::onCancelBtnClicked()
 {
     reject();
 }
@@ -72,9 +72,9 @@ void BaseDialogWidget::initUI()
     // =========================
     // 主布局
     // =========================
-    m_mainLayout = new QVBoxLayout(this);
-    m_mainLayout->setContentsMargins(20, 20, 20, 20);
-    m_mainLayout->setSpacing(15);
+    auto mainLayout = new QVBoxLayout(this);
+    mainLayout->setContentsMargins(20, 20, 20, 20);
+    mainLayout->setSpacing(15);
 
     // =========================
     // 标题栏
@@ -88,29 +88,29 @@ void BaseDialogWidget::initUI()
     titleFont.setBold(true);
     m_titleLabel->setFont(titleFont);
 
-    m_mainLayout->addWidget(m_titleLabel);
+    mainLayout->addWidget(m_titleLabel);
 
     // =========================
     // 中间内容区
     // =========================
-    m_contentWidget = new QWidget(this);
-    m_contentLayout = new QVBoxLayout(m_contentWidget);
+    auto contentWidget = new QWidget(this);
+    m_contentLayout = new QVBoxLayout(contentWidget);
     m_contentLayout->setContentsMargins(0, 0, 0, 0);
     m_contentLayout->setSpacing(10);
 
     // 让中间区域自动拉伸，占据主要空间
-    m_mainLayout->addWidget(m_contentWidget, 1);
+    mainLayout->addWidget(contentWidget, 1);
 
     // =========================
     // 底部按钮区
     // =========================
-    m_buttonWidget = new QWidget(this);
-    m_buttonLayout = new QHBoxLayout(m_buttonWidget);
-    m_buttonLayout->setContentsMargins(0, 0, 0, 0);
-    m_buttonLayout->setSpacing(12);
+    auto buttonWidget = new QWidget(this);
+    auto buttonLayout = new QHBoxLayout(buttonWidget);
+    buttonLayout->setContentsMargins(0, 0, 0, 0);
+    buttonLayout->setSpacing(12);
 
     // 左侧弹簧
-    m_buttonLayout->addStretch();
+    buttonLayout->addStretch();
 
     // 取消按钮
     m_cancelButton = new QPushButton(tr("取消"), this);
@@ -122,20 +122,20 @@ void BaseDialogWidget::initUI()
     m_confirmButton->setDefault(true);   // 回车触发
     m_confirmButton->setAutoDefault(true);
 
-    m_buttonLayout->addWidget(m_cancelButton);
-    m_buttonLayout->addWidget(m_confirmButton);
+    buttonLayout->addWidget(m_cancelButton);
+    buttonLayout->addWidget(m_confirmButton);
 
     // 右侧弹簧
-    m_buttonLayout->addStretch();
+    buttonLayout->addStretch();
 
-    m_mainLayout->addWidget(m_buttonWidget);
+    mainLayout->addWidget(buttonWidget);
 }
 
 void BaseDialogWidget::initConnections()
 {
     connect(m_confirmButton, &QPushButton::clicked,
-            this, &BaseDialogWidget::handleConfirm);
+            this, &BaseDialogWidget::onConfirmBtnClicked);
 
     connect(m_cancelButton, &QPushButton::clicked,
-            this, &BaseDialogWidget::handleCancel);
+            this, &BaseDialogWidget::onCancelBtnClicked);
 }

@@ -1,6 +1,13 @@
 #include "repairstationpage.h"
 #include "repairstationmodel.h"
+#include "fieldfilterproxymodel.h"
 #include "navigationmanager.h"
+
+#include <QHBoxLayout>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QStackedWidget>
+#include <QTableView>
 
 RepairStationPage::RepairStationPage(QWidget *parent)
     : BasePageWidget(parent)
