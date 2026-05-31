@@ -3,7 +3,7 @@ build/
 bin/
 obj/
 # ===== 第三方库 =====
-thirdParty/
+
 # ===== Qt Creator =====
 .qtcreator/
 *.pro.user

@@ -21,7 +21,6 @@ void HeaderWidget::mouseMoveEvent(QMouseEvent *event)
     event->ignore();
 }
 
-
 void HeaderWidget::initUI()
 {
     setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
