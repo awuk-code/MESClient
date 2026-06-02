@@ -66,7 +66,7 @@ RepairStationPage::RepairStationPage(QWidget *parent)
                         }
                         else if(field == "abnormalImage")
                         {
-                            emit sigIMGView(exceptionNo);
+                            showAbnormalImageDialog(rowData);
                         }
                     });
         }
@@ -186,10 +186,12 @@ void RepairStationPage::showSelectRowDialog()
     dialog.cancelButton()->hide();
     dialog.confirmButton()->setText(tr("确定"));
 
-    auto label = new QLabel(tr("请先选中一条待处理的异常品记录。"), &dialog);
-    label->setAlignment(Qt::AlignCenter);
-    label->setWordWrap(true);
-    dialog.contentLayout()->addWidget(label);
+    auto messageLabel = new QLabel(
+        tr("请先在“待处理”列表中勾选一条异常品记录，再点击“维修判定”。"),
+        &dialog);
+    messageLabel->setAlignment(Qt::AlignCenter);
+    messageLabel->setWordWrap(true);
+    dialog.contentLayout()->addWidget(messageLabel);
 
     qDebug() << __FUNCTION__ << "repair judge clicked without selected row";
     dialog.exec();
@@ -213,6 +215,30 @@ QVariantMap RepairStationPage::rowDataFromProxyIndex(
         return {};
 
     return model->rowData(sourceIndex.row());
+}
+
+void RepairStationPage::showAbnormalImageDialog(const QVariantMap& rowData)
+{
+    BaseDialogWidget dialog(this);
+    dialog.setTitle(tr("异常图片"));
+    dialog.cancelButton()->hide();
+    dialog.confirmButton()->setText(tr("确定"));
+
+    const QString exceptionNo =
+        rowData.value("exceptionHandleNo").toString();
+    const QString imageText =
+        rowData.value("abnormalImage").toString();
+
+    auto label = new QLabel(
+        tr("异常单号：%1\n\n当前记录的异常图片为“%2”。后续接入后台图片地址后，可在此处直接预览异常照片。")
+            .arg(exceptionNo.isEmpty() ? tr("-") : exceptionNo,
+                 imageText.isEmpty() ? tr("-") : imageText),
+        &dialog);
+    label->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    label->setWordWrap(true);
+    dialog.contentLayout()->addWidget(label);
+
+    dialog.exec();
 }
 
 void RepairStationPage::openRepairJudgePage(

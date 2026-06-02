@@ -1,10 +1,13 @@
 #include "repairjudgepage.h"
+#include "basedialogwidget.h"
 #include "imageviewwidget.h"
 #include "navigationmanager.h"
 
+#include <QComboBox>
 #include <QDebug>
 #include <QDir>
 #include <QFile>
+#include <QFormLayout>
 #include <QFrame>
 #include <QButtonGroup>
 #include <QGridLayout>
@@ -158,6 +161,36 @@ void RepairJudgePage::initUI()
     methodLayout->addStretch();
     judgeContentLayout->addLayout(methodLayout);
 
+    m_reworkOptionsWidget = new QWidget(judgeContent);
+    auto reworkLayout = new QFormLayout(m_reworkOptionsWidget);
+    reworkLayout->setContentsMargins(0, 0, 0, 0);
+    reworkLayout->setHorizontalSpacing(12);
+    reworkLayout->setVerticalSpacing(8);
+
+    m_reworkRouteCombo = new QComboBox(m_reworkOptionsWidget);
+    m_reworkRouteCombo->addItems({
+        tr("返工工艺路线A"),
+        tr("返工工艺路线B")
+    });
+
+    m_reworkFileCombo = new QComboBox(m_reworkOptionsWidget);
+    m_reworkFileCombo->addItems({
+        tr("返工工艺文件A"),
+        tr("返工工艺文件B")
+    });
+
+    m_reworkTypeCombo = new QComboBox(m_reworkOptionsWidget);
+    m_reworkTypeCombo->addItems({
+        tr("维修返工"),
+        tr("生产返工")
+    });
+
+    reworkLayout->addRow(tr("返工工艺路线："), m_reworkRouteCombo);
+    reworkLayout->addRow(tr("返工工艺文件："), m_reworkFileCombo);
+    reworkLayout->addRow(tr("返工类型："), m_reworkTypeCombo);
+    judgeContentLayout->addWidget(m_reworkOptionsWidget);
+    updateReworkOptionsVisible();
+
     m_judgeTextEdit = new QTextEdit(judgeContent);
     m_judgeTextEdit->setMinimumHeight(130);
     judgeContentLayout->addWidget(m_judgeTextEdit, 1);
@@ -182,6 +215,11 @@ void RepairJudgePage::initUI()
             this, &RepairJudgePage::onBackBtnClicked);
     connect(m_submitBtn, &QPushButton::clicked,
             this, &RepairJudgePage::onSubmitBtnClicked);
+
+    connect(m_methodGroup,
+            &QButtonGroup::idClicked,
+            this,
+            [this](int) { updateReworkOptionsVisible(); });
 }
 
 QVariantMap RepairJudgePage::judgeData() const
@@ -195,6 +233,12 @@ QVariantMap RepairJudgePage::judgeData() const
     data["judgeMethod"] = method;
     data["judgeContent"] =
         m_judgeTextEdit ? m_judgeTextEdit->toPlainText() : QString();
+    data["reworkRoute"] =
+        m_reworkRouteCombo ? m_reworkRouteCombo->currentText() : QString();
+    data["reworkFile"] =
+        m_reworkFileCombo ? m_reworkFileCombo->currentText() : QString();
+    data["reworkType"] =
+        m_reworkTypeCombo ? m_reworkTypeCombo->currentText() : QString();
 
     return data;
 }
@@ -228,12 +272,35 @@ void RepairJudgePage::onSaveBtnClicked()
 
     // 当前先保存到本地临时文件；后续如果改为接口草稿保存，只需要替换这里的写文件逻辑。
     qDebug() << __FUNCTION__ << "draft saved:" << filePath;
-    QMessageBox::information(this, tr("保存"), tr("维修判定内容已临时保存。"));
+    showInfoDialog(tr("保存"), tr("维修判定内容已临时保存。"));
 }
 
 void RepairJudgePage::onSubmitBtnClicked()
 {
     const QVariantMap data = judgeData();
+    const QString content =
+        data.value("judgeContent").toString().trimmed();
+    if (content.isEmpty())
+    {
+        showInfoDialog(tr("提交校验"), tr("请先填写说明记录，再提交维修判定。"));
+        return;
+    }
+
+    const bool isRework =
+        m_methodGroup && m_methodGroup->checkedId() == 2;
+    QString message;
+    if (isRework)
+    {
+        message = tr("已选择“返工”。\n\n返工工艺路线：%1\n返工工艺文件：%2\n返工类型：%3\n\n按需求，提交后应进入审核流程；当前提交接口尚未接入，本次仅保留调试输出。")
+            .arg(data.value("reworkRoute").toString(),
+                 data.value("reworkFile").toString(),
+                 data.value("reworkType").toString());
+    }
+    else
+    {
+        message = tr("已提交“%1”判定。\n\n按需求，提交后应进入审核流程；当前提交接口尚未接入，本次仅保留调试输出。")
+            .arg(data.value("judgeMethod").toString());
+    }
 
     // TODO: 提交按钮后续在这里调用上传接口，将 judgeMethod 和 judgeContent 一并提交给后端。
     qDebug() << __FUNCTION__
@@ -242,13 +309,36 @@ void RepairJudgePage::onSubmitBtnClicked()
              << "method =" << data.value("judgeMethod").toString()
              << "content =" << data.value("judgeContent").toString();
 
-    QMessageBox::information(this, tr("提交"), tr("提交接口待接入，当前仅保留调试输出。"));
+    showInfoDialog(tr("提交"), message);
 }
 
 void RepairJudgePage::onBackBtnClicked()
 {
     // 返回按钮只负责回到维修站页面，不清空当前内容，方便用户再次进入时继续查看。
     NavigationManager::instance()->openPage(PageType::RepairStation);
+}
+
+void RepairJudgePage::updateReworkOptionsVisible()
+{
+    if (!m_reworkOptionsWidget || !m_methodGroup)
+        return;
+
+    m_reworkOptionsWidget->setVisible(m_methodGroup->checkedId() == 2);
+}
+
+void RepairJudgePage::showInfoDialog(const QString& title, const QString& message)
+{
+    BaseDialogWidget dialog(this);
+    dialog.setTitle(title);
+    dialog.cancelButton()->hide();
+    dialog.confirmButton()->setText(tr("确定"));
+
+    auto label = new QLabel(message, &dialog);
+    label->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    label->setWordWrap(true);
+    dialog.contentLayout()->addWidget(label);
+
+    dialog.exec();
 }
 
 void RepairJudgePage::rebuildInfo()
@@ -344,49 +434,27 @@ QPushButton* RepairJudgePage::createImageButton(const QString& text, QWidget* pa
     button->setCursor(Qt::PointingHandCursor);
     button->setFlat(true);
     button->setProperty("buttonRole", "link");
-    return button;
-}
-
-QLabel* RepairJudgePage::createImageLinkLabel(QWidget* parent)
-{
-    auto label = new QLabel(parent ? parent : m_infoWidget);
-    label->setProperty("labelRole", "imageLink");
-    label->setText(QString("<a href=\"open-image\">%1</a>")
-                       .arg(tr("查看图片")));
-    label->setTextFormat(Qt::RichText);
-    label->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
-    label->setOpenExternalLinks(false);
-    label->setCursor(Qt::PointingHandCursor);
-
-    connect(label, &QLabel::linkActivated, this, [this](const QString& link) {
+    connect(button, &QPushButton::clicked, this, [this]() {
         const QString imagePath =
             m_rowData.value("abnormalImage").toString();
         const QString exceptionNo =
             m_rowData.value("exceptionHandleNo").toString();
 
-        qDebug() << __FUNCTION__
-                 << "link =" << link
-                 << "exceptionHandleNo =" << exceptionNo
-                 << "abnormalImage =" << imagePath;
-
-        if (!QFile::exists(imagePath))
+        if (QFile::exists(imagePath))
         {
-            qDebug() << __FUNCTION__
-                     << "image file not exists, wait backend image path:"
-                     << imagePath;
+            auto viewer = new ImageViewWidget;
+            viewer->resize(1200, 800);
+            viewer->show();
+            viewer->loadImage(imagePath);
             return;
         }
 
-        auto viewer = new ImageViewWidget;
-        viewer->resize(1200, 800);
-        viewer->show();
-        viewer->loadImage(imagePath);
-
-        qDebug() << __FUNCTION__
-                 << "image viewer opened:" << imagePath;
+        showInfoDialog(
+            tr("异常图片"),
+            tr("异常单号：%1\n\n当前异常图片尚未接入可预览的本地或后台地址。")
+                .arg(exceptionNo.isEmpty() ? tr("-") : exceptionNo));
     });
-
-    return label;
+    return button;
 }
 
 QString RepairJudgePage::displayText(const QString& field) const

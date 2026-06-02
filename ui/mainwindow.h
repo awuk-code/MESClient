@@ -4,7 +4,6 @@
 
 #include <QWidget>
 #include <QStackedWidget>
-#include <QMouseEvent>
 
 #include "headerwidget.h"
 #include "subheaderwidget.h"
@@ -37,14 +36,9 @@ private:
 private slots:
     //stack的页面跳转
     void onPageChanged(int index/*, QString &title*/);
-    //文本链接的跳转
-    void openPage(const QString& pageId);
     void onOpenPage(PageType type);
     void onForcedLoggedOut(const QString& message);
 private:
-    QPoint m_dragPos;           // 记录鼠标按下时的位置
-    bool m_isResizing = false;  // 是否正在拉伸
-
     HeaderWidget* m_header{nullptr};
     SideBarWidget* m_sidebar{nullptr};
     SubHeaderWidget* m_subHeader{nullptr};
@@ -56,9 +50,6 @@ private:
     RepairJudgePage* m_pageRepairJudge{nullptr};
     ProcessStationPage* m_pageReworkTask{nullptr};
     QTimer* m_sessionCheckTimer{nullptr};
-
-
-    QMap<QString, QWidget*> m_pageMap;
 };
 
 #endif // MAINWINDOW_H

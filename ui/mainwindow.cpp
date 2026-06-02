@@ -245,20 +245,6 @@ void MainWindow::updateSidebarSelection(PageType type)
     }
 }
 
-void MainWindow::openPage(const QString &pageId)
-{
-    if(!m_pageMap.contains(pageId))
-    {
-        qDebug() << __FUNCTION__ <<tr("页面不存在:") << pageId;
-        return;
-    }
-    QWidget* page = m_pageMap.value(pageId);
-
-    m_stack->setCurrentWidget(page);
-
-    qDebug() << __FUNCTION__<< tr("打开页面:") << pageId;
-}
-
 void MainWindow::onOpenPage(PageType type)
 {
     QWidget* page =

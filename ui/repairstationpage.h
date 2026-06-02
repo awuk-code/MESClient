@@ -26,6 +26,7 @@ private:
     void onRepairJudgeBtnClicked();
     void updateRepairJudgeButton();
     void showSelectRowDialog();
+    void showAbnormalImageDialog(const QVariantMap& rowData);
     QVariantMap rowDataFromProxyIndex(const QModelIndex& proxyIndex) const;
     void openRepairJudgePage(const QVariantMap& rowData);
     void openReworkTaskPage(const QVariantMap& rowData);

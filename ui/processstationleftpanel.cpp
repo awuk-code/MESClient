@@ -3,7 +3,10 @@
 
 #include <QAbstractItemView>
 #include <QButtonGroup>
+#include <QCheckBox>
+#include <QComboBox>
 #include <QDebug>
+#include <QFileDialog>
 #include <QGridLayout>
 #include <QHeaderView>
 #include <QHBoxLayout>
@@ -12,6 +15,7 @@
 #include <QMessageBox>
 #include <QPushButton>
 #include <QRadioButton>
+#include <QStringList>
 #include <QStandardItem>
 #include <QStandardItemModel>
 #include <QStyle>
@@ -28,52 +32,288 @@ constexpr int STATUS_COL_PASS = 2;
 constexpr int STATUS_COL_NG = 3;
 constexpr int STATUS_COL_PAUSE = 4;
 
-class NgPassDialog : public BaseDialogWidget
+class NgAbnormalDialog : public BaseDialogWidget
 {
 public:
-    explicit NgPassDialog(const QString& productSn, QWidget* parent = nullptr)
+    explicit NgAbnormalDialog(const QString& productSn, QWidget* parent = nullptr)
         : BaseDialogWidget(parent),
-        m_productSn(productSn)
+          m_productSn(productSn)
     {
         setTitle(tr("NG异常登记"));
         if (confirmButton())
-            confirmButton()->setText(tr("提交"));
+            confirmButton()->setText(tr("确认"));
         if (cancelButton())
             cancelButton()->setText(tr("取消"));
 
-        auto snLabel = new QLabel(tr("产品SN：%1").arg(productSn), this);
-        m_reasonEdit = new QTextEdit(this);
-        m_reasonEdit->setPlaceholderText(tr("请输入NG原因或异常说明"));
-        m_reasonEdit->setMinimumHeight(120);
+        auto snRow = new QHBoxLayout;
+        snRow->addWidget(new QLabel(tr("产品SN："), this));
+        m_productSnCombo = new QComboBox(this);
+        m_productSnCombo->addItem(productSn);
+        m_productSnCombo->setMinimumWidth(220);
+        snRow->addWidget(m_productSnCombo);
+        snRow->addStretch();
+        contentLayout()->addLayout(snRow);
 
-        contentLayout()->addWidget(snLabel);
-        contentLayout()->addWidget(m_reasonEdit);
+        auto typeRow = new QHBoxLayout;
+        typeRow->addWidget(new QLabel(tr("异常类型："), this));
+        m_typeCombo = new QComboBox(this);
+        m_typeCombo->addItems({
+            tr("外观异常"),
+            tr("结构异常")
+        });
+        m_typeCombo->setMinimumWidth(220);
+        typeRow->addWidget(m_typeCombo);
+        typeRow->addStretch();
+        contentLayout()->addLayout(typeRow);
+
+        auto imageRow = new QHBoxLayout;
+        imageRow->addWidget(new QLabel(tr("图片上传："), this));
+        m_imageEdit = new QLineEdit(this);
+        m_imageEdit->setReadOnly(true);
+        m_imageEdit->setPlaceholderText(tr("请选择异常图片"));
+        auto browseBtn = new QPushButton(tr("上传图片"), this);
+        connect(browseBtn, &QPushButton::clicked, this, [this]() {
+            const QString filePath = QFileDialog::getOpenFileName(
+                this,
+                tr("选择异常图片"),
+                QString(),
+                tr("图片文件 (*.png *.jpg *.jpeg *.bmp)"));
+            if (!filePath.isEmpty() && m_imageEdit)
+                m_imageEdit->setText(filePath);
+        });
+        imageRow->addWidget(m_imageEdit, 1);
+        imageRow->addWidget(browseBtn);
+        contentLayout()->addLayout(imageRow);
+
+        contentLayout()->addWidget(new QLabel(tr("异常现象说明"), this));
+        m_phenomenonEdit = new QTextEdit(this);
+        m_phenomenonEdit->setPlaceholderText(tr("请填写异常现象、判定依据或现场说明"));
+        m_phenomenonEdit->setMinimumHeight(90);
+        contentLayout()->addWidget(m_phenomenonEdit);
+
+        auto nextRow = new QHBoxLayout;
+        nextRow->addWidget(new QLabel(tr("下一工序："), this));
+        m_nextProcessLabel = new QLabel(tr("维修站"), this);
+        m_nextProcessLabel->setMinimumWidth(220);
+        nextRow->addWidget(m_nextProcessLabel);
+        nextRow->addStretch();
+        contentLayout()->addLayout(nextRow);
     }
 
-    QString reason() const
+    QString abnormalType() const
     {
-        return m_reasonEdit ? m_reasonEdit->toPlainText().trimmed() : QString();
+        return m_typeCombo ? m_typeCombo->currentText() : QString();
+    }
+
+    QString phenomenon() const
+    {
+        return m_phenomenonEdit ? m_phenomenonEdit->toPlainText().trimmed() : QString();
+    }
+
+    QString imagePath() const
+    {
+        return m_imageEdit ? m_imageEdit->text().trimmed() : QString();
+    }
+
+    QString nextProcess() const
+    {
+        return m_nextProcessLabel ? m_nextProcessLabel->text() : QString();
+    }
+
+    QString summary() const
+    {
+        return tr("异常类型：%1；异常现象：%2；异常图片：%3；下一工序：%4")
+            .arg(abnormalType(), phenomenon(), imagePath(), nextProcess());
     }
 
 protected:
     bool onConfirm() override
     {
-        // NG弹窗先做最基础的非空校验，后续可以在这里补充异常类型、图片等必填项。
-        if (reason().isEmpty())
+        if (abnormalType().isEmpty())
         {
-            QMessageBox::warning(this, tr("NG异常登记"), tr("请填写NG原因。"));
+            QMessageBox::warning(this, tr("NG异常登记"), tr("请选择异常类型。"));
+            return false;
+        }
+
+        if (imagePath().isEmpty())
+        {
+            QMessageBox::warning(this, tr("NG异常登记"), tr("请上传异常图片。"));
+            return false;
+        }
+
+        if (phenomenon().isEmpty())
+        {
+            QMessageBox::warning(this, tr("NG异常登记"), tr("请填写异常现象说明。"));
             return false;
         }
 
         qDebug() << __FUNCTION__
                  << "productSn:" << m_productSn
-                 << "reason:" << reason();
+                 << "type:" << abnormalType()
+                 << "image:" << imagePath()
+                 << "phenomenon:" << phenomenon()
+                 << "nextProcess:" << nextProcess();
         return true;
     }
 
 private:
     QString m_productSn;
-    QTextEdit* m_reasonEdit{nullptr};
+    QComboBox* m_productSnCombo{nullptr};
+    QComboBox* m_typeCombo{nullptr};
+    QLineEdit* m_imageEdit{nullptr};
+    QTextEdit* m_phenomenonEdit{nullptr};
+    QLabel* m_nextProcessLabel{nullptr};
+};
+
+class PauseReasonDialog : public BaseDialogWidget
+{
+public:
+    explicit PauseReasonDialog(const QString& productSn, QWidget* parent = nullptr)
+        : BaseDialogWidget(parent)
+    {
+        setTitle(tr("暂停原因登记"));
+        if (confirmButton())
+            confirmButton()->setText(tr("确认暂停"));
+
+        auto snRow = new QHBoxLayout;
+        snRow->addWidget(new QLabel(tr("产品SN："), this));
+        m_productSnCombo = new QComboBox(this);
+        m_productSnCombo->addItem(productSn);
+        m_productSnCombo->setMinimumWidth(220);
+        snRow->addWidget(m_productSnCombo);
+        snRow->addStretch();
+        contentLayout()->addLayout(snRow);
+
+        auto typeRow = new QHBoxLayout;
+        typeRow->addWidget(new QLabel(tr("暂停类型："), this));
+
+        const QStringList types = {
+            tr("物料异常"),
+            tr("设备仪器工装异常"),
+            tr("工艺文件异常"),
+            tr("环境异常"),
+            tr("人员调度"),
+            tr("其他")
+        };
+
+        m_typeGroup = new QButtonGroup(this);
+        m_typeGroup->setExclusive(true);
+
+        for (const QString& type : types)
+        {
+            auto checkBox = new QCheckBox(type, this);
+            m_typeCheckBoxes.append(checkBox);
+            m_typeGroup->addButton(checkBox);
+            typeRow->addWidget(checkBox);
+            connect(checkBox, &QCheckBox::toggled,
+                    this, [this]() { updateCodePrompt(); });
+        }
+        typeRow->addStretch();
+        contentLayout()->addLayout(typeRow);
+
+        m_codeRowWidget = new QWidget(this);
+        auto codeRow = new QHBoxLayout(m_codeRowWidget);
+        codeRow->setContentsMargins(0, 0, 0, 0);
+        m_codeLabel = new QLabel(tr("关联编码："), m_codeRowWidget);
+        m_codeEdit = new QLineEdit(m_codeRowWidget);
+        codeRow->addWidget(m_codeLabel);
+        codeRow->addWidget(m_codeEdit, 1);
+        contentLayout()->addWidget(m_codeRowWidget);
+
+        contentLayout()->addWidget(new QLabel(tr("具体说明"), this));
+        m_descriptionEdit = new QTextEdit(this);
+        m_descriptionEdit->setMinimumHeight(90);
+        m_descriptionEdit->setPlaceholderText(tr("请填写暂停原因或现场说明"));
+        contentLayout()->addWidget(m_descriptionEdit);
+
+        updateCodePrompt();
+    }
+
+    QString pauseType() const
+    {
+        return selectedTypes().join(tr("、"));
+    }
+
+    QString relatedCode() const
+    {
+        return m_codeEdit ? m_codeEdit->text().trimmed() : QString();
+    }
+
+    QString description() const
+    {
+        return m_descriptionEdit ? m_descriptionEdit->toPlainText().trimmed() : QString();
+    }
+
+protected:
+    bool onConfirm() override
+    {
+        const QStringList types = selectedTypes();
+        if (types.isEmpty())
+        {
+            QMessageBox::warning(this, tr("暂停原因登记"), tr("请至少勾选一种暂停类型。"));
+            return false;
+        }
+
+        if (relatedCode().isEmpty())
+        {
+            QMessageBox::warning(
+                this,
+                tr("暂停原因登记"),
+                tr("请填写%1编码。").arg(types.join(tr("、"))));
+            return false;
+        }
+
+        if (description().isEmpty())
+        {
+            QMessageBox::warning(this, tr("暂停原因登记"), tr("请填写具体说明。"));
+            return false;
+        }
+
+        return true;
+    }
+
+private:
+    QStringList selectedTypes() const
+    {
+        QStringList types;
+
+        if (m_typeGroup && m_typeGroup->checkedButton())
+            types.append(m_typeGroup->checkedButton()->text());
+
+        // 多选逻辑已停用：暂停类型现在只能单选。
+        // for (auto checkBox : m_typeCheckBoxes)
+        // {
+        //     if (checkBox && checkBox->isChecked())
+        //         types.append(checkBox->text());
+        // }
+
+        return types;
+    }
+
+    void updateCodePrompt()
+    {
+        const QStringList types = selectedTypes();
+        const bool hasSelection = !types.isEmpty();
+
+        if (m_codeRowWidget)
+            m_codeRowWidget->setVisible(hasSelection);
+
+        if (!hasSelection || !m_codeEdit || !m_codeLabel)
+            return;
+
+        const QString typeText = types.join(tr("、"));
+        m_codeLabel->setText(tr("关联编码："));
+        m_codeEdit->setPlaceholderText(tr("请输入%1编码").arg(typeText));
+    }
+
+private:
+    QComboBox* m_productSnCombo{nullptr};
+    QButtonGroup* m_typeGroup{nullptr};
+    QList<QCheckBox*> m_typeCheckBoxes;
+    QWidget* m_codeRowWidget{nullptr};
+    QLabel* m_codeLabel{nullptr};
+    QLineEdit* m_codeEdit{nullptr};
+    QTextEdit* m_descriptionEdit{nullptr};
 };
 }
 
@@ -481,6 +721,23 @@ void ProcessStationLeftPanel::onExecuteBtnClicked()
 
 void ProcessStationLeftPanel::onPauseBtnClicked()
 {
+    const QString productSn = currentProductSnFromSelection();
+    if (!validateSelectedProductSn(productSn))
+        return;
+
+    PauseReasonDialog dialog(productSn, this);
+    if (dialog.exec() != QDialog::Accepted)
+    {
+        qDebug() << __FUNCTION__ << "pause canceled productSn:" << productSn;
+        return;
+    }
+
+    qDebug() << __FUNCTION__
+             << "productSn:" << productSn
+             << "type:" << dialog.pauseType()
+             << "code:" << dialog.relatedCode()
+             << "description:" << dialog.description();
+
     handlePauseResult(true);
 }
 
@@ -533,7 +790,7 @@ void ProcessStationLeftPanel::handleNgResult(const QString& productSn)
         return;
     }
 
-    NgPassDialog dialog(productSn, this);
+    NgAbnormalDialog dialog(productSn, this);
     if (dialog.exec() != QDialog::Accepted)
     {
         qDebug() << __FUNCTION__ << "NG canceled productSn:" << productSn;
@@ -546,7 +803,7 @@ void ProcessStationLeftPanel::handleNgResult(const QString& productSn)
 
     qDebug() << __FUNCTION__
              << "NG productSn:" << productSn
-             << "reason:" << dialog.reason()
+             << "abnormal:" << dialog.summary()
              << "row:" << row;
 }
 
