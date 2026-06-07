@@ -7,6 +7,7 @@
 #include <QJsonValue>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QTimer>
 #include <QUuid>
 #include <QDebug>
 
@@ -21,6 +22,7 @@ QString HttpClient::get(const QUrl& url)
 {
     const QString requestId = createRequestId();
     QNetworkReply* reply = m_manager.get(createRequest(url));
+    startRequestTimeout(reply);
     m_requestIds.insert(reply, requestId);
 
     qDebug() << __FUNCTION__ << "GET" << requestId << url;
@@ -32,6 +34,7 @@ QString HttpClient::postJson(const QUrl& url, const QJsonObject& body)
     const QString requestId = createRequestId();
     const QByteArray payload = QJsonDocument(body).toJson(QJsonDocument::Compact);
     QNetworkReply* reply = m_manager.post(createRequest(url), payload);
+    startRequestTimeout(reply);
     m_requestIds.insert(reply, requestId);
 
     qDebug() << __FUNCTION__ << "POST" << requestId << url << payload;
@@ -62,15 +65,27 @@ QNetworkRequest HttpClient::createRequest(const QUrl& url) const
     QNetworkRequest request(url);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     request.setRawHeader("Accept", "application/json");
-    // 后台未响应时最多等待 5 秒，避免登录或按钮请求长时间卡在等待状态。
-    request.setTransferTimeout(5000);
-
     // 后续所有需要登录态的接口都会从 UserSession 自动带 token，不需要页面自己处理请求头。
     const QString token = UserSession::instance()->token();
     if (!token.isEmpty())
         request.setRawHeader("Authorization", QString("Bearer %1").arg(token).toUtf8());
 
     return request;
+}
+
+void HttpClient::startRequestTimeout(QNetworkReply* reply) const
+{
+    if (!reply)
+        return;
+
+    auto timer = new QTimer(reply);
+    timer->setSingleShot(true);
+    QObject::connect(timer, &QTimer::timeout, reply, [reply]() {
+        if (reply->isRunning())
+            reply->abort();
+    });
+    QObject::connect(reply, &QNetworkReply::finished, timer, &QTimer::stop);
+    timer->start(5000);
 }
 
 QString HttpClient::createRequestId() const

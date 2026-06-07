@@ -3,6 +3,7 @@
 #include "qabstractproxymodel.h"
 #include "qmenu.h"
 #include "qpainter.h"
+#include <QDebug>
 
 #include <QGuiApplication>
 #include <QScreen>

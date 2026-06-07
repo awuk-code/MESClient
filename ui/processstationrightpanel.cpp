@@ -1,9 +1,10 @@
 ﻿#include "processstationrightpanel.h"
 
 #include "fieldfilterproxymodel.h"
-#include "pdfviewwidget.h"
+
+
 #include "processstationmodel.h"
-#include "toggleswitchwidget.h"
+
 
 #include <QComboBox>
 #include <QDebug>
@@ -28,15 +29,8 @@ ProcessStationRightPanel::ProcessStationRightPanel(QWidget *parent)
 
     m_referencePdfPage->loadPdf("D:/C++11.pdf");
 
-    m_uploadPage =
-        new QWidget(this);
-    auto uploadLayout =
-        new QVBoxLayout(m_uploadPage);
+    m_uploadPage = new DataUPloadWidget(this);
 
-    uploadLayout->addWidget(
-        new QLabel(tr("资料上传页面")));
-
-    uploadLayout->addStretch();
     setupPage();
     setReplacementMaterialVisible(m_replacementMaterialVisible);
     qDebug() << "ProcessStationRightPanel init, replacement material tab visible:"
@@ -93,7 +87,7 @@ TabConfigs ProcessStationRightPanel::Tabs() const
         tr("资料上传"),
         PageDisplayType::NORMAL,
         QVariant::fromValue(PageDisplayType::NORMAL)
-        ,m_uploadPage
+       , m_uploadPage
     });
     tabs.append({
         tr("引用文件"),
@@ -184,6 +178,17 @@ void ProcessStationRightPanel::setupSearchLayout(QHBoxLayout *layout)
     m_productSnCombo->setMinimumWidth(180);
     m_productSnCombo->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
     m_productSnCombo->addItem(tr("全部"));
+    connect(m_productSnCombo,
+            QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this,
+            [this]() {
+                if (!m_productSnCombo)
+                    return;
+
+                const QString text = m_productSnCombo->currentText();
+                m_currentProductSn = (text == tr("全部")) ? QString() : text;
+                applyCurrentProductSn();
+            });
 
     m_exportBtn = new QPushButton(tr("保存"), this);
     m_exportBtn->setProperty("buttonRole", "save");
@@ -201,6 +206,74 @@ void ProcessStationRightPanel::onSaveBtnClicked()
 {
     // TODO: 保存按钮逻辑待定，后续接口或本地保存规则确定后在这里补充。
     qDebug() << "ProcessStationRightPanel save clicked, wait implementation";
+}
+
+void ProcessStationRightPanel::addScannedProductSn(const QString& productSn)
+{
+    const QString sn = productSn.trimmed();
+    if (sn.isEmpty() || !m_productSnCombo)
+        return;
+
+    if (m_productSnCombo->findText(sn) < 0)
+        m_productSnCombo->addItem(sn);
+
+    m_productSnCombo->setCurrentText(sn);
+    m_currentProductSn = sn;
+    applyCurrentProductSn();
+
+    qDebug() << __FUNCTION__ << "current product SN:" << sn;
+}
+
+void ProcessStationRightPanel::clearProductSnList()
+{
+    m_currentProductSn.clear();
+
+    if (m_productSnCombo)
+    {
+        m_productSnCombo->blockSignals(true);
+        m_productSnCombo->clear();
+        m_productSnCombo->addItem(tr("全部"));
+        m_productSnCombo->setCurrentIndex(0);
+        m_productSnCombo->blockSignals(false);
+    }
+
+    applyCurrentProductSn();
+}
+
+bool ProcessStationRightPanel::validatePassReady(const QString& productSn, QString* message) const
+{
+    const QString sn = productSn.trimmed();
+    if (sn.isEmpty())
+    {
+        if (message)
+            *message = tr("请先扫描或输入产品SN。");
+        return false;
+    }
+
+    if (m_productSnCombo && m_productSnCombo->findText(sn) < 0)
+    {
+        if (message)
+            *message = tr("右侧产品SN列表中没有%1，请先扫入该SN。").arg(sn);
+        return false;
+    }
+
+    if (m_currentProductSn != sn)
+    {
+        if (message)
+            *message = m_currentProductSn.isEmpty()
+                ? tr("请先在右侧产品SN下拉框选择%1后再PASS。").arg(sn)
+                : tr("右侧当前产品SN为%1，请先切换到%2后再PASS。")
+                      .arg(m_currentProductSn, sn);
+        return false;
+    }
+
+    if (m_uploadPage && !m_uploadPage->isComplete(message))
+        return false;
+
+    // TODO(backend): 工序物料信息、工具设备是否必填，以及哪些行必须绑定，应由后台按当前工序返回。
+    // 当前右侧表格共用 ProcessStationModel，切换页签会重载模型，暂不能可靠保存所有页签的完成状态。
+    // 后续应改为按页签/产品SN缓存右侧填写状态，再在这里统一校验。
+    return true;
 }
 
 void ProcessStationRightPanel::setCurrentSearchInfo(const QString &info)
@@ -312,6 +385,48 @@ void ProcessStationRightPanel::updateTableModelByTab(int index)
     {
         setupColumns(table, table->property("tabData"));
     }
+
+    applyCurrentProductSn();
+}
+
+void ProcessStationRightPanel::applyCurrentProductSn()
+{
+    if (m_uploadPage)
+        m_uploadPage->setProductSn(m_currentProductSn);
+
+    auto table = qobject_cast<QTableView*>(m_stack ? m_stack->currentWidget() : nullptr);
+    if (!table)
+        return;
+
+    auto proxy = qobject_cast<FieldFilterProxyModel*>(table->model());
+    if (!proxy)
+        return;
+
+    proxy->setFieldFilter(QStringLiteral("productSN"), QVariant());
+    proxy->setFieldFilter(QStringLiteral("productSNCode"), QVariant());
+
+    const QString field = productSnFieldForTab(tabBar() ? tabBar()->currentIndex() : -1);
+    if (!field.isEmpty() && !m_currentProductSn.isEmpty())
+        proxy->setFieldFilter(field, m_currentProductSn);
+
+    qDebug() << __FUNCTION__
+             << "tab:" << (tabBar() ? tabBar()->currentIndex() : -1)
+             << "field:" << field
+             << "productSN:" << m_currentProductSn;
+}
+
+QString ProcessStationRightPanel::productSnFieldForTab(int index) const
+{
+    switch (index)
+    {
+    case 3:
+    case 4:
+        return QStringLiteral("productSN");
+    case 7:
+        return QStringLiteral("productSNCode");
+    default:
+        return QString();
+    }
 }
 
 int ProcessStationRightPanel::replacementMaterialTabIndex() const
@@ -333,6 +448,8 @@ void ProcessStationRightPanel::setReplacementMaterialVisible(bool visible)
     if (!visible && tabBar()->currentIndex() == index)
         tabBar()->setCurrentIndex(0);
 
-    tabBar()->setTabVisible(index, visible);
+    tabBar()->setTabEnabled(index, visible);
+    tabBar()->setTabText(index, visible ? tr("替换料件") : QString());
+    tabBar()->setTabToolTip(index, visible ? QString() : tr("替换料件"));
     qDebug() << __FUNCTION__ << "visible:" << visible << "index:" << index;
 }

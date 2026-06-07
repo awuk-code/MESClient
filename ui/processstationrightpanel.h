@@ -2,11 +2,13 @@
 #define PROCESSSTATIONRIGHTPANEL_H
 
 #include "basepagewidget.h"
+#include "datauploadwidget.h"
+#include "pdfviewwidget.h"
+#include "toggleswitchwidget.h"
 
 class QLabel;
 class QComboBox;
-class PdfViewWidget;
-class ToggleSwitchWidget;
+
 
 class ProcessStationRightPanel : public BasePageWidget
 {
@@ -14,6 +16,11 @@ class ProcessStationRightPanel : public BasePageWidget
 public:
     explicit ProcessStationRightPanel(QWidget* parent = nullptr);
     void setReplacementMaterialVisible(bool visible);
+    void clearProductSnList();
+    bool validatePassReady(const QString& productSn, QString* message = nullptr) const;
+
+public slots:
+    void addScannedProductSn(const QString& productSn);
 
 signals:
     void toggleRequested(bool isChecked);
@@ -33,6 +40,8 @@ private:
     void onSaveBtnClicked();
     void updateTableModelByTab(int index);
     void updateSearchBarByTab(int index);
+    void applyCurrentProductSn();
+    QString productSnFieldForTab(int index) const;
     int replacementMaterialTabIndex() const;
 
 private:
@@ -40,11 +49,12 @@ private:
     QString m_currentSearchInfo;
     QLabel* m_productSnLabel{nullptr};
     QComboBox* m_productSnCombo{nullptr};
+    QString m_currentProductSn;
 
     PdfViewWidget* m_processPdfPage{nullptr};
     PdfViewWidget* m_referencePdfPage{nullptr};
+    DataUPloadWidget* m_uploadPage{nullptr};
 
-    QWidget* m_uploadPage{nullptr};
     bool m_replacementMaterialVisible{true};
 };
 

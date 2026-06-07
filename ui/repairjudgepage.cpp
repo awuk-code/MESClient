@@ -162,32 +162,29 @@ void RepairJudgePage::initUI()
     judgeContentLayout->addLayout(methodLayout);
 
     m_reworkOptionsWidget = new QWidget(judgeContent);
-    auto reworkLayout = new QFormLayout(m_reworkOptionsWidget);
+    auto reworkLayout = new QHBoxLayout(m_reworkOptionsWidget);
     reworkLayout->setContentsMargins(0, 0, 0, 0);
-    reworkLayout->setHorizontalSpacing(12);
-    reworkLayout->setVerticalSpacing(8);
+    reworkLayout->setSpacing(12);
 
     m_reworkRouteCombo = new QComboBox(m_reworkOptionsWidget);
+    m_reworkRouteCombo->setMinimumWidth(180);
     m_reworkRouteCombo->addItems({
         tr("返工工艺路线A"),
         tr("返工工艺路线B")
     });
 
     m_reworkFileCombo = new QComboBox(m_reworkOptionsWidget);
+    m_reworkFileCombo->setMinimumWidth(180);
     m_reworkFileCombo->addItems({
         tr("返工工艺文件A"),
         tr("返工工艺文件B")
     });
 
-    m_reworkTypeCombo = new QComboBox(m_reworkOptionsWidget);
-    m_reworkTypeCombo->addItems({
-        tr("维修返工"),
-        tr("生产返工")
-    });
-
-    reworkLayout->addRow(tr("返工工艺路线："), m_reworkRouteCombo);
-    reworkLayout->addRow(tr("返工工艺文件："), m_reworkFileCombo);
-    reworkLayout->addRow(tr("返工类型："), m_reworkTypeCombo);
+    reworkLayout->addWidget(new QLabel(tr("返工工艺路线："), m_reworkOptionsWidget));
+    reworkLayout->addWidget(m_reworkRouteCombo);
+    reworkLayout->addWidget(new QLabel(tr("返工工艺文件："), m_reworkOptionsWidget));
+    reworkLayout->addWidget(m_reworkFileCombo);
+    reworkLayout->addStretch();
     judgeContentLayout->addWidget(m_reworkOptionsWidget);
     updateReworkOptionsVisible();
 
@@ -201,8 +198,16 @@ void RepairJudgePage::initUI()
 
     m_submitBtn = new QPushButton(tr("提交"), judgeContent);
     m_submitBtn->setProperty("buttonRole", "primary");
-    m_submitBtn->setFixedSize(84, 32);
+    m_submitBtn->setMinimumSize(84, 32);
+    m_repairReworkBtn = new QPushButton(tr("维修返工"), judgeContent);
+    m_repairReworkBtn->setProperty("buttonRole", "primary");
+    m_repairReworkBtn->setMinimumSize(96, 32);
+    m_productionReworkBtn = new QPushButton(tr("生产返工"), judgeContent);
+    m_productionReworkBtn->setProperty("buttonRole", "primary");
+    m_productionReworkBtn->setMinimumSize(96, 32);
     submitLayout->addWidget(m_submitBtn);
+    submitLayout->addWidget(m_repairReworkBtn);
+    submitLayout->addWidget(m_productionReworkBtn);
     judgeContentLayout->addLayout(submitLayout);
 
     judgeLayout->addWidget(judgeContent, 1);
@@ -215,14 +220,20 @@ void RepairJudgePage::initUI()
             this, &RepairJudgePage::onBackBtnClicked);
     connect(m_submitBtn, &QPushButton::clicked,
             this, &RepairJudgePage::onSubmitBtnClicked);
+    connect(m_repairReworkBtn, &QPushButton::clicked,
+            this, [this]() { submitJudge(tr("维修返工")); });
+    connect(m_productionReworkBtn, &QPushButton::clicked,
+            this, [this]() { submitJudge(tr("生产返工")); });
 
     connect(m_methodGroup,
-            &QButtonGroup::idClicked,
+            static_cast<void (QButtonGroup::*)(int)>(&QButtonGroup::buttonClicked),
             this,
             [this](int) { updateReworkOptionsVisible(); });
+
+    updateReworkOptionsVisible();
 }
 
-QVariantMap RepairJudgePage::judgeData() const
+QVariantMap RepairJudgePage::judgeData(const QString& reworkType) const
 {
     QVariantMap data = m_rowData;
 
@@ -237,8 +248,7 @@ QVariantMap RepairJudgePage::judgeData() const
         m_reworkRouteCombo ? m_reworkRouteCombo->currentText() : QString();
     data["reworkFile"] =
         m_reworkFileCombo ? m_reworkFileCombo->currentText() : QString();
-    data["reworkType"] =
-        m_reworkTypeCombo ? m_reworkTypeCombo->currentText() : QString();
+    data["reworkType"] = reworkType;
 
     return data;
 }
@@ -277,6 +287,11 @@ void RepairJudgePage::onSaveBtnClicked()
 
 void RepairJudgePage::onSubmitBtnClicked()
 {
+    submitJudge();
+}
+
+void RepairJudgePage::submitJudge(const QString& reworkType)
+{
     const QVariantMap data = judgeData();
     const QString content =
         data.value("judgeContent").toString().trimmed();
@@ -291,10 +306,13 @@ void RepairJudgePage::onSubmitBtnClicked()
     QString message;
     if (isRework)
     {
+        const QString selectedReworkType =
+            reworkType.isEmpty() ? tr("维修返工") : reworkType;
+        const QVariantMap reworkData = judgeData(selectedReworkType);
         message = tr("已选择“返工”。\n\n返工工艺路线：%1\n返工工艺文件：%2\n返工类型：%3\n\n按需求，提交后应进入审核流程；当前提交接口尚未接入，本次仅保留调试输出。")
-            .arg(data.value("reworkRoute").toString(),
-                 data.value("reworkFile").toString(),
-                 data.value("reworkType").toString());
+            .arg(reworkData.value("reworkRoute").toString(),
+                 reworkData.value("reworkFile").toString(),
+                 reworkData.value("reworkType").toString());
     }
     else
     {
@@ -307,7 +325,8 @@ void RepairJudgePage::onSubmitBtnClicked()
              << "wait upload, exceptionHandleNo ="
              << data.value("exceptionHandleNo").toString()
              << "method =" << data.value("judgeMethod").toString()
-             << "content =" << data.value("judgeContent").toString();
+             << "content =" << data.value("judgeContent").toString()
+             << "reworkType =" << reworkType;
 
     showInfoDialog(tr("提交"), message);
 }
@@ -323,7 +342,15 @@ void RepairJudgePage::updateReworkOptionsVisible()
     if (!m_reworkOptionsWidget || !m_methodGroup)
         return;
 
-    m_reworkOptionsWidget->setVisible(m_methodGroup->checkedId() == 2);
+    const bool isRework = m_methodGroup->checkedId() == 2;
+    m_reworkOptionsWidget->setVisible(isRework);
+
+    if (m_submitBtn)
+        m_submitBtn->setVisible(!isRework);
+    if (m_repairReworkBtn)
+        m_repairReworkBtn->setVisible(isRework);
+    if (m_productionReworkBtn)
+        m_productionReworkBtn->setVisible(isRework);
 }
 
 void RepairJudgePage::showInfoDialog(const QString& title, const QString& message)

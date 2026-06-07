@@ -3,6 +3,7 @@ INCLUDEPATH += $$PWD
 HEADERS +=  \
     $$PWD/basedialogwidget.h \
     $$PWD/basepagewidget.h \
+    $$PWD/datauploadwidget.h \
     $$PWD/datefilterpopup.h \
     $$PWD/headeroverlaywidget.h \
     $$PWD/headerwidget.h \
@@ -23,6 +24,7 @@ HEADERS +=  \
 SOURCES +=      \
     $$PWD/basedialogwidget.cpp \
     $$PWD/basepagewidget.cpp \
+    $$PWD/datauploadwidget.cpp \
     $$PWD/datefilterpopup.cpp \
     $$PWD/headeroverlaywidget.cpp \
         $$PWD/headerwidget.cpp \
@@ -39,5 +41,6 @@ SOURCES +=      \
     $$PWD/subheaderwidget.cpp \
     $$PWD/toggleswitchwidget.cpp
 
-FORMS +=
+FORMS += \
+    $$PWD/datauploadwidget.ui
 

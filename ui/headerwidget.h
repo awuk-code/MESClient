@@ -30,6 +30,7 @@ private:
     void onBtnMaxClicked();
 
 private:
+    QPoint m_dragPos;
     QLabel *m_title{nullptr};
     QLabel *m_userInfo{nullptr};
     QLabel *m_userIcon{nullptr};

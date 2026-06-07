@@ -58,7 +58,7 @@ QVariant BaseTableModel::data(
     // ===== 对齐 =====
     if (role == Qt::TextAlignmentRole)
     {
-        return QVariant::fromValue(Qt::AlignCenter);
+        return int(Qt::AlignCenter);
     }
 
     // ===== checkbox =====

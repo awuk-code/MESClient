@@ -34,6 +34,28 @@ void ProcessStationPage::initConnect()
             this, [=](bool isChecked){
                 m_leftPanel->setVisible(!isChecked);
             });
+
+    connect(m_leftPanel, &ProcessStationLeftPanel::productSnScanned,
+            m_rightPanel, &ProcessStationRightPanel::addScannedProductSn);
+
+    m_leftPanel->setPassConditionValidator(
+        [this](const QString& productSn, QString* message) {
+            if (!m_rightPanel)
+            {
+                if (message)
+                    *message = tr("右侧工艺信息页面未初始化，不能PASS。");
+                return false;
+            }
+
+            return m_rightPanel->validatePassReady(productSn, message);
+        });
+
+    connect(m_leftPanel, &ProcessStationLeftPanel::productNgSubmitted,
+            this, [](const QVariantMap& abnormalData) {
+                // TODO(backend): 这里应调用“提交NG异常/创建异常处理单”接口，
+                // 成功后由后台刷新维修站待处理列表；当前阶段先保留本地事件和日志。
+                qDebug() << "ProcessStationPage receive NG abnormal data:" << abnormalData;
+            });
 }
 
 void ProcessStationPage::setReworkTaskMode(bool advancedPermission)
@@ -68,6 +90,7 @@ void ProcessStationPage::clearProductionTaskData()
     if (m_rightPanel)
     {
         // 普通工序站点入口不显示返工任务单专用的更换物料信息。
+        m_rightPanel->clearProductSnList();
         m_rightPanel->setReplacementMaterialVisible(false);
     }
 
@@ -92,6 +115,7 @@ void ProcessStationPage::setProductionTaskData(const QVariantMap &rowData)
     if (m_rightPanel)
     {
         // 开工进入的是普通工序站点，不显示返工专用的更换物料信息页签。
+        m_rightPanel->clearProductSnList();
         m_rightPanel->setReplacementMaterialVisible(false);
     }
 
@@ -111,6 +135,7 @@ void ProcessStationPage::setReworkTaskData(const QVariantMap &rowData)
     if (m_rightPanel)
     {
         // 只有维修站点击返工任务单号进入时，右侧才显示更换物料信息页签。
+        m_rightPanel->clearProductSnList();
         m_rightPanel->setReplacementMaterialVisible(true);
     }
 

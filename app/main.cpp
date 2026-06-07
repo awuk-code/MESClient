@@ -3,7 +3,11 @@
 #include "configmanager.h"
 
 #include <QApplication>
+#include <QDebug>
 #include <QFile>
+#include <QGuiApplication>
+#include <QRegularExpression>
+#include <QScreen>
 #include <QString>
 
 typedef enum _LoginStatus{
@@ -12,26 +16,65 @@ typedef enum _LoginStatus{
     LoginSucess
 }LoginStatus;
 
+qreal uiScaleFactor()
+{
+    QScreen* screen = QGuiApplication::primaryScreen();
+    if (!screen)
+        return 1.0;
+
+    const qreal scale = screen->logicalDotsPerInch() / 96.0;
+    return qBound<qreal>(1.0, scale, 1.35);
+}
+
+QString scaleStyleSheetFonts(const QString& styleSheet, qreal scale)
+{
+    if (scale <= 1.0)
+        return styleSheet;
+
+    QString result;
+    int lastPos = 0;
+    QRegularExpression regex(QStringLiteral("font-size\\s*:\\s*(\\d+)px"));
+    QRegularExpressionMatchIterator it = regex.globalMatch(styleSheet);
+
+    while (it.hasNext())
+    {
+        const QRegularExpressionMatch match = it.next();
+        result += styleSheet.mid(lastPos, match.capturedStart() - lastPos);
+
+        const int fontSize = match.captured(1).toInt();
+        const int scaledSize = qRound(fontSize * scale);
+        result += QStringLiteral("font-size: %1px").arg(scaledSize);
+
+        lastPos = match.capturedEnd();
+    }
+
+    result += styleSheet.mid(lastPos);
+    return result;
+}
+
 void loadStylSheet(void)
 {
     QFile file(":/res/style/style.qss");
 
     if (!file.open(QFile::ReadOnly))
     {
-        qDebug() << __FUNCTION__ "style load failed";
+        qDebug() << __FUNCTION__<< "style load failed";
         return;
     }
 
     QString styleSheet= QLatin1String(file.readAll());//读取样式表文件
     file.close();
 
-    qDebug() << __FUNCTION__ "style load ok...."<<styleSheet;
+    styleSheet = scaleStyleSheetFonts(styleSheet, uiScaleFactor());
     qApp->setStyleSheet(styleSheet);//把文件内容传参
 }
 
 
 int main(int argc, char *argv[])
 {
+    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+
     QApplication a(argc, argv);
 
     loadStylSheet();

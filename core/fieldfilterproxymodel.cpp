@@ -5,6 +5,7 @@
 
 FieldFilterProxyModel::FieldFilterProxyModel(QObject *parent)
     : QSortFilterProxyModel(parent)
+    , m_status(QVariant::fromValue(FilterStatus::UNKNOWN))
 {}
 
 void FieldFilterProxyModel::setFilterColumn(int column)
@@ -96,7 +97,18 @@ bool FieldFilterProxyModel::filterAcceptsRow(int srcRow, const QModelIndex &srcP
     // ===== Tab状态过滤 =====
     QString status =  row.value("status").toString();
 
-    FilterStatus filterStatus = m_status.value<FilterStatus>();
+    FilterStatus filterStatus = FilterStatus::UNKNOWN;
+    if (m_status.canConvert<FilterStatus>())
+    {
+        filterStatus = m_status.value<FilterStatus>();
+    }
+    else if (m_status.isValid())
+    {
+        bool ok = false;
+        const int statusValue = m_status.toInt(&ok);
+        if (ok)
+            filterStatus = static_cast<FilterStatus>(statusValue);
+    }
     switch (filterStatus)
     {
     case FilterStatus::UNKNOWN:

@@ -7,11 +7,21 @@
 QPushButton {
     background-color: transparent;
     border: none;
+    font-size: 13px;
 }
 
 QToolButton {
     border: none;
     background: transparent;
+}
+
+QLabel,
+QLineEdit,
+QComboBox,
+QTextEdit,
+QRadioButton,
+QCheckBox {
+    font-size: 13px;
 }
 
 QToolTip {
@@ -58,13 +68,13 @@ QToolTip {
 }
 
 #menuBtn:checked {
-    background-color: #eef6ff;
-    color: #1890ff;
+    background-color: #f7e8f7;
+    color: #880088;
 }
 
 #menuBtn:hover {
     background-color: #f5f7fa;
-    color: #1890ff;
+    color: #880088;
 }
 
 /* ============================================================
@@ -77,19 +87,21 @@ QTabBar#BasePageTabBar {
 
 QTabBar#BasePageTabBar::tab {
     background: transparent;
-    padding: 8px 20px;
+    font-size: 13px;
+    height: 40px;
+    padding: 0px 20px;
     margin-top: 1px;
     color: #606266;
     border: none;
 }
 
 QTabBar#BasePageTabBar::tab:selected {
-    color: #409EFF;
-    border-top: 2px solid #409EFF;
+    color: #880088;
+    border-top: 2px solid #880088;
 }
 
 QTabBar#BasePageTabBar::tab:hover {
-    color: #409EFF;
+    color: #880088;
 }
 
 
@@ -109,10 +121,12 @@ QLabel[labelRole="dialogTitle"] {
 }
 
 QLabel[labelRole="fieldName"] {
+    font-size: 13px;
     color: #606266;
 }
 
 QLabel[labelRole="fieldValue"] {
+    font-size: 13px;
     color: #303133;
 }
 
@@ -127,13 +141,17 @@ QLabel[labelRole="sectionTitle"] {
 }
 
 QLabel[labelRole="imageLink"] {
-    color: #409EFF;
+    color: #880088;
 }
 
 /* 表格正文样式入口：表格内容字体、颜色在这里统一设置，表头和代理绘制样式不在这里处理。 */
 QTableView {
     font-size: 13px;
     color: #303133;
+}
+
+QHeaderView::section {
+    font-size: 13px;
 }
 
 QFrame[panelRole="section"] {
@@ -194,7 +212,7 @@ QDialog#BaseDialogWidget QWidget#DialogButtonBar {
 QPushButton[buttonRole="save"],
 QPushButton[buttonRole="export"],
 QPushButton[buttonRole="primary"] {
-    background-color: #409EFF;
+    background-color: #880088;
     color: #ffffff;
     border-radius: 4px;
     padding: 6px 16px;
@@ -203,7 +221,14 @@ QPushButton[buttonRole="primary"] {
 QPushButton[buttonRole="save"]:hover,
 QPushButton[buttonRole="export"]:hover,
 QPushButton[buttonRole="primary"]:hover {
-    background-color: #66b1ff;
+    background-color: #a64ca6;
+}
+
+QPushButton[buttonRole="save"]:disabled,
+QPushButton[buttonRole="export"]:disabled,
+QPushButton[buttonRole="primary"]:disabled {
+    background-color: #c0c4cc;
+    color: #ffffff;
 }
 
 QPushButton[buttonRole="secondary"] {
@@ -215,16 +240,39 @@ QPushButton[buttonRole="secondary"] {
 }
 
 QPushButton[buttonRole="secondary"]:hover {
-    color: #409EFF;
-    border-color: #409EFF;
+    color: #880088;
+    border-color: #880088;
 }
 
 QPushButton[buttonRole="link"] {
-    color: #409EFF;
+    color: #880088;
     text-align: left;
     border: none;
     background: transparent;
     padding: 0px;
+}
+
+QPushButton[buttonRole="compact"] {
+    background-color: transparent;
+    color: #303133;
+    border-radius: 4px;
+    padding: 4px 10px;
+    min-height: 24px;
+}
+
+QPushButton[buttonRole="compact"]:hover {
+    background-color: #f0f2f5;
+}
+
+QPushButton[buttonRole="compact"]:pressed,
+QPushButton[buttonRole="compact"]:checked {
+    background-color: #880088;
+    color: #ffffff;
+}
+
+QPushButton[buttonRole="compact"]:disabled {
+    color: #c0c4cc;
+    background-color: transparent;
 }
 
 /* ============================================================
@@ -238,17 +286,17 @@ QPushButton[buttonRole="link"] {
 }
 
 #MLoginWidget QLineEdit:hover {
-    border: 1px solid #409EFF;
+    border: 1px solid #880088;
 }
 
 #MLoginWidget QPushButton#LoginBtn {
-    background-color: #409EFF;
+    background-color: #880088;
     color: #ffffff;
     border-radius: 5px;
 }
 
 #MLoginWidget QPushButton#LoginBtn:hover {
-    background-color: #66b1ff;
+    background-color: #a64ca6;
 }
 
 #LoginErrorLabel {

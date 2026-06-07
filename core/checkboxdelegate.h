@@ -10,6 +10,7 @@
 #include <QMouseEvent>
 #include <QPainter>
 #include <QStyle>
+#include <QStyleOptionViewItem>
 
 #include "baseitemdelegate.h"
 
@@ -19,6 +20,8 @@ class CheckBoxDelegate : public BaseItemDelegate
 public:
     explicit CheckBoxDelegate(QObject *parent = nullptr);
 
+    static int indicatorSize(const QFont& font);
+
     void paint(QPainter *painter,
                const QStyleOptionViewItem &option,
                const QModelIndex &index) const override;
@@ -27,6 +30,9 @@ public:
                      QAbstractItemModel *model,
                      const QStyleOptionViewItem &option,
                      const QModelIndex &index) override;
+
+    QSize sizeHint(const QStyleOptionViewItem &option,
+                   const QModelIndex &index) const override;
 
 
 };

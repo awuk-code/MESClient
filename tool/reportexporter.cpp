@@ -82,7 +82,7 @@ bool writeCsv(QWidget* parent,
     }
 
     QTextStream out(&file);
-    out.setEncoding(QStringConverter::Utf8);
+    out.setCodec("UTF-8");
     out << QChar(0xFEFF);
 
     auto writeCsvRow = [&](int row) {

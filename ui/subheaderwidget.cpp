@@ -22,7 +22,7 @@ void SubHeaderWidget::initUI()
     QHBoxLayout* layout = new QHBoxLayout(this);
     layout->setContentsMargins(15,0,15,0);
 
-    m_pagePath = {tr("生产任务"), tr("生产任务列表")};
+    m_pagePath = QStringList() << tr("生产任务") << tr("生产任务列表");
     m_path = new QLabel(this);
     layout->addWidget(m_path);
     layout->addStretch();

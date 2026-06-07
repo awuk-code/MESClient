@@ -13,12 +13,14 @@ HeaderWidget::HeaderWidget(QWidget *parent)
 
 void HeaderWidget::mousePressEvent(QMouseEvent *event)
 {
-    event->ignore();
+    if(event->button() == Qt::LeftButton)
+            m_dragPos = event->globalPos() - window()->frameGeometry().topLeft();
 }
 
 void HeaderWidget::mouseMoveEvent(QMouseEvent *event)
 {
-    event->ignore();
+    if(event->buttons() & Qt::LeftButton)
+            window()->move(event->globalPos() - m_dragPos);
 }
 
 void HeaderWidget::initUI()
@@ -89,8 +91,7 @@ void HeaderWidget::initUI()
 void HeaderWidget::initConnect()
 {
 
-    connect(m_btnClose, &QPushButton::clicked,
-            this, &HeaderWidget::onBtnCloseClicked);
+    connect(m_btnClose, &QPushButton::clicked, this, &HeaderWidget::onBtnCloseClicked);
     m_trayIcon = new QSystemTrayIcon(QIcon(":/res/common/user.svg"), this);
     connect(m_trayIcon, &QSystemTrayIcon::activated, this,
             [this](QSystemTrayIcon::ActivationReason reason) {
@@ -105,10 +106,8 @@ void HeaderWidget::initConnect()
         m_trayIcon->show();
     }
 
-    connect(m_btnMin, &QPushButton::clicked,
-            this, &HeaderWidget::onBtnMinClicked);
-    connect(m_btnMax, &QPushButton::clicked,
-            this, &HeaderWidget::onBtnMaxClicked);
+    connect(m_btnMin, &QPushButton::clicked, this, &HeaderWidget::onBtnMinClicked);
+    connect(m_btnMax, &QPushButton::clicked, this, &HeaderWidget::onBtnMaxClicked);
 }
 
 void HeaderWidget::onBtnCloseClicked()
@@ -127,6 +126,11 @@ void HeaderWidget::onBtnMinClicked()
 
 void HeaderWidget::onBtnMaxClicked()
 {
-    window()->showMaximized();
-    m_btnMax->setIcon(QIcon(":/res/common/max2.svg"));
+    if(window()->isMaximized()){
+                window()->showNormal();
+                m_btnMax->setIcon(QIcon(":/res/common/max1.svg"));
+            }else{
+                window()->showMaximized();
+                m_btnMax->setIcon(QIcon(":/res/common/max2.svg"));
+            }
 }

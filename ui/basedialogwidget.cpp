@@ -48,10 +48,10 @@ bool BaseDialogWidget::onConfirm()
 
 void BaseDialogWidget::mousePressEvent(QMouseEvent *event)
 {
-    if (event->button() == Qt::LeftButton && isInTitleBar(event->position().toPoint()))
+    if (event->button() == Qt::LeftButton && isInTitleBar(event->pos()))
     {
         m_dragging = true;
-        m_dragPos = event->globalPosition().toPoint() - frameGeometry().topLeft();
+        m_dragPos = event->globalPos() - frameGeometry().topLeft();
         event->accept();
         return;
     }
@@ -63,7 +63,7 @@ void BaseDialogWidget::mouseMoveEvent(QMouseEvent *event)
 {
     if (m_dragging && (event->buttons() & Qt::LeftButton))
     {
-        move(event->globalPosition().toPoint() - m_dragPos);
+        move(event->globalPos() - m_dragPos);
         event->accept();
         return;
     }

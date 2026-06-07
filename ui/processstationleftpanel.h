@@ -3,10 +3,12 @@
 
 #include <QList>
 #include <QMap>
+#include <QDateTime>
 #include <QVariant>
 #include <QVariantMap>
 #include <QVector>
 #include <QWidget>
+#include <functional>
 
 class QColor;
 class QLabel;
@@ -18,6 +20,7 @@ class QStandardItemModel;
 class QTableView;
 
 using TaskList = QList<QVariant>;
+using PassConditionValidator = std::function<bool(const QString& productSn, QString* message)>;
 
 class ProcessStationLeftPanel : public QWidget
 {
@@ -43,6 +46,11 @@ public:
     void setReworkTaskStatusData(const QVariantMap& rowData);
     void setDisplayMode(DisplayMode mode);
     void clearPassStatus();
+    void setPassConditionValidator(PassConditionValidator validator);
+
+signals:
+    void productSnScanned(const QString& productSn);
+    void productNgSubmitted(const QVariantMap& abnormalData);
 
 private:
     void initUI();
@@ -64,12 +72,25 @@ private:
     void handleNgResult(const QString& productSn);
     void handlePauseResult(bool paused);
     bool validateProductSn(const QString& productSn) const;
+    bool validateProductSnForCurrentTask(const QString& productSn) const;
     bool validateSelectedProductSn(const QString& productSn) const;
     bool validatePassCondition(const QString& productSn) const;
+    bool isProductPassed(const QString& productSn) const;
+    bool isProductNg(const QString& productSn) const;
+    bool isProductPaused(const QString& productSn) const;
+    bool validateProductNotPassed(const QString& productSn, const QString& actionName) const;
+    bool validateProductNotNg(const QString& productSn, const QString& actionName) const;
+    bool validateProductNotPaused(const QString& productSn, const QString& actionName) const;
+    QString productSnForPauseAction() const;
     QString currentProductSnFromSelection() const;
     int statusRowForProductSn(const QString& productSn) const;
+    bool isStatusMarked(int row, int column) const;
     int appendStatusRow(const QString& productSn);
     void setStatusMark(int row, int column, bool checked, const QColor& color);
+    void startProductTiming(const QString& productSn);
+    void pauseProductTiming(const QString& productSn);
+    void resumeProductTiming(const QString& productSn);
+    qint64 finishProductTiming(const QString& productSn);
     void updateTaskStatusRealtime();
 
     QVector<QPair<QString, QString>> taskInfoFields() const;
@@ -110,6 +131,11 @@ private:
     QVariantMap m_taskStatusData;
     QVariantMap m_reworkTaskStatusData;
     QMap<QString, int> m_productStatusRows;
+    QMap<QString, QDateTime> m_productStartTimes;
+    QMap<QString, QDateTime> m_productPauseStartTimes;
+    QMap<QString, qint64> m_productPausedSeconds;
+    QMap<QString, qint64> m_productFinishedSeconds;
+    PassConditionValidator m_passConditionValidator;
     DisplayMode m_displayMode{DisplayMode::NormalTask};
 };
 

@@ -12,7 +12,7 @@ SideBarWidget::SideBarWidget(QWidget *parent)
 
 void SideBarWidget::initUI()
 {
-    setMinimumWidth(35);
+//    setMinimumWidth(40);
     setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
     QVBoxLayout* layout = new QVBoxLayout(this);
     layout->setContentsMargins(5, 10, 5, 10);
@@ -47,7 +47,8 @@ void SideBarWidget::initUI()
 
 void SideBarWidget::initConnect()
 {
-    connect(m_group, &QButtonGroup::buttonClicked,
+    connect(m_group,
+            static_cast<void (QButtonGroup::*)(QAbstractButton*)>(&QButtonGroup::buttonClicked),
             this, &SideBarWidget::onMenuButtonClicked);
 }
 

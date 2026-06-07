@@ -8,6 +8,7 @@
 #include "reportexporter.h"
 
 #include <QAbstractItemView>
+#include <QDebug>
 #include <QEvent>
 #include <QFontMetrics>
 #include <QFrame>
@@ -85,7 +86,7 @@ bool BasePageWidget::eventFilter(QObject* watched, QEvent* event)
 
 void BasePageWidget::updateTableResizeMode()
 {
-    for (QWidget* page : std::as_const(m_pages))
+    for (QWidget* page : qAsConst(m_pages))
     {
         if (auto table = qobject_cast<QTableView*>(page))
             applyAdaptiveColumnWidths(table);
@@ -153,6 +154,9 @@ void BasePageWidget::initUI()
     m_tabBar = new QTabBar(contentFrame);
     m_tabBar->setObjectName("BasePageTabBar");
     m_tabBar->setExpanding(false);
+    QFont tabFont = m_tabBar->font();
+    tabFont.setPixelSize(13);
+    m_tabBar->setFont(tabFont);
     contentLayout->addWidget(m_tabBar);
 
 
@@ -267,7 +271,7 @@ void BasePageWidget::onSearchBtnClicked()
 {
     QString text = m_searchEdit->text();
 
-    for (auto proxy : std::as_const(m_proxies))
+    for (auto proxy : qAsConst(m_proxies))
     {
         proxy->setKeyword(text);
     }
@@ -659,11 +663,11 @@ int BasePageWidget::contentWidthForColumn(
 
     if (cfg.type == ColumnType::CheckBox)
     {
-        width = qMax(width, 44);
+        width = qMax(width, qMax(18, QFontMetrics(table->font()).height() + 2) + 24);
     }
     else if (cfg.type == ColumnType::Operation)
     {
-        width = qMax(width, OperationDelegate::minimumColumnWidth());
+        width = qMax(width, OperationDelegate::minimumColumnWidth(table->font()));
     }
 
     QFontMetrics cellFm(table->font());

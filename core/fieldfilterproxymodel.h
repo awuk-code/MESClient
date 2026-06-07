@@ -27,7 +27,7 @@ private:
     int m_filterColumn = 0;
     QString m_keyword;
     QStringList searchFields;
-    QVariant m_status = -1;
+    QVariant m_status;
 
     QMap<QString, QVariant> m_fieldFilters; //用于表头图标过滤
 };

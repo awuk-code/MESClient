@@ -3,6 +3,10 @@ QT       += core gui network svg
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++11
+msvc {
+    QMAKE_CXXFLAGS += /utf-8
+    QMAKE_CFLAGS += /utf-8
+}
 TARGET = MESClient
 TEMPLATE = app
 

@@ -1,0 +1,194 @@
+2026-06-05 今晚修改说明
+
+一、扫码过站限制调整
+
+涉及文件：
+- ui/processstationleftpanel.h
+- ui/processstationleftpanel.cpp
+
+涉及函数 / 类：
+- ResumeReasonDialog
+- ProcessStationLeftPanel::onExecuteBtnClicked
+- ProcessStationLeftPanel::onPauseBtnClicked
+- ProcessStationLeftPanel::onResumeBtnClicked
+- ProcessStationLeftPanel::handleScanInAction
+- ProcessStationLeftPanel::handlePassResult
+- ProcessStationLeftPanel::handleNgResult
+- ProcessStationLeftPanel::handlePauseResult
+- ProcessStationLeftPanel::isProductPassed
+- ProcessStationLeftPanel::isProductPaused
+- ProcessStationLeftPanel::validateProductNotPassed
+- ProcessStationLeftPanel::validateProductNotPaused
+- ProcessStationLeftPanel::isStatusMarked
+
+1. PASS 操作增加确认弹窗。
+   选中 PASS 后点击执行，会先提示确认该产品是否通过当前工序，确认后才写入 PASS 状态。
+
+2. 暂停状态下禁止 PASS / NG。
+   产品处于暂停状态时，再执行 PASS 或 NG，会提示“请先解除暂停。”。
+
+3. 解除暂停增加理由登记。
+   点击解除暂停时，会弹出解除暂停原因登记窗口，必须填写理由后才会取消暂停状态。
+
+4. PASS 后禁止继续操作。
+   产品已 PASS 后，不允许重复 PASS、NG、暂停、解除暂停，也不允许重复扫入继续操作。
+
+5. PASS / NG 的产品来源调整。
+   PASS 和 NG 不再读取状态表当前选中行，而是读取输入框中的产品 SN，再到状态信息表中查找对应行。
+   如果表格中没有该 SN，会提示需要先扫入该产品 SN。
+
+6. 暂停 / 解除暂停的产品来源保持不变。
+   暂停和解除暂停仍然针对状态信息表中当前选中的具体行操作。
+
+7. 扫入后不再清空输入框。
+   这样用户扫入 SN 后，可以先去右侧完成物料、工艺、上传等操作，回来选择 PASS 或 NG 时继续使用输入框中的 SN。
+
+
+二、导出报表调整
+
+涉及文件：
+- tool/reportexporter.cpp
+- tool/reportexporter.h
+- 筛选导出/reportexporter.cpp.txt
+- 筛选导出/reportexporter.h.txt
+
+涉及函数：
+- ReportExporter::exportTable
+- exportColumns
+- writeCsv
+- csvText
+- isExportColumn
+
+1. 曾临时实现过导出前高级筛选窗口。
+   支持按字段关键字、日期范围等条件筛选后再导出。
+
+2. 经确认，原导出逻辑本身已经导出当前页面经过用户筛选后的结果。
+   例如状态筛选、顶部搜索、表头日期筛选等，都会先作用在当前表格代理模型上，导出时拿到的就是筛选后的表格数据。
+
+3. 因此正式代码中撤销了导出前筛选弹窗，恢复为导出当前页面当前筛选结果。
+
+4. 高级筛选导出的代码备份保留在项目目录：
+   D:\Dev_projects\qt5-proj\MESClient\筛选导出
+
+
+三、表格 TabBar 字体显示调整
+
+涉及文件：
+- res/style/style.qss
+- ui/basepagewidget.cpp
+
+涉及位置 / 函数：
+- QTabBar#BasePageTabBar::tab
+- BasePageWidget::initUI
+
+1. 表格页签 BasePageTabBar 的文字字号改为与正文一致。
+   当前统一为 13px。
+
+2. 修复 TabBar 中文文字被裁剪、缺笔画的问题。
+   原因是 Qt5 的 QTabBar 在 QSS 设置字号后，内部 tabSizeHint 与实际绘制字号不稳定。
+
+3. 最终处理方式：
+   - QSS 中给 BasePageTabBar::tab 设置固定 height。
+   - 在 BasePageWidget 中给 QTabBar 明确设置 13px 字体。
+
+
+四、资料上传页面实现
+
+涉及文件：
+- ui/dataupload.h
+- ui/dataupload.cpp
+- ui/processstationrightpanel.cpp
+- ui/processstationrightpanel.h
+- ui/ui.pri
+
+涉及类 / 函数：
+- DataUpload
+- DataUpload::DataUpload
+- DataUpload::initUI
+- DataUpload::initConnect
+- DataUpload::onDocUploadBtnClicked
+- DataUpload::onImgUploadBtnClicked
+- DataUpload::createTitleLabel
+- DataUpload::createLineEdit
+- DataUpload::chooseFile
+- ProcessStationRightPanel::ProcessStationRightPanel
+- ProcessStationRightPanel::Tabs
+
+1. 实现 DataUpload 页面。
+   文件：
+   - ui/dataupload.h
+   - ui/dataupload.cpp
+
+2. 将资料上传 Tab 接入 DataUpload 页面。
+   原来的资料上传页面只是占位文本，现在已经替换成实际表单界面。
+
+3. 当前页面包含：
+   - snXXXXX_DOC 文件路径输入框和上传按钮
+   - snXXXXX_IMG 文件路径输入框和上传按钮
+   - 产品大小输入框
+   - 产品尺寸输入框
+   - 产品重量输入框
+
+4. 上传按钮当前实现为本地选择文件并回填路径。
+   后续接入后台后，可在 onDocUploadBtnClicked 和 onImgUploadBtnClicked 中替换为真实上传接口。
+
+
+五、左侧扫入 SN 联动右侧页面
+
+涉及文件：
+- ui/processstationleftpanel.h
+- ui/processstationleftpanel.cpp
+- ui/processstationpage.cpp
+- ui/processstationrightpanel.h
+- ui/processstationrightpanel.cpp
+- ui/dataupload.h
+- ui/dataupload.cpp
+
+涉及类 / 函数：
+- ProcessStationLeftPanel::productSnScanned
+- ProcessStationLeftPanel::handleScanInAction
+- ProcessStationPage::initConnect
+- ProcessStationPage::clearProductionTaskData
+- ProcessStationPage::setProductionTaskData
+- ProcessStationPage::setReworkTaskData
+- ProcessStationRightPanel::addScannedProductSn
+- ProcessStationRightPanel::clearProductSnList
+- ProcessStationRightPanel::applyCurrentProductSn
+- ProcessStationRightPanel::productSnFieldForTab
+- ProcessStationRightPanel::setupSearchLayout
+- ProcessStationRightPanel::updateTableModelByTab
+- DataUpload::setProductSn
+
+1. 左侧扫码过站扫入产品 SN 成功后，会发出 productSnScanned 信号。
+
+2. ProcessStationPage 作为左右面板的整体容器，负责关联左侧信号和右侧槽函数。
+   这样左侧和右侧不直接互相依赖，左右联动逻辑集中在大页面中维护。
+
+3. 右侧 ProcessStationRightPanel 接收到 SN 后，会将 SN 添加到产品 SN 下拉框中。
+   如果该 SN 已存在，则不重复添加，只切换为当前选中项。
+
+4. 右侧当前产品 SN 会同步影响资料上传页。
+   DataUpload 页面中的 snXXXXX_DOC / snXXXXX_IMG 会自动更新为当前扫入产品对应的 SN_DOC / SN_IMG。
+
+5. 右侧有产品 SN 字段的表格页会按照当前 SN 进行本地过滤。
+   当前支持：
+   - 工序物料信息：字段 productSN
+   - 工具设备：字段 productSN
+   - 更换物料信息：字段 productSNCode
+
+6. 切换任务或清空工序站数据时，会清空右侧产品 SN 下拉框，避免上一个任务的 SN 残留到新任务中。
+
+
+六、编译验证
+
+涉及构建文件 / 环境：
+- MESClient.pro
+- ui/ui.pri
+- D:\qt5.12\5.12.12\msvc2017_64\bin\qmake.exe
+- D:\qt5.12\Tools\QtCreator\bin\jom\jom.exe
+- Visual Studio 2017 BuildTools amd64 环境
+
+1. 以上修改均已使用 Qt5.12.12 + MSVC2017 编译通过。
+
+2. 当前生成程序路径：
+   D:\Dev_projects\qt5-proj\build-MESClient-Qt5_12_12-msvc2017\debug\MESClient.exe

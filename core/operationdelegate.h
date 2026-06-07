@@ -15,6 +15,7 @@ public:
 
      bool updateRowData(QAbstractItemModel* model,const QModelIndex& index, const QVariantMap& rowData);
      static int minimumColumnWidth();
+     static int minimumColumnWidth(const QFont& font);
 
 
  signals:

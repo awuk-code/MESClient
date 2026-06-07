@@ -41,7 +41,7 @@ QSize ToggleSwitchWidget::sizeHint() const
     return QSize(m_sideLength, m_sideLength);
 }
 
-void ToggleSwitchWidget::enterEvent(QEnterEvent *event)
+void ToggleSwitchWidget::enterEvent(QEvent *event)
 {
     m_hovered = true;
     update();

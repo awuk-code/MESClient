@@ -28,6 +28,7 @@ private slots:
 
 private:
     QNetworkRequest createRequest(const QUrl& url) const;
+    void startRequestTimeout(QNetworkReply* reply) const;
     QString createRequestId() const;
     ApiResponse parseReply(QNetworkReply* reply, const QByteArray& rawData) const;
 

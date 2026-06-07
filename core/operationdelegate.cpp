@@ -2,6 +2,53 @@
 #include "commonfunc.h"
 
 #include <QAbstractProxyModel>
+#include <QFontMetrics>
+
+namespace
+{
+struct OperationButtonRects
+{
+    QRect printRect;
+    QRect startRect;
+};
+
+int operationButtonHeight(const QFontMetrics& metrics, int cellHeight)
+{
+    const int desiredHeight = metrics.height() + 10;
+    return qMax(22, qMin(cellHeight - 8, desiredHeight));
+}
+
+int operationButtonWidth(const QFontMetrics& metrics, const QString& text, int minimumWidth)
+{
+    return qMax(minimumWidth, metrics.horizontalAdvance(text) + 24);
+}
+
+OperationButtonRects operationButtonRects(const QRect& cellRect,
+                                          const QFont& font,
+                                          const QString& printText,
+                                          const QString& startText)
+{
+    QFontMetrics metrics(font);
+
+    const int leftMargin = 10;
+    const int gap = 12;
+    const int printWidth = operationButtonWidth(metrics, printText, 86);
+    const int startWidth = operationButtonWidth(metrics, startText, 64);
+    const int buttonHeight = operationButtonHeight(metrics, cellRect.height());
+    const int top = cellRect.top() + (cellRect.height() - buttonHeight) / 2;
+
+    OperationButtonRects rects;
+    rects.printRect = QRect(cellRect.left() + leftMargin,
+                            top,
+                            printWidth,
+                            buttonHeight);
+    rects.startRect = QRect(rects.printRect.right() + 1 + gap,
+                            top,
+                            startWidth,
+                            buttonHeight);
+    return rects;
+}
+}
 
 OperationDelegate::OperationDelegate(QObject *parent)
     : BaseItemDelegate{parent}
@@ -9,9 +56,19 @@ OperationDelegate::OperationDelegate(QObject *parent)
 
 int OperationDelegate::minimumColumnWidth()
 {
-    // 操作列内有“标签打印”和“开工”两个按钮：
-    // 左边距 10 + 按钮 60 + 间距 10 + 按钮 60 + 右边距 10。
-    return 150;
+    QFont font;
+    return minimumColumnWidth(font);
+}
+
+int OperationDelegate::minimumColumnWidth(const QFont& font)
+{
+    QFontMetrics metrics(font);
+    const int leftMargin = 10;
+    const int rightMargin = 10;
+    const int gap = 12;
+    const int printWidth = operationButtonWidth(metrics, tr("标签打印"), 86);
+    const int startWidth = operationButtonWidth(metrics, tr("开工"), 64);
+    return leftMargin + printWidth + gap + startWidth + rightMargin;
 }
 
 /**
@@ -64,16 +121,10 @@ void OperationDelegate::paint(
 
     QRect rect = option.rect;
 
-    // 按钮区域
-    QRect printRect(rect.left() + 10,
-                    rect.top() + 6,
-                    60,
-                    rect.height() - 12);
+    painter->setFont(option.font);
 
-    QRect startRect(rect.left() + 80,
-                    rect.top() + 6,
-                    60,
-                    rect.height() - 12);
+    const OperationButtonRects buttonRects =
+        operationButtonRects(rect, option.font, tr("标签打印"), tr("开工"));
 
     // 绘制按钮
     // 标签打印按钮
@@ -87,16 +138,16 @@ void OperationDelegate::paint(
     // 打印
     painter->setBrush(printColor);
     painter->setPen(Qt::NoPen);
-    painter->drawRoundedRect(printRect, 4, 4);
+    painter->drawRoundedRect(buttonRects.printRect, 4, 4);
 
     painter->setPen(Qt::white);
-    painter->drawText(printRect,
+    painter->drawText(buttonRects.printRect,
                       Qt::AlignCenter,
                       tr("标签打印"));
 
     // 开工按钮
     // 未打印：灰色
-    // 已打印：绿色
+    // 可开工：绿色
     QString status =  rowData.value("status").toString();
     QColor startColor;
     if (status != tr("已完工"))
@@ -110,10 +161,10 @@ void OperationDelegate::paint(
 
     painter->setBrush(startColor);
     painter->setPen(Qt::NoPen);
-    painter->drawRoundedRect(startRect, 4, 4);
+    painter->drawRoundedRect(buttonRects.startRect, 4, 4);
 
     painter->setPen(Qt::white);
-    painter->drawText(startRect,
+    painter->drawText(buttonRects.startRect,
                       Qt::AlignCenter,
                       tr("开工"));
 
@@ -126,7 +177,7 @@ QSize OperationDelegate::sizeHint(const QStyleOptionViewItem &option,
     Q_UNUSED(index)
 
     QSize size = BaseItemDelegate::sizeHint(option, index);
-    size.setWidth(qMax(size.width(), minimumColumnWidth()));
+    size.setWidth(qMax(size.width(), minimumColumnWidth(option.font)));
     return size;
 }
 
@@ -149,20 +200,13 @@ bool OperationDelegate::editorEvent(
 
     QRect rect = option.rect;
 
-    QRect printRect(rect.left() + 10,
-                    rect.top() + 6,
-                    60,
-                    rect.height() - 12);
-
-    QRect startRect(rect.left() + 80,
-                    rect.top() + 6,
-                    60,
-                    rect.height() - 12);
+    const OperationButtonRects buttonRects =
+        operationButtonRects(rect, option.font, tr("标签打印"), tr("开工"));
 
     QPoint pos = mouseEvent->pos();
 
     //------------------------
-    if (printRect.contains(pos))
+    if (buttonRects.printRect.contains(pos))
     {
         // if(!labelPrinted){
 
@@ -179,7 +223,7 @@ bool OperationDelegate::editorEvent(
     }
 
     //点击开工-----------只有已打印才能点击
-    if (startRect.contains(pos))
+    if (buttonRects.startRect.contains(pos))
     {
         QString status =
             rowData.value("status").toString();

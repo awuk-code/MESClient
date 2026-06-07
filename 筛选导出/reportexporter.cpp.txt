@@ -1,0 +1,465 @@
+#include "reportexporter.h"
+
+#include <QAbstractItemModel>
+#include <QComboBox>
+#include <QDate>
+#include <QDateTime>
+#include <QDateEdit>
+#include <QDialog>
+#include <QDialogButtonBox>
+#include <QFile>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QFormLayout>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QLineEdit>
+#include <QMessageBox>
+#include <QPushButton>
+#include <QStandardPaths>
+#include <QTableView>
+#include <QTextStream>
+#include <QVBoxLayout>
+#include <QVector>
+
+ReportExporter::ReportExporter(QObject* parent)
+    : QObject(parent)
+{
+}
+
+namespace
+{
+struct ExportFilter
+{
+    int keywordColumn{-1};
+    QString keyword;
+    int dateColumn{-1};
+    QDate startDate;
+    QDate endDate;
+};
+
+bool isExportColumn(QTableView* table, int col)
+{
+    if (!table || !table->model() || table->isColumnHidden(col))
+        return false;
+
+    const QString header =
+        table->model()->headerData(col, Qt::Horizontal, Qt::DisplayRole)
+            .toString();
+
+    if (header == ReportExporter::tr("选择"))
+        return false;
+
+    for (int row = 0; row < table->model()->rowCount(); ++row)
+    {
+        if (table->model()->index(row, col)
+                .data(Qt::CheckStateRole)
+                .isValid())
+            return false;
+    }
+
+    return true;
+}
+
+QVector<int> exportColumns(QTableView* table)
+{
+    QVector<int> columns;
+    if (!table || !table->model())
+        return columns;
+
+    for (int col = 0; col < table->model()->columnCount(); ++col)
+    {
+        if (isExportColumn(table, col))
+            columns.append(col);
+    }
+
+    return columns;
+}
+
+QString headerText(QTableView* table, int column)
+{
+    if (!table || !table->model())
+        return QString();
+
+    return table->model()
+        ->headerData(column, Qt::Horizontal, Qt::DisplayRole)
+        .toString()
+        .trimmed();
+}
+
+bool isDateLikeColumn(const QString& header)
+{
+    return header.contains(ReportExporter::tr("日期")) ||
+           header.contains(ReportExporter::tr("时间"));
+}
+
+QDate parseDateText(const QString& text)
+{
+    const QString value = text.trimmed();
+    if (value.isEmpty())
+        return QDate();
+
+    const QStringList dateTimeFormats = {
+        QStringLiteral("yyyy-MM-dd HH:mm:ss"),
+        QStringLiteral("yyyy-MM-dd HH:mm"),
+        QStringLiteral("yyyy/MM/dd HH:mm:ss"),
+        QStringLiteral("yyyy/MM/dd HH:mm")
+    };
+    for (const QString& format : dateTimeFormats)
+    {
+        const QDateTime dateTime = QDateTime::fromString(value, format);
+        if (dateTime.isValid())
+            return dateTime.date();
+    }
+
+    const QStringList dateFormats = {
+        QStringLiteral("yyyy-MM-dd"),
+        QStringLiteral("yyyy/MM/dd")
+    };
+    for (const QString& format : dateFormats)
+    {
+        const QDate date = QDate::fromString(value, format);
+        if (date.isValid())
+            return date;
+    }
+
+    return QDate();
+}
+
+QPair<QDate, QDate> dateRangeForColumn(QTableView* table, int column)
+{
+    QDate minDate;
+    QDate maxDate;
+
+    if (!table || !table->model() || column < 0)
+        return qMakePair(minDate, maxDate);
+
+    for (int row = 0; row < table->model()->rowCount(); ++row)
+    {
+        const QDate date = parseDateText(
+            table->model()->index(row, column)
+                .data(Qt::DisplayRole)
+                .toString());
+        if (!date.isValid())
+            continue;
+
+        if (!minDate.isValid() || date < minDate)
+            minDate = date;
+        if (!maxDate.isValid() || date > maxDate)
+            maxDate = date;
+    }
+
+    return qMakePair(minDate, maxDate);
+}
+
+void setDateRangeFromColumn(
+    QTableView* table,
+    int column,
+    QDateEdit* startEdit,
+    QDateEdit* endEdit)
+{
+    if (!startEdit || !endEdit)
+        return;
+
+    const auto range = dateRangeForColumn(table, column);
+    if (range.first.isValid() && range.second.isValid())
+    {
+        startEdit->setDate(range.first);
+        endEdit->setDate(range.second);
+        return;
+    }
+
+    const QDate today = QDate::currentDate();
+    startEdit->setDate(today.addMonths(-1));
+    endEdit->setDate(today);
+}
+
+bool chooseExportFilter(
+    QWidget* parent,
+    QTableView* table,
+    const QVector<int>& columns,
+    ExportFilter* filter)
+{
+    if (!filter)
+        return false;
+
+    QDialog dialog(parent);
+    dialog.setWindowTitle(ReportExporter::tr("导出筛选"));
+    dialog.setMinimumWidth(460);
+
+    auto mainLayout = new QVBoxLayout(&dialog);
+    auto tipLabel = new QLabel(
+        ReportExporter::tr("筛选条件只影响本次导出的数据，不改变当前页面列表。"),
+        &dialog);
+    tipLabel->setWordWrap(true);
+    mainLayout->addWidget(tipLabel);
+
+    auto formLayout = new QFormLayout;
+    formLayout->setLabelAlignment(Qt::AlignRight | Qt::AlignVCenter);
+
+    auto keywordRow = new QWidget(&dialog);
+    auto keywordLayout = new QHBoxLayout(keywordRow);
+    keywordLayout->setContentsMargins(0, 0, 0, 0);
+    auto keywordColumnCombo = new QComboBox(keywordRow);
+    keywordColumnCombo->addItem(ReportExporter::tr("全部可见字段"), -1);
+    for (int column : columns)
+        keywordColumnCombo->addItem(headerText(table, column), column);
+
+    auto keywordEdit = new QLineEdit(keywordRow);
+    keywordEdit->setPlaceholderText(
+        ReportExporter::tr("例如生产线、任务单号、产品型号"));
+    keywordLayout->addWidget(keywordColumnCombo);
+    keywordLayout->addWidget(keywordEdit, 1);
+    formLayout->addRow(ReportExporter::tr("字段筛选："), keywordRow);
+
+    auto dateFieldCombo = new QComboBox(&dialog);
+    dateFieldCombo->addItem(ReportExporter::tr("不按日期筛选"), -1);
+    for (int column : columns)
+    {
+        const QString header = headerText(table, column);
+        if (isDateLikeColumn(header))
+            dateFieldCombo->addItem(header, column);
+    }
+    formLayout->addRow(ReportExporter::tr("日期字段："), dateFieldCombo);
+
+    auto dateRow = new QWidget(&dialog);
+    auto dateLayout = new QHBoxLayout(dateRow);
+    dateLayout->setContentsMargins(0, 0, 0, 0);
+    auto startDateEdit = new QDateEdit(dateRow);
+    auto endDateEdit = new QDateEdit(dateRow);
+    for (auto edit : {startDateEdit, endDateEdit})
+    {
+        edit->setCalendarPopup(true);
+        edit->setDisplayFormat(QStringLiteral("yyyy-MM-dd"));
+        edit->setEnabled(false);
+    }
+    setDateRangeFromColumn(table, -1, startDateEdit, endDateEdit);
+    dateLayout->addWidget(startDateEdit);
+    dateLayout->addWidget(new QLabel(ReportExporter::tr("至"), dateRow));
+    dateLayout->addWidget(endDateEdit);
+    formLayout->addRow(ReportExporter::tr("日期范围："), dateRow);
+
+    QObject::connect(
+        dateFieldCombo,
+        QOverload<int>::of(&QComboBox::currentIndexChanged),
+        &dialog,
+        [=](int index) {
+            const int column = dateFieldCombo->itemData(index).toInt();
+            const bool enabled = column >= 0;
+            startDateEdit->setEnabled(enabled);
+            endDateEdit->setEnabled(enabled);
+            if (enabled)
+                setDateRangeFromColumn(table, column, startDateEdit, endDateEdit);
+        });
+
+    mainLayout->addLayout(formLayout);
+
+    auto buttons = new QDialogButtonBox(
+        QDialogButtonBox::Ok | QDialogButtonBox::Cancel,
+        &dialog);
+    buttons->button(QDialogButtonBox::Ok)
+        ->setText(ReportExporter::tr("导出"));
+    buttons->button(QDialogButtonBox::Cancel)
+        ->setText(ReportExporter::tr("取消"));
+    mainLayout->addWidget(buttons);
+
+    QObject::connect(buttons, &QDialogButtonBox::accepted, &dialog, [&]() {
+        const int dateColumn = dateFieldCombo->currentData().toInt();
+        if (dateColumn >= 0 && startDateEdit->date() > endDateEdit->date())
+        {
+            QMessageBox::warning(
+                &dialog,
+                ReportExporter::tr("导出筛选"),
+                ReportExporter::tr("开始日期不能晚于结束日期。"));
+            return;
+        }
+
+        dialog.accept();
+    });
+    QObject::connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+    if (dialog.exec() != QDialog::Accepted)
+        return false;
+
+    filter->keywordColumn = keywordColumnCombo->currentData().toInt();
+    filter->keyword = keywordEdit->text().trimmed();
+    filter->dateColumn = dateFieldCombo->currentData().toInt();
+    filter->startDate = startDateEdit->date();
+    filter->endDate = endDateEdit->date();
+    return true;
+}
+
+bool rowMatchesKeyword(
+    QTableView* table,
+    int row,
+    const QVector<int>& columns,
+    const ExportFilter& filter)
+{
+    if (filter.keyword.isEmpty())
+        return true;
+
+    const Qt::CaseSensitivity cs = Qt::CaseInsensitive;
+    if (filter.keywordColumn >= 0)
+    {
+        return table->model()
+            ->index(row, filter.keywordColumn)
+            .data(Qt::DisplayRole)
+            .toString()
+            .contains(filter.keyword, cs);
+    }
+
+    for (int column : columns)
+    {
+        if (table->model()
+                ->index(row, column)
+                .data(Qt::DisplayRole)
+                .toString()
+                .contains(filter.keyword, cs))
+            return true;
+    }
+
+    return false;
+}
+
+bool rowMatchesDate(QTableView* table, int row, const ExportFilter& filter)
+{
+    if (filter.dateColumn < 0)
+        return true;
+
+    const QDate date = parseDateText(
+        table->model()
+            ->index(row, filter.dateColumn)
+            .data(Qt::DisplayRole)
+            .toString());
+    if (!date.isValid())
+        return false;
+
+    return date >= filter.startDate && date <= filter.endDate;
+}
+
+QVector<int> exportRows(
+    QTableView* table,
+    const QVector<int>& columns,
+    const ExportFilter& filter)
+{
+    QVector<int> rows;
+    if (!table || !table->model())
+        return rows;
+
+    for (int row = 0; row < table->model()->rowCount(); ++row)
+    {
+        if (!rowMatchesKeyword(table, row, columns, filter))
+            continue;
+        if (!rowMatchesDate(table, row, filter))
+            continue;
+
+        rows.append(row);
+    }
+
+    return rows;
+}
+
+QString csvText(const QString& text)
+{
+    QString value = text;
+    value.replace("\"", "\"\"");
+    if (value.contains(',') || value.contains('"') ||
+        value.contains('\n') || value.contains('\r'))
+        value = "\"" + value + "\"";
+    return value;
+}
+
+bool writeCsv(QWidget* parent,
+              const QString& fileName,
+              QTableView* table,
+              const QVector<int>& columns,
+              const QVector<int>& rows)
+{
+    QFile file(fileName);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        QMessageBox::warning(
+            parent,
+            ReportExporter::tr("导出报表"),
+            ReportExporter::tr("文件打开失败，无法导出。"));
+        return false;
+    }
+
+    QTextStream out(&file);
+    out.setCodec("UTF-8");
+    out << QChar(0xFEFF);
+
+    auto writeCsvRow = [&](int row) {
+        QStringList values;
+        for (int col : columns)
+        {
+            const QString text =
+                row < 0
+                    ? table->model()->headerData(col, Qt::Horizontal, Qt::DisplayRole).toString()
+                    : table->model()->index(row, col).data(Qt::DisplayRole).toString();
+            values << csvText(text);
+        }
+        out << values.join(",") << "\n";
+    };
+
+    writeCsvRow(-1);
+    for (int row : rows)
+        writeCsvRow(row);
+
+    file.close();
+    return true;
+}
+}
+
+void ReportExporter::exportTable(QWidget* parent, QTableView* table)
+{
+    if (!table || !table->model())
+    {
+        QMessageBox::information(
+            parent,
+            tr("导出报表"),
+            tr("当前页面没有可导出的表格。"));
+        return;
+    }
+
+    const QVector<int> columns = exportColumns(table);
+    if (columns.isEmpty())
+    {
+        QMessageBox::information(parent, tr("导出报表"), tr("当前页面没有可导出的列。"));
+        return;
+    }
+
+    ExportFilter filter;
+    if (!chooseExportFilter(parent, table, columns, &filter))
+        return;
+
+    const QVector<int> rows = exportRows(table, columns, filter);
+    if (rows.isEmpty())
+    {
+        QMessageBox::information(parent, tr("导出报表"), tr("没有符合筛选条件的数据。"));
+        return;
+    }
+
+    const QString defaultDir =
+        QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+    const QString baseName =
+        tr("%1/报表_%2")
+            .arg(defaultDir)
+            .arg(QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss"));
+
+    QString fileName = QFileDialog::getSaveFileName(
+        parent,
+        tr("导出报表"),
+        baseName + ".csv",
+        tr("CSV 文件 (*.csv)"));
+    if (fileName.isEmpty())
+        return;
+
+    if (!fileName.endsWith(".csv", Qt::CaseInsensitive))
+        fileName += ".csv";
+
+    const bool ok = writeCsv(parent, fileName, table, columns, rows);
+
+    if (ok)
+        QMessageBox::information(parent, tr("导出报表"), tr("导出完成。"));
+}

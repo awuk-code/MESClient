@@ -128,6 +128,7 @@ void RepairStationPage::setupSearchLayout(QHBoxLayout *layout)
 
     m_repairJudgeBtn =
         new QPushButton(tr("维修判定"), this);
+    m_repairJudgeBtn->setProperty("buttonRole", "primary");
     m_exportBtn =
         new QPushButton(tr("导出报表"), this);
     m_exportBtn->setProperty("buttonRole", "export");

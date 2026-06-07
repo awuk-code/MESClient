@@ -202,7 +202,7 @@ void MLoginWedget::mousePressEvent(QMouseEvent *event)
     if (event->button() == Qt::LeftButton)
     {
         m_dragging = true;
-        m_dragPos = event->globalPosition().toPoint() - frameGeometry().topLeft();
+        m_dragPos = event->globalPos() - frameGeometry().topLeft();
     }
 }
 
@@ -210,7 +210,7 @@ void MLoginWedget::mouseMoveEvent(QMouseEvent *event)
 {
     if (m_dragging && (event->buttons() & Qt::LeftButton))
     {
-        move(event->globalPosition().toPoint() - m_dragPos);
+        move(event->globalPos() - m_dragPos);
     }
 }
 

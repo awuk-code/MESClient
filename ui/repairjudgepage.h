@@ -23,7 +23,7 @@ private:
     void initUI();
     void rebuildInfo();
     void clearInfo();
-    QVariantMap judgeData() const;
+    QVariantMap judgeData(const QString& reworkType = QString()) const;
     void onSaveBtnClicked();
     void onSubmitBtnClicked();
     void onBackBtnClicked();
@@ -32,6 +32,7 @@ private:
     QPushButton* createImageButton(const QString& text, QWidget* parent = nullptr);
     QString displayText(const QString& field) const;
     void updateReworkOptionsVisible();
+    void submitJudge(const QString& reworkType = QString());
     void showInfoDialog(const QString& title, const QString& message);
 
 private:
@@ -43,11 +44,12 @@ private:
     QButtonGroup* m_methodGroup{nullptr};
     QTextEdit* m_judgeTextEdit{nullptr};
     QPushButton* m_submitBtn{nullptr};
+    QPushButton* m_repairReworkBtn{nullptr};
+    QPushButton* m_productionReworkBtn{nullptr};
     QWidget* m_contentWidget{nullptr};
     QWidget* m_reworkOptionsWidget{nullptr};
     QComboBox* m_reworkRouteCombo{nullptr};
     QComboBox* m_reworkFileCombo{nullptr};
-    QComboBox* m_reworkTypeCombo{nullptr};
 };
 
 #endif // REPAIRJUDGEPAGE_H
