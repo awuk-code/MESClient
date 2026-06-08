@@ -2,13 +2,13 @@
 #define PROCESSSTATIONLEFTPANEL_H
 
 #include <QList>
-#include <QMap>
-#include <QDateTime>
 #include <QVariant>
 #include <QVariantMap>
 #include <QVector>
 #include <QWidget>
 #include <functional>
+
+#include "processstationpassstatus.h"
 
 class QColor;
 class QStandardItemModel;
@@ -103,11 +103,7 @@ private:
     QVariantMap m_abnormalInfoData;
     QVariantMap m_taskStatusData;
     QVariantMap m_reworkTaskStatusData;
-    QMap<QString, int> m_productStatusRows;
-    QMap<QString, QDateTime> m_productStartTimes;
-    QMap<QString, QDateTime> m_productPauseStartTimes;
-    QMap<QString, qint64> m_productPausedSeconds;
-    QMap<QString, qint64> m_productFinishedSeconds;
+    ProcessStationPassStatus m_passStatus;
     PassConditionValidator m_passConditionValidator;
     DisplayMode m_displayMode{DisplayMode::NormalTask};
 };

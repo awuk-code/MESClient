@@ -15,20 +15,17 @@
 #include <QMessageBox>
 #include <QPushButton>
 #include <QStringList>
-#include <QStandardItem>
 #include <QStandardItemModel>
-#include <QStyle>
 #include <QTableView>
 #include <QTextEdit>
 #include <QVBoxLayout>
 
 namespace
 {
-constexpr int STATUS_COL_NO = 0;
-constexpr int STATUS_COL_PRODUCT_SN = 1;
-constexpr int STATUS_COL_PASS = 2;
-constexpr int STATUS_COL_NG = 3;
-constexpr int STATUS_COL_PAUSE = 4;
+constexpr int STATUS_COL_PRODUCT_SN = ProcessStationPassStatus::ProductSnColumn;
+constexpr int STATUS_COL_PASS = ProcessStationPassStatus::PassColumn;
+constexpr int STATUS_COL_NG = ProcessStationPassStatus::NgColumn;
+constexpr int STATUS_COL_PAUSE = ProcessStationPassStatus::PauseColumn;
 
 QString formatDuration(qint64 seconds)
 {
@@ -407,6 +404,7 @@ void ProcessStationLeftPanel::initUI()
     m_pass = new ProcessStationPassWidget(tr("扫码过站"), this);
     m_statusTableView = m_pass->statusTableView();
     m_statusModel = m_pass->statusModel();
+    m_passStatus.setModel(m_statusModel);
 
     mainLayout->addWidget(m_taskInfo);
     mainLayout->addWidget(m_abnormalInfo);
@@ -781,17 +779,17 @@ bool ProcessStationLeftPanel::validatePassCondition(const QString& productSn) co
 
 bool ProcessStationLeftPanel::isProductPassed(const QString& productSn) const
 {
-    return isStatusMarked(statusRowForProductSn(productSn), STATUS_COL_PASS);
+    return m_passStatus.isPassed(productSn);
 }
 
 bool ProcessStationLeftPanel::isProductNg(const QString& productSn) const
 {
-    return isStatusMarked(statusRowForProductSn(productSn), STATUS_COL_NG);
+    return m_passStatus.isNg(productSn);
 }
 
 bool ProcessStationLeftPanel::isProductPaused(const QString& productSn) const
 {
-    return isStatusMarked(statusRowForProductSn(productSn), STATUS_COL_PAUSE);
+    return m_passStatus.isPaused(productSn);
 }
 
 bool ProcessStationLeftPanel::validateProductNotPassed(
@@ -870,38 +868,17 @@ QString ProcessStationLeftPanel::currentProductSnFromSelection() const
 
 int ProcessStationLeftPanel::statusRowForProductSn(const QString& productSn) const
 {
-    return m_productStatusRows.value(productSn, -1);
+    return m_passStatus.rowForProductSn(productSn);
 }
 
 bool ProcessStationLeftPanel::isStatusMarked(int row, int column) const
 {
-    if (!m_statusModel || row < 0 || row >= m_statusModel->rowCount())
-        return false;
-
-    return !m_statusModel->index(row, column)
-        .data(Qt::DisplayRole)
-        .toString()
-        .trimmed()
-        .isEmpty();
+    return m_passStatus.isMarked(row, column);
 }
 
 int ProcessStationLeftPanel::appendStatusRow(const QString& productSn)
 {
-    if (!m_statusModel)
-        return -1;
-
-    const int row = m_statusModel->rowCount();
-    m_statusModel->insertRow(row);
-    m_statusModel->setItem(row, STATUS_COL_NO,
-                           new QStandardItem(QString::number(row + 1)));
-    m_statusModel->setItem(row, STATUS_COL_PRODUCT_SN,
-                           new QStandardItem(productSn));
-    m_statusModel->setItem(row, STATUS_COL_PASS, new QStandardItem);
-    m_statusModel->setItem(row, STATUS_COL_NG, new QStandardItem);
-    m_statusModel->setItem(row, STATUS_COL_PAUSE, new QStandardItem);
-
-    m_productStatusRows.insert(productSn, row);
-    return row;
+    return m_passStatus.appendRow(productSn);
 }
 
 void ProcessStationLeftPanel::setStatusMark(
@@ -910,110 +887,33 @@ void ProcessStationLeftPanel::setStatusMark(
     bool checked,
     const QColor& color)
 {
-    if (!m_statusModel || row < 0 || row >= m_statusModel->rowCount())
-        return;
-
-    auto item = m_statusModel->item(row, column);
-    if (!item)
-    {
-        item = new QStandardItem;
-        m_statusModel->setItem(row, column, item);
-    }
-
-    item->setText(checked ? tr("√") : QString());
-    item->setTextAlignment(Qt::AlignCenter);
-    item->setForeground(checked ? QBrush(color) : QBrush());
-
-    QFont font = item->font();
-    font.setBold(checked);
-    item->setFont(font);
+    m_passStatus.setMark(row, column, checked, color);
 }
 
 void ProcessStationLeftPanel::startProductTiming(const QString& productSn)
 {
-    const QString sn = productSn.trimmed();
-    if (sn.isEmpty() || m_productStartTimes.contains(sn))
-        return;
-
-    m_productStartTimes.insert(sn, QDateTime::currentDateTime());
-    m_productPausedSeconds.insert(sn, 0);
-
-    // TODO(backend): 扫入成功后应把开始时间提交给后台，异常退出后由后台恢复当前工序状态。
-    qDebug() << __FUNCTION__ << "productSn:" << sn << "start:" << m_productStartTimes.value(sn);
+    m_passStatus.startTiming(productSn);
 }
 
 void ProcessStationLeftPanel::pauseProductTiming(const QString& productSn)
 {
-    const QString sn = productSn.trimmed();
-    if (sn.isEmpty() || m_productPauseStartTimes.contains(sn))
-        return;
-
-    if (!m_productStartTimes.contains(sn))
-    {
-        // TODO(backend): 重新进入软件后，暂停/恢复应从后台读取历史开始时间；当前本地缺失时只能从当前时刻补起。
-        m_productStartTimes.insert(sn, QDateTime::currentDateTime());
-        m_productPausedSeconds.insert(sn, 0);
-    }
-
-    m_productPauseStartTimes.insert(sn, QDateTime::currentDateTime());
-    qDebug() << __FUNCTION__ << "productSn:" << sn << "pauseStart:" << m_productPauseStartTimes.value(sn);
+    m_passStatus.pauseTiming(productSn);
 }
 
 void ProcessStationLeftPanel::resumeProductTiming(const QString& productSn)
 {
-    const QString sn = productSn.trimmed();
-    if (sn.isEmpty() || !m_productPauseStartTimes.contains(sn))
-        return;
-
-    const qint64 pausedSeconds =
-        m_productPauseStartTimes.value(sn).secsTo(QDateTime::currentDateTime());
-    m_productPausedSeconds[sn] = m_productPausedSeconds.value(sn, 0) + qMax<qint64>(0, pausedSeconds);
-    m_productPauseStartTimes.remove(sn);
-
-    // TODO(backend): 恢复生产时应提交解除暂停原因和暂停时长，后台负责累计工时。
-    qDebug() << __FUNCTION__
-             << "productSn:" << sn
-             << "pausedSeconds:" << pausedSeconds
-             << "totalPaused:" << m_productPausedSeconds.value(sn);
+    m_passStatus.resumeTiming(productSn);
 }
 
 qint64 ProcessStationLeftPanel::finishProductTiming(const QString& productSn)
 {
-    const QString sn = productSn.trimmed();
-    if (sn.isEmpty())
-        return 0;
-
-    if (m_productPauseStartTimes.contains(sn))
-        resumeProductTiming(sn);
-
-    const QDateTime startTime = m_productStartTimes.value(sn);
-    if (!startTime.isValid())
-        return 0;
-
-    const qint64 elapsed =
-        qMax<qint64>(0, startTime.secsTo(QDateTime::currentDateTime()) -
-                            m_productPausedSeconds.value(sn, 0));
-    m_productFinishedSeconds.insert(sn, elapsed);
-
-    // TODO(backend): PASS/NG 完成时应提交结束时间、有效工时和暂停累计时长。
-    qDebug() << __FUNCTION__ << "productSn:" << sn << "elapsed:" << formatDuration(elapsed);
-    return elapsed;
+    return m_passStatus.finishTiming(productSn);
 }
 
 void ProcessStationLeftPanel::updateTaskStatusRealtime()
 {
-    if (!m_statusModel)
-        return;
-
-    int passCount = 0;
-    int ngCount = 0;
-    for (int row = 0; row < m_statusModel->rowCount(); ++row)
-    {
-        if (!m_statusModel->index(row, STATUS_COL_PASS).data(Qt::DisplayRole).toString().isEmpty())
-            ++passCount;
-        if (!m_statusModel->index(row, STATUS_COL_NG).data(Qt::DisplayRole).toString().isEmpty())
-            ++ngCount;
-    }
+    const int passCount = m_passStatus.passCount();
+    const int ngCount = m_passStatus.ngCount();
 
     m_taskStatusData.insert("finishedCount", passCount);
     m_taskStatusData.insert("ngCount", ngCount);
@@ -1187,13 +1087,7 @@ void ProcessStationLeftPanel::clearPassStatus()
 {
     // 切换任务或侧边栏直接进入时，清空当前工序的产品实时过站表。
     // 任务单状态中的完成数/NG数也同步归零，避免沿用上一个产品的实时状态。
-    m_productStatusRows.clear();
-    m_productStartTimes.clear();
-    m_productPauseStartTimes.clear();
-    m_productPausedSeconds.clear();
-    m_productFinishedSeconds.clear();
-    if (m_statusModel)
-        m_statusModel->removeRows(0, m_statusModel->rowCount());
+    m_passStatus.clear();
 
     m_taskStatusData.insert("finishedCount", 0);
     m_taskStatusData.insert("ngCount", 0);
