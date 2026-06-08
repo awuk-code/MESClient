@@ -1,0 +1,78 @@
+2026-06-09 工序站点左侧页面继续拆分说明
+
+一、修改目标
+
+在上一阶段已拆出信息展示区和扫码过站 UI 的基础上，继续降低 ProcessStationLeftPanel 的代码量。
+本次只拆弹窗展示与输入收集，不拆 PASS / NG / 暂停 / 解除暂停的业务流程。
+
+二、新增文件
+
+- ui/processstationpassdialogs.h
+- ui/processstationpassdialogs.cpp
+
+三、主要修改
+
+1. 拆出过站相关弹窗
+
+以下弹窗类已从 ui/processstationleftpanel.cpp 移到 ProcessStationPassDialogs 模块：
+
+- NgAbnormalDialog
+- PauseReasonDialog
+- ResumeReasonDialog
+
+2. 精简 ProcessStationLeftPanel
+
+ProcessStationLeftPanel 不再直接依赖以下弹窗 UI 控件头文件：
+
+- QButtonGroup
+- QCheckBox
+- QComboBox
+- QFileDialog
+- QLabel
+- QLineEdit
+- QPushButton
+- QTextEdit
+
+左侧面板继续保留过站业务编排，包括：
+
+- 扫入
+- PASS
+- NG
+- 暂停
+- 解除暂停
+- 产品 SN 校验
+- 状态表维护
+- 工时计时
+- 任务状态实时刷新
+
+3. 同步构建配置
+
+已同步新增文件到：
+
+- ui/ui.pri
+- MESClient.vcxproj
+- MESClient.vcxproj.filters
+
+同时补齐上一阶段拆分文件在 VS 工程中的收录：
+
+- processstationinfosection
+- processstationpasswidget
+- processstationpassstatus
+
+四、验证结果
+
+已尝试使用 VS2017 BuildTools + Qt 5.12.12 的 Release/x64 工程构建。
+当前构建在所有源文件的标准库头文件处失败：
+
+- fatal error C1083: 无法打开包括文件: "stddef.h": No such file or directory
+
+该错误出现在 network/apidefinition.cpp、ui/processstationleftpanel.cpp、ui/processstationpassdialogs.cpp 等多个无关源文件中，属于本机 VS/Windows SDK 或 CRT include 环境问题，不是本次拆分代码的单点编译错误。
+
+五、后续建议
+
+下一步可以继续拆分左侧过站业务控制：
+
+- ProcessStationPassController：承接按钮动作、校验、PASS/NG/暂停流程
+- ProductPassStatusModel：进一步隔离状态表数据和计时
+
+建议仍按小步拆分，每一步都保持页面行为不变。

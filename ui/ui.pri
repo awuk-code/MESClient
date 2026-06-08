@@ -12,6 +12,7 @@ HEADERS +=  \
     $$PWD/pdfviewwidget.h \
     $$PWD/processstationinfosection.h \
     $$PWD/processstationleftpanel.h \
+    $$PWD/processstationpassdialogs.h \
     $$PWD/processstationpasswidget.h \
     $$PWD/processstationpassstatus.h \
     $$PWD/processstationpage.h \
@@ -36,6 +37,7 @@ SOURCES +=      \
     $$PWD/pdfviewwidget.cpp \
     $$PWD/processstationinfosection.cpp \
     $$PWD/processstationleftpanel.cpp \
+    $$PWD/processstationpassdialogs.cpp \
     $$PWD/processstationpasswidget.cpp \
     $$PWD/processstationpassstatus.cpp \
     $$PWD/processstationpage.cpp \
