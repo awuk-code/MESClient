@@ -17,3 +17,32 @@ CMakeLists.txt.user
 # ===== 系统文件 =====
 .DS_Store
 Thumbs.db
+
+# Build outputs and local IDE caches
+build-*/
+debug/
+release/
+.vs/
+*.qtvscr
+*.vcxproj
+*.vcxproj.filters
+*.suo
+*.VC.db
+*.VC.opendb
+*.obj
+*.pch
+*.ipch
+*.pdb
+*.ilk
+*.tlog
+*.lastbuildstate
+*.log
+*.exe
+*.dll
+*.exp
+*.res
+*.idb
+moc_*.cpp
+qrc_*.cpp
+ui_*.h
+.qmake.stash

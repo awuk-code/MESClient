@@ -72,22 +72,22 @@ void loadStylSheet(void)
 
 int main(int argc, char *argv[])
 {
-    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+   QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+   QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 
     QApplication a(argc, argv);
 
     loadStylSheet();
 
-    // 运行配置从 exe 同目录 config/config.ini 读取；不存在时 ConfigManager 会自动生成默认配置。
-    ConfigManager::instance().loadConfig();
+   // 运行配置从 exe 同目录 config/config.ini 读取；不存在时 ConfigManager 会自动生成默认配置。
+   ConfigManager::instance().loadConfig();
 
-    QString text = QString("Version: %1 | Build: %2 | Protocol: %3 | DeviceId: %4")
-                       .arg(ConfigManager::instance().softwareVersion())
-                       .arg(ConfigManager::instance().buildTime())
-                       .arg(ConfigManager::instance().protocolVersion())
-                       .arg(ConfigManager::instance().deviceId());
-    qDebug() << __FUNCTION__<< text;
+   QString text = QString("Version: %1 | Build: %2 | Protocol: %3 | DeviceId: %4")
+                      .arg(ConfigManager::instance().softwareVersion())
+                      .arg(ConfigManager::instance().buildTime())
+                      .arg(ConfigManager::instance().protocolVersion())
+                      .arg(ConfigManager::instance().deviceId());
+   qDebug() << __FUNCTION__<< text;
 
     // LoginStatus status;
 

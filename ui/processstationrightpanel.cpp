@@ -93,7 +93,7 @@ TabConfigs ProcessStationRightPanel::Tabs() const
         tr("引用文件"),
         PageDisplayType::PDF,
         QVariant::fromValue(PageDisplayType::PDF)
-        , m_referencePdfPage
+        ,m_referencePdfPage
     });
 
     tabs.append({
@@ -267,8 +267,8 @@ bool ProcessStationRightPanel::validatePassReady(const QString& productSn, QStri
         return false;
     }
 
-    if (m_uploadPage && !m_uploadPage->isComplete(message))
-        return false;
+//    if (m_uploadPage && !m_uploadPage->isComplete(message))
+//        return false;
 
     // TODO(backend): 工序物料信息、工具设备是否必填，以及哪些行必须绑定，应由后台按当前工序返回。
     // 当前右侧表格共用 ProcessStationModel，切换页签会重载模型，暂不能可靠保存所有页签的完成状态。
