@@ -11,12 +11,10 @@
 #include <functional>
 
 class QColor;
-class QLineEdit;
-class QPushButton;
-class QRadioButton;
 class QStandardItemModel;
 class QTableView;
 class ProcessStationInfoSection;
+class ProcessStationPassWidget;
 
 using TaskList = QList<QVariant>;
 using PassConditionValidator = std::function<bool(const QString& productSn, QString* message)>;
@@ -54,9 +52,6 @@ private:
     void initUI();
     void initConnect();
     void setTaskData(ProcessStationInfoSection* section, const QVector<QPair<QString, QString>>& fields, const QVariantMap& rowData, int fieldPairsPerRow = 0);
-    // 创建扫码过站小页面
-    QWidget* createPassWidget(const QString &title);
-    void bindPassWidgetActions();
     void onExecuteBtnClicked();
     void onPauseBtnClicked();
     void onResumeBtnClicked();
@@ -95,15 +90,8 @@ private:
     ProcessStationInfoSection* m_taskInfo{nullptr};
     ProcessStationInfoSection* m_abnormalInfo{nullptr};
     ProcessStationInfoSection* m_taskStatus{nullptr};
-    QWidget* m_pass{nullptr};
+    ProcessStationPassWidget* m_pass{nullptr};
 
-    QRadioButton* m_scanInRadio{nullptr};
-    QRadioButton* m_passRadio{nullptr};
-    QRadioButton* m_ngRadio{nullptr};
-    QLineEdit* m_scanEdit{nullptr};
-    QPushButton* m_executeBtn{nullptr};
-    QPushButton* m_pauseBtn{nullptr};
-    QPushButton* m_resumeBtn{nullptr};
     QTableView* m_statusTableView{nullptr};
     QStandardItemModel* m_statusModel{nullptr};
 

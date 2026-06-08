@@ -1,21 +1,19 @@
 #include "processstationleftpanel.h"
 #include "basedialogwidget.h"
 #include "processstationinfosection.h"
+#include "processstationpasswidget.h"
 
-#include <QAbstractItemView>
 #include <QButtonGroup>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDateTime>
 #include <QDebug>
 #include <QFileDialog>
-#include <QHeaderView>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QPushButton>
-#include <QRadioButton>
 #include <QStringList>
 #include <QStandardItem>
 #include <QStandardItemModel>
@@ -406,7 +404,9 @@ void ProcessStationLeftPanel::initUI()
     m_taskInfo = new ProcessStationInfoSection(tr("任务单信息"), this);
     m_abnormalInfo = new ProcessStationInfoSection(tr("异常品信息"), this);
     m_taskStatus = new ProcessStationInfoSection(tr("任务单状态"), this);
-    m_pass = createPassWidget(tr("扫码过站"));
+    m_pass = new ProcessStationPassWidget(tr("扫码过站"), this);
+    m_statusTableView = m_pass->statusTableView();
+    m_statusModel = m_pass->statusModel();
 
     mainLayout->addWidget(m_taskInfo);
     mainLayout->addWidget(m_abnormalInfo);
@@ -421,241 +421,43 @@ void ProcessStationLeftPanel::initUI()
 
 void ProcessStationLeftPanel::initConnect()
 {
+    if (!m_pass)
+        return;
 
-}
-
-QWidget *ProcessStationLeftPanel::createPassWidget(const QString &title)
-{
-    QWidget* widget = new QWidget(this);
-
-    auto* layout = new QVBoxLayout(widget);
-
-    QHBoxLayout* titleLayout = new QHBoxLayout;
-    titleLayout->setContentsMargins(0, 0, 0, 0);
-
-    QLabel* icon = new QLabel(widget);
-    QLabel* text = new QLabel(widget);
-    icon->setPixmap(QPixmap(":res/common/rect.svg").scaled(24,24, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-    text->setText(title);
-    // 标题等级样式入口：左侧二级标题，后续修改字体时在 QSS 的 sectionTitle 中统一设置。
-    text->setProperty("labelRole", "sectionTitle");
-
-    titleLayout->addWidget(icon);
-    titleLayout->addWidget(text);
-    titleLayout->addStretch();
-    layout->addLayout(titleLayout);
-
-
-    QHBoxLayout* contentLayout = new QHBoxLayout;
-    contentLayout->setContentsMargins(0, 0, 0, 0);
-    contentLayout->setSpacing(0);
-
-    // 左侧缩进
-    contentLayout->addSpacing(28);
-
-    // 实际内容容器
-    QWidget* contentWidget = new QWidget(widget);
-    QVBoxLayout* contentVBox = new QVBoxLayout(contentWidget);
-    contentVBox->setContentsMargins(0, 0, 0, 0);
-    contentVBox->setSpacing(8);
-
-    // ==========================================================
-    // 1. 过站类别
-    // ==========================================================
-    {
-        QHBoxLayout* row = new QHBoxLayout;
-        row->setContentsMargins(0, 0, 0, 0);
-
-        QLabel* label = new QLabel(tr("过站类别："), contentWidget);
-        QPushButton* typeBtn = new QPushButton(tr("正常过站"), contentWidget);
-        typeBtn->setProperty("buttonRole", "compact");
-
-        row->addWidget(label);
-        row->addWidget(typeBtn);
-        row->addStretch();
-
-        contentVBox->addLayout(row);
-    }
-
-    // ==========================================================
-    // 2. 过站方式
-    // ==========================================================
-    {
-        QHBoxLayout* row = new QHBoxLayout;
-        row->setContentsMargins(0, 0, 0, 0);
-
-        QLabel* label = new QLabel(
-            tr("<span style='color:#f56c6c;'>*</span>过站方式："),
-            contentWidget);
-
-        // 过站方式需要在点击“执行”时读取，所以保存为成员变量。
-        m_scanInRadio = new QRadioButton(tr("扫入"), contentWidget);
-        m_passRadio   = new QRadioButton(tr("PASS"), contentWidget);
-        m_ngRadio     = new QRadioButton(tr("NG"), contentWidget);
-
-        auto passModeGroup = new QButtonGroup(contentWidget);
-        passModeGroup->addButton(m_scanInRadio);
-        passModeGroup->addButton(m_passRadio);
-        passModeGroup->addButton(m_ngRadio);
-
-        // 默认选中“扫入”
-        m_scanInRadio->setChecked(true);
-
-        // 暂停/解除暂停可以随时操作当前输入框产品SN，或当前选中的状态表行。
-        m_pauseBtn      = new QPushButton(tr("暂停"), contentWidget);
-        m_resumeBtn     = new QPushButton(tr("解除暂停"), contentWidget);
-        QPushButton* rollbackBtn   = new QPushButton(tr("工序回退"), contentWidget);
-        m_pauseBtn->setProperty("buttonRole", "compact");
-        m_resumeBtn->setProperty("buttonRole", "compact");
-        rollbackBtn->setProperty("buttonRole", "compact");
-
-        row->addWidget(label);
-        row->addWidget(m_scanInRadio);
-        row->addWidget(m_passRadio);
-        row->addWidget(m_ngRadio);
-        row->addSpacing(12);
-        row->addWidget(m_pauseBtn);
-        row->addWidget(m_resumeBtn);
-        row->addWidget(rollbackBtn);
-        row->addStretch();
-
-        contentVBox->addLayout(row);
-    }
-
-    // ==========================================================
-    // 3. 操作
-    // ==========================================================
-    {
-        QHBoxLayout* row = new QHBoxLayout;
-        row->setContentsMargins(0, 0, 0, 0);
-
-        QLabel* label = new QLabel(
-            tr("<span style='color:#f56c6c;'>*</span>扫码操作："),
-            contentWidget);
-
-        m_scanEdit = new QLineEdit(contentWidget);
-        m_scanEdit->setPlaceholderText(tr("请扫描产品条码..."));
-
-        m_executeBtn = new QPushButton(tr("执行"), contentWidget);
-        m_executeBtn->setProperty("buttonRole", "compact");
-
-        row->addWidget(label);
-        row->addWidget(m_scanEdit);
-        row->addWidget(m_executeBtn);
-        row->addStretch();
-
-        contentVBox->addLayout(row);
-    }
-
-    // ==========================================================
-    // 4. 状态信息（标签与表格在同一行）
-    // ==========================================================
-    {
-        QHBoxLayout* row = new QHBoxLayout;
-        row->setContentsMargins(0, 0, 0, 0);
-        row->setSpacing(8);
-
-        // 左侧标签
-        QLabel* label = new QLabel(
-            tr("<span style='color:#f56c6c;'>*</span>状态信息："),
-            contentWidget);
-        row->addWidget(label, 0, Qt::AlignTop);
-        // 右侧表格
-        m_statusTableView = new QTableView(contentWidget);
-
-        m_statusModel =
-            new QStandardItemModel(0, 5, m_statusTableView);
-
-        m_statusModel->setHorizontalHeaderLabels(QStringList()
-                                                 << tr("序号")
-                                                 << tr("产品SN")
-                                                 << tr("PASS")
-                                                 << tr("NG")
-                                                 << tr("暂停"));
-
-        m_statusTableView->setModel(m_statusModel);
-
-        // 表格属性
-        m_statusTableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
-        m_statusTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
-        m_statusTableView->setSelectionMode(QAbstractItemView::SingleSelection);
-        m_statusTableView->setAlternatingRowColors(true);
-        m_statusTableView->verticalHeader()->hide();
-
-        // 列宽按比例自动拉伸
-        m_statusTableView->horizontalHeader()->setSectionResizeMode(
-            QHeaderView::Stretch);
-
-        // 固定一个合适的高度
-        m_statusTableView->setMinimumHeight(180);
-
-        // 布局：
-        // label 固定宽度，tableView 占据剩余空间
-        row->addWidget(m_statusTableView, 1);
-
-        // 加入内容布局
-        contentVBox->addLayout(row);
-    }
-
-    // 将内容区域加入外层布局
-    contentLayout->addWidget(contentWidget);
-    layout->addLayout(contentLayout);
-
-    bindPassWidgetActions();
-
-    return widget;
-}
-
-void ProcessStationLeftPanel::bindPassWidgetActions()
-{
-    if (m_executeBtn)
-    {
-        connect(m_executeBtn, &QPushButton::clicked,
-                this, &ProcessStationLeftPanel::onExecuteBtnClicked);
-    }
-
-    if (m_scanEdit)
-    {
-        connect(m_scanEdit, &QLineEdit::returnPressed,
-                this, &ProcessStationLeftPanel::onExecuteBtnClicked);
-    }
-
-    if (m_pauseBtn)
-    {
-        connect(m_pauseBtn, &QPushButton::clicked,
-                this, &ProcessStationLeftPanel::onPauseBtnClicked);
-    }
-
-    if (m_resumeBtn)
-    {
-        connect(m_resumeBtn, &QPushButton::clicked,
-                this, &ProcessStationLeftPanel::onResumeBtnClicked);
-    }
+    connect(m_pass, &ProcessStationPassWidget::executeRequested,
+            this, &ProcessStationLeftPanel::onExecuteBtnClicked);
+    connect(m_pass, &ProcessStationPassWidget::pauseRequested,
+            this, &ProcessStationLeftPanel::onPauseBtnClicked);
+    connect(m_pass, &ProcessStationPassWidget::resumeRequested,
+            this, &ProcessStationLeftPanel::onResumeBtnClicked);
 }
 
 void ProcessStationLeftPanel::onExecuteBtnClicked()
 {
-    if (m_scanInRadio && m_scanInRadio->isChecked())
+    if (!m_pass)
+        return;
+
+    if (m_pass->isScanInMode())
     {
-        const QString productSn = m_scanEdit ? m_scanEdit->text().trimmed() : QString();
+        const QString productSn = m_pass->scanText();
         if (!validateProductSn(productSn))
             return;
 
         handleScanInAction(productSn);
     }
-    else if (m_passRadio && m_passRadio->isChecked())
+    else if (m_pass->isPassMode())
     {
         // PASS 针对输入框中的产品SN，再到状态信息表中查找对应行。
-        const QString productSn = m_scanEdit ? m_scanEdit->text().trimmed() : QString();
+        const QString productSn = m_pass->scanText();
         if (!validateProductSn(productSn))
             return;
 
         handlePassResult(productSn);
     }
-    else if (m_ngRadio && m_ngRadio->isChecked())
+    else if (m_pass->isNgMode())
     {
         // NG 针对输入框中的产品SN，再到状态信息表中查找对应行。
-        const QString productSn = m_scanEdit ? m_scanEdit->text().trimmed() : QString();
+        const QString productSn = m_pass->scanText();
         if (!validateProductSn(productSn))
             return;
 
@@ -1049,7 +851,7 @@ QString ProcessStationLeftPanel::productSnForPauseAction() const
     if (!selectedSn.trimmed().isEmpty())
         return selectedSn.trimmed();
 
-    return m_scanEdit ? m_scanEdit->text().trimmed() : QString();
+    return m_pass ? m_pass->scanText() : QString();
 }
 
 QString ProcessStationLeftPanel::currentProductSnFromSelection() const

@@ -1,0 +1,110 @@
+2026-06-08 工序站点左侧页面拆分说明
+
+一、修改目标
+
+工序站点左侧页面 ProcessStationLeftPanel 原文件代码量较大，信息展示区、扫码过站区、过站业务逻辑混在同一个 cpp 文件中，后续维护成本较高。
+
+本次先做低风险拆分：只拆出“任务单信息 / 异常品信息 / 任务单状态”这三类信息展示区，不拆扫码过站业务逻辑。
+
+
+二、涉及文件
+
+新增文件：
+- ui/processstationinfosection.h
+- ui/processstationinfosection.cpp
+
+修改文件：
+- ui/processstationleftpanel.h
+- ui/processstationleftpanel.cpp
+- ui/ui.pri
+
+
+三、主要修改内容
+
+1. 新增 ProcessStationInfoSection 组件
+
+该组件统一负责左侧信息区的 UI 展示，包括：
+- 区域标题
+- 展开 / 收起按钮
+- 左侧缩进
+- 字段名 / 字段值网格布局
+- 根据 QVariantMap 刷新字段值
+
+对外主要接口：
+- setTitle(const QString& title)
+- setFieldsData(const InfoFieldList& fields, const QVariantMap& rowData, int fieldPairsPerRow = 0)
+
+
+2. 精简 ProcessStationLeftPanel
+
+ProcessStationLeftPanel 不再直接创建信息区内部 QLabel / QGridLayout。
+
+原来由左侧面板维护的以下函数已迁移到 ProcessStationInfoSection：
+- createTaskWidget
+- createTaskTitleWidget
+- createInfoGrid
+- createInfoTitleLabel
+- createInfoValueLabel
+
+左侧面板现在只保留三个信息区对象：
+- m_taskInfo
+- m_abnormalInfo
+- m_taskStatus
+
+
+3. 保留原有业务逻辑
+
+本次没有拆分扫码过站相关业务逻辑，以下逻辑仍保留在 ProcessStationLeftPanel 中：
+- 扫入
+- PASS
+- NG
+- 暂停
+- 解除暂停
+- 产品 SN 校验
+- 状态表维护
+- 工时计时
+- 任务状态实时刷新
+
+这样可以降低拆分风险，保证页面行为不发生明显变化。
+
+
+四、构建配置调整
+
+在 ui/ui.pri 中加入新文件：
+
+HEADERS:
+- processstationinfosection.h
+
+SOURCES:
+- processstationinfosection.cpp
+
+
+五、验证结果
+
+已使用 Qt 5.12.12 + MSVC2017 Release 构建验证通过。
+
+构建目录：
+D:\Dev_projects\qt5-proj\build-MESClient-Desktop_Qt_5_12_12_MSVC2017_64bit-Release
+
+运行验证：
+- MESClient.exe 可正常启动
+- 主窗口标题显示为 MESClient
+
+编译过程中仍存在原项目已有警告：
+- ui/datauploadwidget.cpp conflicts with datauploadwidget.cpp
+
+该警告与本次拆分无关。
+
+
+六、后续建议
+
+下一步可以继续拆分“扫码过站 UI”：
+- 新增 ProcessStationPassWidget
+- 将扫码方式、按钮、输入框、状态表 UI 从 ProcessStationLeftPanel 中移出
+- 先只拆 UI，不拆业务逻辑
+
+再下一步可考虑拆分业务控制：
+- ProcessStationPassController
+- ProductPassStatusModel
+
+建议按阶段拆分，每拆一步都编译运行验证，避免一次性改动过大。
