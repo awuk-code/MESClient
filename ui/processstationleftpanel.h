@@ -11,13 +11,12 @@
 #include <functional>
 
 class QColor;
-class QLabel;
-class QGridLayout;
 class QLineEdit;
 class QPushButton;
 class QRadioButton;
 class QStandardItemModel;
 class QTableView;
+class ProcessStationInfoSection;
 
 using TaskList = QList<QVariant>;
 using PassConditionValidator = std::function<bool(const QString& productSn, QString* message)>;
@@ -34,7 +33,6 @@ public:
 
     explicit ProcessStationLeftPanel(QWidget* parent = nullptr);
     // 填充数据
-    void setTaskData(QGridLayout* layout, const QVector<QPair<QString, QString>>& fields, const QVariantMap& rowData, int fieldPairsPerRow = 0);
     void setTaskInfoValue(TaskList& values);
     void setTaskStatusValue(TaskList& values);
 
@@ -55,12 +53,7 @@ signals:
 private:
     void initUI();
     void initConnect();
-    // 将区域标题和表格拆开创建，后续权限切换时可以直接替换标题或显示指定区域。
-    QWidget* createTaskWidget(const QString &title, QLabel* &titleLabel, QGridLayout* &layoutout);
-    QWidget* createTaskTitleWidget(const QString &title, QLabel* &titleLabel, QWidget* parentWidget);
-    QGridLayout* createInfoGrid(QWidget* parentWidget);
-    QLabel* createInfoTitleLabel(const QString& text, QWidget* parentWidget);
-    QLabel* createInfoValueLabel(const QString& text, QWidget* parentWidget);
+    void setTaskData(ProcessStationInfoSection* section, const QVector<QPair<QString, QString>>& fields, const QVariantMap& rowData, int fieldPairsPerRow = 0);
     // 创建扫码过站小页面
     QWidget* createPassWidget(const QString &title);
     void bindPassWidgetActions();
@@ -99,18 +92,10 @@ private:
     QVariantMap valuesToRowData(const QVector<QPair<QString, QString>>& fields, const TaskList& values) const;
 
 private:
-    QWidget* m_taskInfo{nullptr};
-    QWidget* m_abnormalInfo{nullptr};
-    QWidget* m_taskStatus{nullptr};
+    ProcessStationInfoSection* m_taskInfo{nullptr};
+    ProcessStationInfoSection* m_abnormalInfo{nullptr};
+    ProcessStationInfoSection* m_taskStatus{nullptr};
     QWidget* m_pass{nullptr};
-
-    QLabel* m_taskInfoTitleLabel{nullptr};
-    QLabel* m_abnormalInfoTitleLabel{nullptr};
-    QLabel* m_taskStatusTitleLabel{nullptr};
-
-    QGridLayout* m_taskInfoLayout{nullptr};
-    QGridLayout* m_abnormalInfoLayout{nullptr};
-    QGridLayout* m_taskStatusLayout{nullptr};
 
     QRadioButton* m_scanInRadio{nullptr};
     QRadioButton* m_passRadio{nullptr};

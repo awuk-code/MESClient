@@ -10,6 +10,7 @@ HEADERS +=  \
     $$PWD/imageviewwidget.h \
     $$PWD/mainwindow.h \
     $$PWD/pdfviewwidget.h \
+    $$PWD/processstationinfosection.h \
     $$PWD/processstationleftpanel.h \
     $$PWD/processstationpage.h \
     $$PWD/processstationrightpanel.h \
@@ -31,6 +32,7 @@ SOURCES +=      \
     $$PWD/imageviewwidget.cpp \
         $$PWD/mainwindow.cpp \
     $$PWD/pdfviewwidget.cpp \
+    $$PWD/processstationinfosection.cpp \
     $$PWD/processstationleftpanel.cpp \
     $$PWD/processstationpage.cpp \
     $$PWD/processstationrightpanel.cpp \

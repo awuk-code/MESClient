@@ -1,5 +1,6 @@
 #include "processstationleftpanel.h"
 #include "basedialogwidget.h"
+#include "processstationinfosection.h"
 
 #include <QAbstractItemView>
 #include <QButtonGroup>
@@ -8,7 +9,6 @@
 #include <QDateTime>
 #include <QDebug>
 #include <QFileDialog>
-#include <QGridLayout>
 #include <QHeaderView>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -22,7 +22,6 @@
 #include <QStyle>
 #include <QTableView>
 #include <QTextEdit>
-#include <QToolButton>
 #include <QVBoxLayout>
 
 namespace
@@ -404,12 +403,9 @@ void ProcessStationLeftPanel::initUI()
     mainLayout->setContentsMargins(0, 0, 0,0);
     mainLayout->setSpacing(8);
 
-    m_taskInfo = createTaskWidget(tr("任务单信息"), m_taskInfoTitleLabel, m_taskInfoLayout);
-    m_abnormalInfo = createTaskWidget(tr("异常品信息"), m_abnormalInfoTitleLabel, m_abnormalInfoLayout);
-    m_taskStatus = createTaskWidget(tr("任务单状态"), m_taskStatusTitleLabel, m_taskStatusLayout);
-    qDebug() << __FUNCTION__ <<"m_taskInfoLayout: "<<m_taskInfoLayout
-             <<"m_abnormalInfoLayout:"<<m_abnormalInfoLayout
-             <<"m_taskStatusLayout:"<<m_taskStatusLayout;
+    m_taskInfo = new ProcessStationInfoSection(tr("任务单信息"), this);
+    m_abnormalInfo = new ProcessStationInfoSection(tr("异常品信息"), this);
+    m_taskStatus = new ProcessStationInfoSection(tr("任务单状态"), this);
     m_pass = createPassWidget(tr("扫码过站"));
 
     mainLayout->addWidget(m_taskInfo);
@@ -426,129 +422,6 @@ void ProcessStationLeftPanel::initUI()
 void ProcessStationLeftPanel::initConnect()
 {
 
-}
-
-QWidget *ProcessStationLeftPanel::createTaskWidget(const QString &title, QLabel* &titleLabel, QGridLayout *&layoutout)
-{
-    QWidget* widget = new QWidget(this);
-
-    QVBoxLayout* layout = new QVBoxLayout(widget);
-    layout->setContentsMargins(0, 0, 0, 0);
-    layout->setSpacing(4);
-
-    QWidget* titleWidget = createTaskTitleWidget(title, titleLabel, widget);
-    layout->addWidget(titleWidget);
-
-    QWidget* infoWidget = new QWidget(widget);
-    QGridLayout* infoLayout = createInfoGrid(infoWidget);
-    layoutout = infoLayout;
-
-    // 信息区域单独缩进，保持原左侧布局样式；内部改为维修判定页同类的字段-值布局。
-    QHBoxLayout* tableLayout = new QHBoxLayout;
-    tableLayout->setContentsMargins(0, 0, 0, 0);
-    tableLayout->setSpacing(0);
-    tableLayout->addSpacing(28);
-    tableLayout->addWidget(infoWidget);
-
-    layout->addLayout(tableLayout);
-
-    auto toggleBtn = titleWidget->findChild<QToolButton*>();
-    if (toggleBtn)
-    {
-        connect(toggleBtn, &QToolButton::toggled,
-                this,
-                [=](bool checked)
-                {
-                    infoWidget->setVisible(checked);
-
-                    if (checked)
-                    {
-                        toggleBtn->setIcon(
-                            QIcon(":/res/common/expand.svg"));
-                        toggleBtn->setToolTip(tr("收起"));
-                    }
-                    else
-                    {
-                        toggleBtn->setIcon(
-                            QIcon(":/res/common/collapse.svg"));
-                        toggleBtn->setToolTip(tr("展开"));
-                    }
-                });
-    }
-
-    qDebug() << __FUNCTION__ << "created task widget:" << title
-             << "layout:" << infoLayout;
-
-    return widget;
-}
-
-QWidget *ProcessStationLeftPanel::createTaskTitleWidget(const QString &title, QLabel* &titleLabel, QWidget *parentWidget)
-{
-    QWidget* widget = new QWidget(parentWidget);
-
-    // =========================
-    // 标题区域
-    // =========================
-
-    QHBoxLayout* titleLayout = new QHBoxLayout(widget);
-    titleLayout->setContentsMargins(0, 0, 0, 0);
-
-    QLabel* icon = new QLabel(widget);
-    QLabel* text = new QLabel(widget);
-    icon->setPixmap(QPixmap(":res/common/rect.svg").scaled(24,24, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-    text->setText(title);
-    // 标题等级样式入口：左侧二级标题，后续修改字体时在 QSS 的 sectionTitle 中统一设置。
-    text->setProperty("labelRole", "sectionTitle");
-    titleLabel = text;
-
-    QToolButton* toggleBtn = new QToolButton(widget);
-    toggleBtn->setCheckable(true);
-    toggleBtn->setChecked(true);
-    toggleBtn->setAutoRaise(true);
-    toggleBtn->setCursor(Qt::PointingHandCursor);
-    toggleBtn->setFixedSize(20, 20);
-    toggleBtn->setIconSize(QSize(16, 16));
-    toggleBtn->setIcon(QIcon(":/res/common/expand.svg"));
-    toggleBtn->setToolTip(tr("收起"));
-    toggleBtn->setProperty("buttonRole", "panelToggle");
-
-    titleLayout->addWidget(icon);
-    titleLayout->addWidget(text);
-    titleLayout->addWidget(toggleBtn);
-    titleLayout->addStretch();
-
-    qDebug() << __FUNCTION__ << "created title:" << title;
-    return widget;
-}
-
-QGridLayout *ProcessStationLeftPanel::createInfoGrid(QWidget *parentWidget)
-{
-    auto grid = new QGridLayout(parentWidget);
-    grid->setContentsMargins(0, 0, 0, 0);
-    grid->setHorizontalSpacing(14);
-    grid->setVerticalSpacing(8);
-    grid->setColumnStretch(1, 1);
-    grid->setColumnStretch(3, 1);
-    qDebug() << __FUNCTION__ << "created info grid:" << grid;
-    return grid;
-}
-
-QLabel *ProcessStationLeftPanel::createInfoTitleLabel(const QString &text, QWidget *parentWidget)
-{
-    auto label = new QLabel(text, parentWidget);
-    label->setMinimumWidth(110);
-    label->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-    label->setProperty("labelRole", "fieldName");
-    return label;
-}
-
-QLabel *ProcessStationLeftPanel::createInfoValueLabel(const QString &text, QWidget *parentWidget)
-{
-    auto label = new QLabel(text, parentWidget);
-    label->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-    label->setWordWrap(true);
-    label->setProperty("labelRole", "fieldValue");
-    return label;
 }
 
 QWidget *ProcessStationLeftPanel::createPassWidget(const QString &title)
@@ -1344,7 +1217,7 @@ void ProcessStationLeftPanel::updateTaskStatusRealtime()
     m_taskStatusData.insert("ngCount", ngCount);
 
     if (m_displayMode == DisplayMode::NormalTask)
-        setTaskData(m_taskStatusLayout, taskStatusFields(), m_taskStatusData);
+        setTaskData(m_taskStatus, taskStatusFields(), m_taskStatusData);
 
     qDebug() << __FUNCTION__
              << "finishedCount:" << passCount
@@ -1412,47 +1285,15 @@ QVariantMap ProcessStationLeftPanel::valuesToRowData(
 }
 
 void ProcessStationLeftPanel::setTaskData(
-    QGridLayout *layout,
+    ProcessStationInfoSection* section,
     const QVector<QPair<QString, QString>>& fields,
-    const QVariantMap &rowData,
+    const QVariantMap& rowData,
     int fieldPairsPerRow)
 {
-    if (!layout)
+    if (!section)
         return;
 
-    // 左侧信息区统一规则：7项及以下单列显示，超过7项再自动分成两列，避免区域过高。
-    if (fieldPairsPerRow <= 0)
-        fieldPairsPerRow = fields.size() <= 7 ? 1 : 2;
-    fieldPairsPerRow = qMax(1, fieldPairsPerRow);
-
-    while (auto item = layout->takeAt(0))
-    {
-        if (auto widget = item->widget())
-            widget->deleteLater();
-
-        delete item;
-    }
-
-    auto parentWidget = layout->parentWidget();
-    for (int i = 0; i < fields.size(); ++i)
-    {
-        const int row = i / fieldPairsPerRow;
-        const int labelColumn = (i % fieldPairsPerRow) * 2;
-        const QString title = fields[i].first;
-        const QString field = fields[i].second;
-        const QString value = rowData.value(field).toString();
-
-        layout->addWidget(
-            createInfoTitleLabel(title, parentWidget),
-            row,
-            labelColumn);
-        layout->addWidget(
-            createInfoValueLabel(value, parentWidget),
-            row,
-            labelColumn + 1);
-    }
-
-    qDebug() << __FUNCTION__ << "fields:" << fields.size() << "data keys:" << rowData.keys();
+    section->setFieldsData(fields, rowData, fieldPairsPerRow);
 }
 
 void ProcessStationLeftPanel::setTaskInfoValue(TaskList &values)
@@ -1481,33 +1322,33 @@ void ProcessStationLeftPanel::setReworkTaskStatusValue(TaskList &values)
     qDebug() << __FUNCTION__ << "rows:" << values.size();
 
     if (m_displayMode == DisplayMode::ReworkTask)
-        setTaskData(m_taskStatusLayout, taskStatusFields(), m_reworkTaskStatusData);
+        setTaskData(m_taskStatus, taskStatusFields(), m_reworkTaskStatusData);
 }
 
 void ProcessStationLeftPanel::setTaskInfoData(const QVariantMap &rowData)
 {
     m_taskInfoData = rowData;
-    setTaskData(m_taskInfoLayout, taskInfoFields(), rowData);
+    setTaskData(m_taskInfo, taskInfoFields(), rowData);
 }
 
 void ProcessStationLeftPanel::setTaskStatusData(const QVariantMap &rowData)
 {
     m_taskStatusData = rowData;
     if (m_displayMode == DisplayMode::NormalTask)
-        setTaskData(m_taskStatusLayout, taskStatusFields(), rowData);
+        setTaskData(m_taskStatus, taskStatusFields(), rowData);
 }
 
 void ProcessStationLeftPanel::setAbnormalInfoData(const QVariantMap &rowData)
 {
     m_abnormalInfoData = rowData;
-    setTaskData(m_abnormalInfoLayout, abnormalInfoFields(), rowData);
+    setTaskData(m_abnormalInfo, abnormalInfoFields(), rowData);
 }
 
 void ProcessStationLeftPanel::setReworkTaskStatusData(const QVariantMap &rowData)
 {
     m_reworkTaskStatusData = rowData;
     if (m_displayMode == DisplayMode::ReworkTask)
-        setTaskData(m_taskStatusLayout, taskStatusFields(), rowData);
+        setTaskData(m_taskStatus, taskStatusFields(), rowData);
 }
 
 void ProcessStationLeftPanel::setDisplayMode(DisplayMode mode)
@@ -1522,13 +1363,13 @@ void ProcessStationLeftPanel::setDisplayMode(DisplayMode mode)
     if (m_abnormalInfo)
         m_abnormalInfo->setVisible(isReworkTask);
 
-    if (m_taskStatusTitleLabel)
-        m_taskStatusTitleLabel->setText(isReworkTask ? tr("返工维修任务单状态") : tr("任务单状态"));
+    if (m_taskStatus)
+        m_taskStatus->setTitle(isReworkTask ? tr("返工维修任务单状态") : tr("任务单状态"));
 
     if (isReworkTask)
-        setTaskData(m_taskStatusLayout, taskStatusFields(), m_reworkTaskStatusData);
+        setTaskData(m_taskStatus, taskStatusFields(), m_reworkTaskStatusData);
     else
-        setTaskData(m_taskStatusLayout, taskStatusFields(), m_taskStatusData);
+        setTaskData(m_taskStatus, taskStatusFields(), m_taskStatusData);
 
     qDebug() << __FUNCTION__ << "mode:" << (isReworkTask ? "ReworkTask" : "NormalTask")
              << "taskInfoVisible:" << (m_taskInfo ? m_taskInfo->isVisible() : false)
@@ -1556,7 +1397,7 @@ void ProcessStationLeftPanel::clearPassStatus()
     m_taskStatusData.insert("ngCount", 0);
 
     if (m_displayMode == DisplayMode::NormalTask)
-        setTaskData(m_taskStatusLayout, taskStatusFields(), m_taskStatusData);
+        setTaskData(m_taskStatus, taskStatusFields(), m_taskStatusData);
 
     qDebug() << __FUNCTION__ << "pass status cleared";
 }
