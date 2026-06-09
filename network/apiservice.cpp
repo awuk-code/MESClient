@@ -30,6 +30,8 @@ void ApiService::login(const QString& userName, const QString& password)
     body.insert("userName", userName);
     body.insert("password", password);
     body.insert("deviceId", ConfigManager::instance().deviceId());
+    body.insert("clientIP", ConfigManager::instance().clientIP());
+    body.insert("clientMAC", ConfigManager::instance().clientMAC());
     body.insert("clientVersion", ConfigManager::instance().softwareVersion());
     body.insert("buildDate", ConfigManager::instance().buildTime());
     body.insert("protocolVersion", ConfigManager::instance().protocolVersion());

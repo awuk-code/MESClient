@@ -1,5 +1,7 @@
 #include "configmanager.h"
 
+#include "clientinfo.h"
+
 #include <QCoreApplication>
 #include <QCryptographicHash>
 #include <QDebug>
@@ -26,6 +28,7 @@ void ConfigManager::loadConfig(const QString &filePath)
 
     ensureConfigFile();
     loadFromIni();
+    refreshClientInfo();
 
     qDebug() << __FUNCTION__
              << "configPath:" << m_configPath
@@ -33,6 +36,8 @@ void ConfigManager::loadConfig(const QString &filePath)
              << "buildTime:" << buildTime()
              << "protocolVersion:" << protocolVersion()
              << "server:" << serverIP() << serverPort()
+             << "clientIP:" << clientIP()
+             << "clientMAC:" << clientMAC()
              << "deviceId:" << deviceId();
 }
 
@@ -80,6 +85,22 @@ QString ConfigManager::deviceId() const
 {
     // 单账号禁止多台电脑登录需要后台根据 deviceId 判断；客户端只负责提供稳定设备标识。
     return m_deviceId.isEmpty() ? localMachineId() : m_deviceId;
+}
+
+QString ConfigManager::clientIP() const
+{
+    if (m_clientIP.isEmpty())
+        const_cast<ConfigManager*>(this)->refreshClientInfo();
+
+    return m_clientIP;
+}
+
+QString ConfigManager::clientMAC() const
+{
+    if (m_clientMAC.isEmpty())
+        const_cast<ConfigManager*>(this)->refreshClientInfo();
+
+    return m_clientMAC;
 }
 
 QString ConfigManager::serverIP() const
@@ -185,4 +206,10 @@ QString ConfigManager::localMachineId() const
     const QByteArray hostName = QSysInfo::machineHostName().toUtf8();
     return QString::fromLatin1(
         QCryptographicHash::hash(hostName, QCryptographicHash::Sha256).toHex());
+}
+
+void ConfigManager::refreshClientInfo()
+{
+    m_clientIP = ClientInfo::ip();
+    m_clientMAC = ClientInfo::mac();
 }

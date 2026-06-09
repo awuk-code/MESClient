@@ -15,6 +15,8 @@ public:
     QString protocolVersion() const;
     QString buildTime() const;
     QString deviceId() const;
+    QString clientIP() const;
+    QString clientMAC() const;
 
     QString serverIP() const;
     int serverPort() const;
@@ -29,6 +31,7 @@ private:
     void loadFromIni();
     void writeDefaultConfig(const QString& filePath) const;
     QString localMachineId() const;
+    void refreshClientInfo();
 
     QString m_configPath;
     QDateTime m_sessionStartTime;
@@ -36,6 +39,8 @@ private:
     QString m_protocolVersion = "1.0";
     QString m_buildDate = QString(__DATE__ " " __TIME__);
     QString m_deviceId;
+    QString m_clientIP;
+    QString m_clientMAC;
     QString m_serverIP = "127.0.0.1";
     int m_serverPort = 8080;
 };

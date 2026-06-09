@@ -1,0 +1,153 @@
+MatAdapter 使用说明
+===================
+
+一、工具定位
+------------
+
+MatAdapter 是工序站点表格数据的格式转换工具，只负责两种结构之间的转换：
+
+1. 后台复合数据：
+
+[
+  {
+    "productSN": "P001",
+    "materials": [
+      { "materialCode": "M001", "materialSN": "S001" },
+      { "materialCode": "M002", "materialSN": "S002" }
+    ]
+  }
+]
+
+2. 前台表格分离数据：
+
+[
+  { "rowNumber": 1, "productSN": "P001", "materialCode": "M001", "materialSN": "S001" },
+  { "rowNumber": 1, "productSN": "P001", "materialCode": "M002", "materialSN": "S002" }
+]
+
+表格里看到的是分离行数据，上传给后台的是复合数据。
+
+
+二、对外接口
+------------
+
+MatAdapter 只暴露三个方向的接口：
+
+1. 判断是否为复合数据
+
+bool MatAdapter::isCompound(const QJsonArray& data);
+bool MatAdapter::isCompound(const QVector<QVariantMap>& data);
+
+用途：
+用于提交前检查处理后的上传数据是否已经是复合结构。
+只要数据行里存在 materials 数组字段，就认为是复合数据。
+
+
+2. 复合数据转表格分离数据
+
+QVector<QVariantMap> MatAdapter::split(const QJsonArray& compoundData);
+QVector<QVariantMap> MatAdapter::split(const QVector<QVariantMap>& compoundData);
+
+用途：
+任务单点击开工后，后台开始推送或返回数据，前台在填充工序站点表格前调用 split。
+
+示例：
+
+QJsonArray backendData = ...;
+QVector<QVariantMap> tableRows = MatAdapter::split(backendData);
+model->setRows(tableRows);
+
+说明：
+如果后台传入的是一对多复合数据，split 会按 materials 展开。
+如果后台传入的是一对一平铺数据，split 会按 productSN 做分组整理。
+
+
+3. 表格分离数据转复合数据
+
+QJsonArray MatAdapter::combine(const QVector<QVariantMap>& splitRows);
+QJsonArray MatAdapter::combine(const QJsonArray& originalData,
+                               const QVector<QVariantMap>& splitRows);
+
+用途：
+编码、物料 SN、PASS/NG 状态等信息录入完成后，提交前调用 combine，把表格数据重新聚合成后台需要的 JSON。
+
+真实上传时建议优先使用带 originalData 的重载。
+这个接口不是重新创建一份全新的 JSON，而是以后台原始数据为基础，把前台修改或补充的数据合并回去。
+这样可以保留后台已经给出的 ID、状态、工序字段、时间字段、物料原始字段等信息。
+
+示例：
+
+QJsonArray originalData = ...;       // 后台原始数据
+QVector<QVariantMap> tableRows = model->rows();
+QJsonArray uploadData = MatAdapter::combine(originalData, tableRows);
+
+if (!MatAdapter::isCompound(uploadData))
+{
+    // 阻止提交或提示数据格式异常
+    return;
+}
+
+// httpClient->post(url, uploadData);
+
+如果当前没有后台原始数据，才使用：
+
+QJsonArray uploadData = MatAdapter::combine(tableRows);
+
+
+三、推荐数据流
+--------------
+
+1. 显示流程
+
+后台 JSON 数据
+    -> MatAdapter::split(...)
+    -> 表格模型
+    -> 工序站点表格显示
+
+
+2. 上传流程
+
+表格模型当前行数据
+    -> MatAdapter::combine(originalData, tableRows)
+    -> MatAdapter::isCompound(...)
+    -> 上传后台
+
+
+四、上传合并规则
+----------------
+
+上传时不是简单地把表格重新转成 JSON，而是“修改补充后台数据”：
+
+1. 后台原始父级字段会保留。
+例如 taskNo、processCode、productSN、status、startTime、finishTime 等字段，如果原始数据里存在，上传时仍然保留。
+
+2. 表格首行里和父级同名的字段会回填到父级。
+例如产品 PASS/NG 状态、当前工序状态、完成时间等，如果先补到对应产品 SN 的表格行里，combine(originalData, tableRows) 会更新父级字段。
+
+3. 每一行物料字段会合并回 materials。
+例如 materialSN、materialBatch、serialNumber 等字段，会按当前表格行顺序补回对应物料。
+
+4. 内部元数据不会上传。
+例如 _groupKey、_groupIndex、_groupFirst、_groupRowCount、_itemIndex 只用于前台分组、序号和合并单元格，上传时会自动清理。
+
+
+五、使用范围
+------------
+
+当前建议只在工序站点使用 MatAdapter。
+
+任务单页面和维修站页面如果仍然是一对一数据，不需要引入这个工具。
+这样可以避免把工序站点的一对多物料逻辑扩散到其他页面。
+
+
+六、字段约定
+------------
+
+当前默认字段如下：
+
+产品 SN 字段：productSN
+物料数组字段：materials
+表格序号字段：rowNumber
+
+MatAdapter 内部还会给表格行加入一些分组元数据，例如 _groupKey、_groupIndex、_groupFirst、_groupRowCount、_itemIndex。
+这些字段只用于前台显示、合并单元格、聚合上传等内部处理，combine 上传时会自动清理，不需要外部页面手动删除。

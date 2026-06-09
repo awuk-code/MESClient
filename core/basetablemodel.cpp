@@ -21,6 +21,11 @@ void BaseTableModel::setRows(const QVector<QVariantMap> &rows)
     endResetModel();
 }
 
+QVector<QVariantMap> BaseTableModel::rows() const
+{
+    return m_rows;
+}
+
 const QVector<ColumnConfig>& BaseTableModel::columns() const
 {
     return m_columns;

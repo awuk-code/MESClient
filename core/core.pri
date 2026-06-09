@@ -5,7 +5,6 @@ HEADERS += \
     $$PWD/basetablemodel.h \
     $$PWD/checkboxdelegate.h \
     $$PWD/fieldfilterproxymodel.h \
-    $$PWD/jsondataloader.h \
     $$PWD/lineeditdelegate.h \
     $$PWD/navigationmanager.h \
     $$PWD/operationdelegate.h \
@@ -19,7 +18,6 @@ SOURCES += \
     $$PWD/basetablemodel.cpp \
     $$PWD/checkboxdelegate.cpp \
     $$PWD/fieldfilterproxymodel.cpp \
-    $$PWD/jsondataloader.cpp \
     $$PWD/lineeditdelegate.cpp \
     $$PWD/navigationmanager.cpp \
     $$PWD/operationdelegate.cpp \

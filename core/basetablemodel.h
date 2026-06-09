@@ -35,6 +35,9 @@ public:
     // 设置数据
     void setRows(const QVector<QVariantMap>& rows);
 
+    // 获取当前表格完整数据，提交前用于组合上传 JSON。
+    QVector<QVariantMap> rows() const;
+
     // 获取列配置
     const QVector<ColumnConfig>& columns() const;
 

@@ -1,0 +1,266 @@
+20260610 今晚修改说明
+=====================
+
+一、总体修改目标
+----------------
+
+今晚主要围绕三个方向修改：
+
+1. 工序站点一对多物料数据处理。
+2. 工具类目录归类和工具接口封装。
+3. 客户端真实 IP、MAC 获取，并接入登录请求。
+
+
+二、MatAdapter 数据适配工具
+--------------------------
+
+新增文件：
+
+tool/matadapter.h
+tool/matadapter.cpp
+
+作用：
+
+MatAdapter 用于处理工序站点中“一个产品 SN 对应多个物料”的数据结构。
+后台数据可以是复合结构，前台表格显示时需要拆成多行；上传时需要再组合回后台需要的复合结构。
+
+对外接口：
+
+1. 判断是否为复合数据
+
+bool MatAdapter::isCompound(const QJsonArray& data);
+bool MatAdapter::isCompound(const QVector<QVariantMap>& data);
+
+用于提交前检查数据是否已经是带 materials 数组的复合结构。
+
+2. 后台数据拆分为表格行
+
+QVector<QVariantMap> MatAdapter::split(const QJsonArray& compoundData);
+QVector<QVariantMap> MatAdapter::split(const QVector<QVariantMap>& compoundData);
+
+用于表格显示前处理后台返回数据。
+如果后台是 { productSN, materials: [...] }，会展开为多行表格数据。
+如果后台已经是平铺数据，会按 productSN 分组并补充行元数据。
+
+3. 表格行组合为上传数据
+
+QJsonArray MatAdapter::combine(const QVector<QVariantMap>& splitRows);
+
+没有后台原始数据时使用，直接把表格行组合成复合 JSON。
+
+4. 以后台原始数据为基础合并上传数据
+
+QJsonArray MatAdapter::combine(const QJsonArray& originalData,
+                               const QVector<QVariantMap>& splitRows);
+
+真实上传时优先使用这个接口。
+这个接口不是重新创建一份全新的 JSON，而是以后台原始数据为基础，把前台录入、修改、状态等数据补回去。
+这样可以保留后台原有的 ID、状态、时间、工序字段、物料原始字段等信息。
+
+
+三、MatAdapter 推荐数据流
+------------------------
+
+显示流程：
+
+后台 JSON 数据
+    -> MatAdapter::split(...)
+    -> 表格模型 setRows(...)
+    -> 工序站点表格显示
+
+上传流程：
+
+后台原始 JSON 数据 + 表格当前行数据
+    -> MatAdapter::combine(originalData, tableRows)
+    -> MatAdapter::isCompound(...)
+    -> 上传后台
+
+说明：
+
+PASS、NG、完成时间、工时等状态数据后续提交前也应该补到对应产品 SN 的表格行或上传上下文中，再由 MatAdapter 合并回原始后台数据。
+
+
+四、BaseTableModel 增加 rows 接口
+--------------------------------
+
+修改文件：
+
+core/basetablemodel.h
+core/basetablemodel.cpp
+
+新增接口：
+
+QVector<QVariantMap> rows() const;
+
+作用：
+
+提交前可以从表格模型中获取当前完整行数据。
+后续工序站点上传时可使用：
+
+QJsonArray uploadData =
+    MatAdapter::combine(originalBackendData, model->rows());
+
+
+五、JsonDataLoader 移动到 tool
+------------------------------
+
+移动文件：
+
+core/jsondataloader.h  -> tool/jsondataloader.h
+core/jsondataloader.cpp -> tool/jsondataloader.cpp
+
+原因：
+
+JsonDataLoader 属于 JSON 数据读取工具，不属于 core 业务模型。
+移动到 tool 后，目录职责更清楚。
+
+同步修改：
+
+core/core.pri 中移除 jsondataloader。
+tool/tool.pri 中加入 jsondataloader。
+
+
+六、ClientInfo 客户端信息工具
+-----------------------------
+
+新增文件：
+
+tool/clientinfo.h
+tool/clientinfo.cpp
+
+作用：
+
+获取客户端真实 IP、MAC 和主机名。
+
+对外接口：
+
+QString ClientInfo::ip();
+QString ClientInfo::mac();
+QVariantMap ClientInfo::info();
+
+ClientInfo::info() 返回字段：
+
+clientIP
+clientMAC
+hostName
+
+筛选规则：
+
+1. 过滤回环地址 127.*。
+2. 过滤 0.0.0.0。
+3. 过滤链路本地地址 169.254.*。
+4. 过滤 224.* 及以上的异常 IPv4。
+5. 过滤空 MAC、00:00:00:00:00:00、FF:FF:FF:FF:FF:FF。
+6. 过滤虚拟、隧道、干扰网卡，例如 VMware、VirtualBox、Hyper-V、Docker、WSL、VPN、TAP、TUN、Bluetooth、Loopback、Npcap 等。
+7. 过滤未运行、回环、点对点网卡。
+
+当前逻辑：
+
+优先返回真实物理网卡的 IPv4 和 MAC。
+如果没有符合条件的真实网卡，则返回空，避免误把虚拟网卡或干扰项当成真实客户端信息上传。
+
+
+七、ConfigManager 增加客户端 IP 和 MAC 属性
+-------------------------------------------
+
+修改文件：
+
+config/configmanager.h
+config/configmanager.cpp
+
+新增接口：
+
+QString clientIP() const;
+QString clientMAC() const;
+
+新增成员：
+
+QString m_clientIP;
+QString m_clientMAC;
+
+新增私有方法：
+
+void refreshClientInfo();
+
+说明：
+
+clientIP 和 clientMAC 是运行时环境信息，没有写入 config.ini。
+原因是 IP 可能变化，如果写入配置文件，后续可能拿到旧值。
+
+loadConfig() 时会刷新一次客户端信息。
+如果调用 clientIP() 或 clientMAC() 时当前为空，也会再次刷新。
+
+
+八、登录请求增加客户端信息
+--------------------------
+
+修改文件：
+
+network/apiservice.cpp
+
+登录请求 body 新增字段：
+
+body.insert("clientIP", ConfigManager::instance().clientIP());
+body.insert("clientMAC", ConfigManager::instance().clientMAC());
+
+作用：
+
+后台登录接口可以直接获取当前客户端真实 IP 和 MAC。
+后续可用于登录日志、设备校验、客户端追踪、账号登录控制等逻辑。
+
+
+九、工程文件调整
+----------------
+
+修改文件：
+
+core/core.pri
+tool/tool.pri
+
+tool/tool.pri 新增：
+
+clientinfo.h
+clientinfo.cpp
+jsondataloader.h
+jsondataloader.cpp
+matadapter.h
+matadapter.cpp
+
+core/core.pri 移除：
+
+jsondataloader.h
+jsondataloader.cpp
+
+
+十、补充说明文档
+----------------
+
+新增文件：
+
+modefiy_text/20260610_MatAdapter使用说明.txt
+
+内容：
+
+1. MatAdapter 工具定位。
+2. 后台复合数据示例。
+3. 前台表格分离数据示例。
+4. isCompound、split、combine 的使用方法。
+5. 推荐显示流程和上传流程。
+6. 上传合并规则。
+7. 字段约定和内部元数据说明。
+
+
+十一、当前注意事项
+------------------
+
+1. MatAdapter 已经具备显示拆分和上传聚合能力，但还没有完全接入工序站点真实提交流程。
+
+2. PASS、NG、完成时间、工时等状态目前主要还在 ProcessStationPassController / PassWidget 相关逻辑中维护。
+   后续真正提交时，需要在上传前把这些状态补到对应产品 SN 的上传数据中。
+
+3. ClientInfo 已经尽量过滤虚拟网卡和干扰项，但不同现场电脑网络环境可能不同。
+   上线前建议在实际工控机、办公电脑、双网卡电脑上各验证一次。
+
+4. 本地执行 git diff --check 时，只有 CRLF 换行提示，没有发现代码格式错误。
+
+5. 当前环境之前存在 VS/CRT 头文件 stddef.h 缺失问题，因此没有完成一次可靠的本地全量编译验证。
