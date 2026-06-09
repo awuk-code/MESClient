@@ -6,18 +6,14 @@
 #include <QVariantMap>
 #include <QVector>
 #include <QWidget>
-#include <functional>
 
-#include "processstationpassstatus.h"
+#include "processstationpasscontroller.h"
 
-class QColor;
-class QStandardItemModel;
-class QTableView;
 class ProcessStationInfoSection;
+class ProcessStationPassController;
 class ProcessStationPassWidget;
 
 using TaskList = QList<QVariant>;
-using PassConditionValidator = std::function<bool(const QString& productSn, QString* message)>;
 
 class ProcessStationLeftPanel : public QWidget
 {
@@ -52,34 +48,7 @@ private:
     void initUI();
     void initConnect();
     void setTaskData(ProcessStationInfoSection* section, const QVector<QPair<QString, QString>>& fields, const QVariantMap& rowData, int fieldPairsPerRow = 0);
-    void onExecuteBtnClicked();
-    void onPauseBtnClicked();
-    void onResumeBtnClicked();
-    void handleScanInAction(const QString& productSn);
-    void handlePassResult(const QString& productSn);
-    void handleNgResult(const QString& productSn);
-    void handlePauseResult(bool paused);
-    bool validateProductSn(const QString& productSn) const;
-    bool validateProductSnForCurrentTask(const QString& productSn) const;
-    bool validateSelectedProductSn(const QString& productSn) const;
-    bool validatePassCondition(const QString& productSn) const;
-    bool isProductPassed(const QString& productSn) const;
-    bool isProductNg(const QString& productSn) const;
-    bool isProductPaused(const QString& productSn) const;
-    bool validateProductNotPassed(const QString& productSn, const QString& actionName) const;
-    bool validateProductNotNg(const QString& productSn, const QString& actionName) const;
-    bool validateProductNotPaused(const QString& productSn, const QString& actionName) const;
-    QString productSnForPauseAction() const;
-    QString currentProductSnFromSelection() const;
-    int statusRowForProductSn(const QString& productSn) const;
-    bool isStatusMarked(int row, int column) const;
-    int appendStatusRow(const QString& productSn);
-    void setStatusMark(int row, int column, bool checked, const QColor& color);
-    void startProductTiming(const QString& productSn);
-    void pauseProductTiming(const QString& productSn);
-    void resumeProductTiming(const QString& productSn);
-    qint64 finishProductTiming(const QString& productSn);
-    void updateTaskStatusRealtime();
+    void updateTaskStatusRealtime(int passCount, int ngCount);
 
     QVector<QPair<QString, QString>> taskInfoFields() const;
     QVector<QPair<QString, QString>> taskStatusFields() const;
@@ -91,9 +60,7 @@ private:
     ProcessStationInfoSection* m_abnormalInfo{nullptr};
     ProcessStationInfoSection* m_taskStatus{nullptr};
     ProcessStationPassWidget* m_pass{nullptr};
-
-    QTableView* m_statusTableView{nullptr};
-    QStandardItemModel* m_statusModel{nullptr};
+    ProcessStationPassController* m_passController{nullptr};
 
     TaskList m_taskInfoValue;
     TaskList m_abnormalInfoValue;
@@ -103,8 +70,6 @@ private:
     QVariantMap m_abnormalInfoData;
     QVariantMap m_taskStatusData;
     QVariantMap m_reworkTaskStatusData;
-    ProcessStationPassStatus m_passStatus;
-    PassConditionValidator m_passConditionValidator;
     DisplayMode m_displayMode{DisplayMode::NormalTask};
 };
 

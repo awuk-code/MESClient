@@ -1,0 +1,868 @@
+2026-06-09 ProcessStationLeftPanel 完整拆分说明文档
+
+一、拆分背景
+
+原 ui/processstationleftpanel.cpp 同时承担了以下职责：
+
+1. 左侧页面整体布局
+2. 任务单信息、异常品信息、任务单状态三个信息区的 UI 创建与刷新
+3. 扫码过站区域 UI 创建
+4. 过站状态表数据维护
+5. 产品扫码、PASS、NG、暂停、解除暂停业务流程
+6. NG 异常登记、暂停原因登记、解除暂停原因登记弹窗 UI
+7. 工时开始、暂停、恢复、结束计时
+8. 任务状态实时统计刷新
+
+这些职责混在同一个文件中会导致 ProcessStationLeftPanel 体积过大，后续继续改业务逻辑或 UI 样式时维护成本较高。
+当前拆分遵循“小步拆分、行为不变”的原则：先拆 UI 与状态辅助类，再逐步考虑业务控制器。
+
+
+二、当前拆分后的文件结构
+
+1. ui/processstationleftpanel.h
+2. ui/processstationleftpanel.cpp
+
+保留左侧页面总控职责：
+
+- 页面整体布局组合
+- 数据入口
+- 显示模式切换
+- 扫码过站业务编排
+- 信号对外转发
+- 与右侧校验器的对接入口
+
+2. ui/processstationinfosection.h
+3. ui/processstationinfosection.cpp
+
+拆出的信息展示区组件，负责任务单信息、异常品信息、任务单状态这类字段网格展示。
+
+4. ui/processstationpasswidget.h
+5. ui/processstationpasswidget.cpp
+
+拆出的扫码过站 UI 组件，负责扫码方式、输入框、按钮、状态表控件的创建和 UI 信号发出。
+
+6. ui/processstationpassstatus.h
+7. ui/processstationpassstatus.cpp
+
+拆出的过站状态辅助类，负责产品 SN 行索引、PASS / NG / 暂停标记、状态计数和工时计时。
+
+8. ui/processstationpassdialogs.h
+9. ui/processstationpassdialogs.cpp
+
+拆出的过站相关弹窗模块，负责 NG 异常登记、暂停原因登记、解除暂停原因登记。
+
+10. ui/ui.pri
+
+已加入新拆分文件：
+
+- processstationinfosection.h / .cpp
+- processstationpasswidget.h / .cpp
+- processstationpassstatus.h / .cpp
+- processstationpassdialogs.h / .cpp
+
+
+三、ProcessStationLeftPanel 当前保留内容
+
+文件：
+
+- ui/processstationleftpanel.h
+- ui/processstationleftpanel.cpp
+
+类：
+
+- ProcessStationLeftPanel : public QWidget
+
+类型定义：
+
+- using TaskList = QList<QVariant>
+- using PassConditionValidator = std::function<bool(const QString& productSn, QString* message)>
+
+枚举：
+
+- ProcessStationLeftPanel::DisplayMode
+  - NormalTask：正常生产任务单模式
+  - ReworkTask：返工任务单模式
+
+对外 public 方法：
+
+- explicit ProcessStationLeftPanel(QWidget* parent = nullptr)
+  创建左侧面板，初始化 UI、连接信号，并初始化空数据展示。
+
+- void setTaskInfoValue(TaskList& values)
+  使用旧的列表数据形式填充任务单信息。
+
+- void setTaskStatusValue(TaskList& values)
+  使用旧的列表数据形式填充任务单状态。
+
+- void setAbnormalInfoValue(TaskList& values)
+  使用旧的列表数据形式填充异常品信息。
+
+- void setReworkTaskStatusValue(TaskList& values)
+  使用旧的列表数据形式填充返工任务单状态。
+
+- void setTaskInfoData(const QVariantMap& rowData)
+  使用字段 key-value 形式填充任务单信息。
+
+- void setTaskStatusData(const QVariantMap& rowData)
+  使用字段 key-value 形式填充任务单状态。
+
+- void setAbnormalInfoData(const QVariantMap& rowData)
+  使用字段 key-value 形式填充异常品信息。
+
+- void setReworkTaskStatusData(const QVariantMap& rowData)
+  使用字段 key-value 形式填充返工任务单状态。
+
+- void setDisplayMode(DisplayMode mode)
+  切换正常任务 / 返工任务显示模式。
+
+- void clearPassStatus()
+  清空过站状态表和计时状态。
+
+- void setPassConditionValidator(PassConditionValidator validator)
+  注入右侧工艺、物料、资料上传等 PASS 前校验逻辑。
+
+signals：
+
+- void productSnScanned(const QString& productSn)
+  扫入产品 SN 成功后发出，供右侧页面联动刷新。
+
+- void productNgSubmitted(const QVariantMap& abnormalData)
+  NG 登记确认后发出，供维修站或异常处理页面接收。
+
+private UI / 连接方法：
+
+- void initUI()
+  创建整体垂直布局，组合 ProcessStationInfoSection 与 ProcessStationPassWidget。
+
+- void initConnect()
+  连接 ProcessStationPassWidget 的 executeRequested、pauseRequested、resumeRequested 信号。
+
+- void setTaskData(ProcessStationInfoSection* section, const QVector<QPair<QString, QString>>& fields, const QVariantMap& rowData, int fieldPairsPerRow = 0)
+  将字段配置和数据转交给 ProcessStationInfoSection 刷新。
+
+private 业务入口方法：
+
+- void onExecuteBtnClicked()
+  执行按钮入口，根据扫码方式分发到扫入、PASS、NG。
+
+- void onPauseBtnClicked()
+  暂停按钮入口，完成 SN 获取、校验、暂停弹窗确认，然后进入暂停处理。
+
+- void onResumeBtnClicked()
+  解除暂停按钮入口，完成 SN 获取、校验、解除暂停弹窗确认，然后进入解除暂停处理。
+
+private 业务处理方法：
+
+- void handleScanInAction(const QString& productSn)
+  扫入产品 SN，追加或选中状态表行，启动计时，发出 productSnScanned。
+
+- void handlePassResult(const QString& productSn)
+  PASS 当前产品，完成 PASS 前校验、确认提示、状态标记、结束计时、任务状态刷新。
+
+- void handleNgResult(const QString& productSn)
+  NG 当前产品，打开 NgAbnormalDialog，记录异常数据，标记 NG，结束计时，发出 productNgSubmitted。
+
+- void handlePauseResult(bool paused)
+  根据 paused 参数执行暂停或解除暂停，更新状态表暂停标记并暂停 / 恢复计时。
+
+private 校验方法：
+
+- bool validateProductSn(const QString& productSn) const
+  校验 SN 是否为空。
+
+- bool validateProductSnForCurrentTask(const QString& productSn) const
+  校验 SN 是否允许进入当前任务。返工模式下会校验是否匹配异常品 SN。
+
+- bool validateSelectedProductSn(const QString& productSn) const
+  校验状态表当前是否选中产品 SN。
+
+- bool validatePassCondition(const QString& productSn) const
+  调用外部注入的 PASS 条件校验器；未注入时默认放行。
+
+- bool validateProductNotPassed(const QString& productSn, const QString& actionName) const
+  校验产品不能已 PASS。
+
+- bool validateProductNotNg(const QString& productSn, const QString& actionName) const
+  校验产品不能已 NG。
+
+- bool validateProductNotPaused(const QString& productSn, const QString& actionName) const
+  校验产品不能处于暂停状态。
+
+private 状态查询方法：
+
+- bool isProductPassed(const QString& productSn) const
+  查询产品是否已 PASS，委托给 ProcessStationPassStatus。
+
+- bool isProductNg(const QString& productSn) const
+  查询产品是否已 NG，委托给 ProcessStationPassStatus。
+
+- bool isProductPaused(const QString& productSn) const
+  查询产品是否暂停，委托给 ProcessStationPassStatus。
+
+- QString productSnForPauseAction() const
+  暂停 / 解除暂停时优先取状态表选中 SN，没有选中时取扫码输入框 SN。
+
+- QString currentProductSnFromSelection() const
+  从状态表当前选中行读取产品 SN。
+
+- int statusRowForProductSn(const QString& productSn) const
+  查询产品 SN 对应状态表行。
+
+- bool isStatusMarked(int row, int column) const
+  查询指定状态列是否已标记。
+
+private 状态写入与计时方法：
+
+- int appendStatusRow(const QString& productSn)
+  追加状态表行，委托给 ProcessStationPassStatus。
+
+- void setStatusMark(int row, int column, bool checked, const QColor& color)
+  设置 PASS / NG / 暂停状态标记，委托给 ProcessStationPassStatus。
+
+- void startProductTiming(const QString& productSn)
+  产品扫入后开始计时。
+
+- void pauseProductTiming(const QString& productSn)
+  产品暂停时暂停计时。
+
+- void resumeProductTiming(const QString& productSn)
+  产品解除暂停时恢复计时。
+
+- qint64 finishProductTiming(const QString& productSn)
+  产品 PASS / NG 后结束计时并返回有效耗时秒数。
+
+- void updateTaskStatusRealtime()
+  根据 PASS / NG 数量实时刷新任务单状态信息区。
+
+private 字段映射方法：
+
+- QVector<QPair<QString, QString>> taskInfoFields() const
+  返回任务单信息字段标题与数据 key 的映射。
+
+- QVector<QPair<QString, QString>> taskStatusFields() const
+  返回任务单状态字段标题与数据 key 的映射。
+
+- QVector<QPair<QString, QString>> abnormalInfoFields() const
+  返回异常品信息字段标题与数据 key 的映射。
+
+- QVariantMap valuesToRowData(const QVector<QPair<QString, QString>>& fields, const TaskList& values) const
+  将旧的列表数据按字段顺序转换为 QVariantMap。
+
+当前成员变量：
+
+- ProcessStationInfoSection* m_taskInfo
+- ProcessStationInfoSection* m_abnormalInfo
+- ProcessStationInfoSection* m_taskStatus
+- ProcessStationPassWidget* m_pass
+- QTableView* m_statusTableView
+- QStandardItemModel* m_statusModel
+- TaskList m_taskInfoValue
+- TaskList m_abnormalInfoValue
+- TaskList m_taskStatusValue
+- TaskList m_reworkTaskStatusValue
+- QVariantMap m_taskInfoData
+- QVariantMap m_abnormalInfoData
+- QVariantMap m_taskStatusData
+- QVariantMap m_reworkTaskStatusData
+- ProcessStationPassStatus m_passStatus
+- PassConditionValidator m_passConditionValidator
+- DisplayMode m_displayMode
+
+
+四、ProcessStationInfoSection 拆分说明
+
+文件：
+
+- ui/processstationinfosection.h
+- ui/processstationinfosection.cpp
+
+类：
+
+- ProcessStationInfoSection : public QWidget
+
+职责：
+
+- 统一创建左侧信息区标题
+- 统一创建展开 / 收起按钮
+- 统一创建字段名 / 字段值网格
+- 根据字段映射和 QVariantMap 刷新数据
+
+public 方法：
+
+- explicit ProcessStationInfoSection(const QString& title, QWidget* parent = nullptr)
+  创建信息区组件。
+
+- void setTitle(const QString& title)
+  更新信息区标题。
+
+- void setFieldsData(const InfoFieldList& fields, const QVariantMap& rowData, int fieldPairsPerRow = 0)
+  按字段配置和数据刷新信息网格。
+
+private 方法：
+
+- QWidget* createTitleWidget(const QString& title)
+  创建标题栏，包括左侧图标、标题文本和展开 / 收起按钮。
+
+- QGridLayout* createInfoGrid(QWidget* parentWidget)
+  创建字段网格布局。
+
+- QLabel* createInfoTitleLabel(const QString& text, QWidget* parentWidget)
+  创建字段名标签。
+
+- QLabel* createInfoValueLabel(const QString& text, QWidget* parentWidget)
+  创建字段值标签。
+
+从 ProcessStationLeftPanel 迁出的原职责：
+
+- createTaskWidget
+- createTaskTitleWidget
+- createInfoGrid
+- createInfoTitleLabel
+- createInfoValueLabel
+
+
+五、ProcessStationPassWidget 拆分说明
+
+文件：
+
+- ui/processstationpasswidget.h
+- ui/processstationpasswidget.cpp
+
+类：
+
+- ProcessStationPassWidget : public QWidget
+
+职责：
+
+- 创建“扫码过站”区域标题
+- 创建过站类别展示
+- 创建扫码方式单选项：扫入 / PASS / NG
+- 创建暂停、解除暂停、工序回退按钮
+- 创建扫码输入框和执行按钮
+- 创建状态信息表 QTableView 和 QStandardItemModel
+- 对外发出按钮请求信号，不处理业务逻辑
+
+public 方法：
+
+- explicit ProcessStationPassWidget(const QString& title, QWidget* parent = nullptr)
+  创建扫码过站 UI 组件。
+
+- bool isScanInMode() const
+  当前是否选择“扫入”。
+
+- bool isPassMode() const
+  当前是否选择“PASS”。
+
+- bool isNgMode() const
+  当前是否选择“NG”。
+
+- QString scanText() const
+  获取扫码输入框文本，并 trim。
+
+- QTableView* statusTableView() const
+  返回状态表视图指针，供左侧面板选中行。
+
+- QStandardItemModel* statusModel() const
+  返回状态表模型指针，供 ProcessStationPassStatus 维护数据。
+
+signals：
+
+- void executeRequested()
+  点击执行按钮或输入框回车时发出。
+
+- void pauseRequested()
+  点击暂停按钮时发出。
+
+- void resumeRequested()
+  点击解除暂停按钮时发出。
+
+private 方法：
+
+- void initUI(const QString& title)
+  创建扫码过站区所有 UI。
+
+- void initConnect()
+  连接按钮和输入框回车信号到组件自身 signals。
+
+从 ProcessStationLeftPanel 迁出的原职责：
+
+- 扫码方式 UI
+- 扫码输入框 UI
+- 执行 / 暂停 / 解除暂停按钮 UI
+- 状态表 UI 和表头初始化
+
+
+六、ProcessStationPassStatus 拆分说明
+
+文件：
+
+- ui/processstationpassstatus.h
+- ui/processstationpassstatus.cpp
+
+类：
+
+- ProcessStationPassStatus
+
+职责：
+
+- 维护产品 SN 与状态表行的映射
+- 维护 PASS / NG / 暂停标记
+- 维护产品开始、暂停、恢复、结束计时
+- 统计 PASS 数量和 NG 数量
+
+枚举：
+
+- ProcessStationPassStatus::Column
+  - NoColumn = 0
+  - ProductSnColumn = 1
+  - PassColumn = 2
+  - NgColumn = 3
+  - PauseColumn = 4
+
+public 方法：
+
+- explicit ProcessStationPassStatus(QStandardItemModel* model = nullptr)
+  创建状态辅助对象，可直接绑定状态表模型。
+
+- void setModel(QStandardItemModel* model)
+  设置或切换状态表模型。
+
+- void clear()
+  清空行映射、计时数据、状态表数据。
+
+- int rowForProductSn(const QString& productSn) const
+  根据产品 SN 查询状态表行号。
+
+- bool isMarked(int row, int column) const
+  判断指定单元格是否已有状态标记。
+
+- bool isPassed(const QString& productSn) const
+  判断产品是否已 PASS。
+
+- bool isNg(const QString& productSn) const
+  判断产品是否已 NG。
+
+- bool isPaused(const QString& productSn) const
+  判断产品是否已暂停。
+
+- int appendRow(const QString& productSn)
+  添加产品状态行，如果已存在则返回原行号。
+
+- void setMark(int row, int column, bool checked, const QColor& color)
+  设置或清除状态表标记。
+
+- void startTiming(const QString& productSn)
+  开始产品处理计时。
+
+- void pauseTiming(const QString& productSn)
+  暂停产品处理计时。
+
+- void resumeTiming(const QString& productSn)
+  恢复产品处理计时，并累加暂停时长。
+
+- qint64 finishTiming(const QString& productSn)
+  结束产品处理计时，返回扣除暂停时长后的有效秒数。
+
+- int passCount() const
+  统计 PASS 产品数量。
+
+- int ngCount() const
+  统计 NG 产品数量。
+
+private 方法：
+
+- QString normalizedSn(const QString& productSn) const
+  统一 trim 产品 SN。
+
+当前成员变量：
+
+- QStandardItemModel* m_model
+- QMap<QString, int> m_productStatusRows
+- QMap<QString, QDateTime> m_productStartTimes
+- QMap<QString, QDateTime> m_productPauseStartTimes
+- QMap<QString, qint64> m_productPausedSeconds
+- QMap<QString, qint64> m_productFinishedSeconds
+
+从 ProcessStationLeftPanel 迁出的原职责：
+
+- 状态行新增
+- 状态标记
+- PASS / NG / 暂停状态判断
+- 工时开始 / 暂停 / 恢复 / 结束
+- PASS / NG 数量统计
+
+
+七、ProcessStationPassDialogs 拆分说明
+
+文件：
+
+- ui/processstationpassdialogs.h
+- ui/processstationpassdialogs.cpp
+
+职责：
+
+- 统一承接扫码过站相关弹窗
+- 只负责弹窗 UI、输入获取、确认前校验
+- 不直接修改状态表，不直接提交业务结果
+
+
+1. NgAbnormalDialog
+
+类：
+
+- NgAbnormalDialog : public BaseDialogWidget
+
+职责：
+
+- NG 异常登记
+- 选择异常类型
+- 上传异常图片
+- 填写异常现象
+- 展示下一工序
+- 输出异常登记数据
+
+public 方法：
+
+- explicit NgAbnormalDialog(const QString& productSn, QWidget* parent = nullptr)
+  创建 NG 异常登记弹窗。
+
+- QString abnormalType() const
+  获取异常类型。
+
+- QString phenomenon() const
+  获取异常现象说明。
+
+- QString imagePath() const
+  获取异常图片路径。
+
+- QString nextProcess() const
+  获取下一工序。
+
+- QString summary() const
+  获取异常登记摘要，用于日志输出。
+
+protected 方法：
+
+- bool onConfirm() override
+  确认前校验异常类型、异常图片、异常现象是否完整。
+
+成员变量：
+
+- QString m_productSn
+- QComboBox* m_productSnCombo
+- QComboBox* m_typeCombo
+- QLineEdit* m_imageEdit
+- QTextEdit* m_phenomenonEdit
+- QLabel* m_nextProcessLabel
+
+
+2. PauseReasonDialog
+
+类：
+
+- PauseReasonDialog : public BaseDialogWidget
+
+职责：
+
+- 暂停原因登记
+- 选择暂停类型
+- 填写关联编码
+- 填写具体说明
+
+public 方法：
+
+- explicit PauseReasonDialog(const QString& productSn, QWidget* parent = nullptr)
+  创建暂停原因登记弹窗。
+
+- QString pauseType() const
+  获取暂停类型。
+
+- QString relatedCode() const
+  获取关联编码。
+
+- QString description() const
+  获取暂停具体说明。
+
+protected 方法：
+
+- bool onConfirm() override
+  确认前校验暂停类型、关联编码、具体说明是否完整。
+
+private 方法：
+
+- QStringList selectedTypes() const
+  获取当前选中的暂停类型。当前实现是单选。
+
+- void updateCodePrompt()
+  根据暂停类型更新关联编码输入提示，并控制关联编码区域显示。
+
+成员变量：
+
+- QComboBox* m_productSnCombo
+- QButtonGroup* m_typeGroup
+- QList<QCheckBox*> m_typeCheckBoxes
+- QWidget* m_codeRowWidget
+- QLabel* m_codeLabel
+- QLineEdit* m_codeEdit
+- QTextEdit* m_descriptionEdit
+
+
+3. ResumeReasonDialog
+
+类：
+
+- ResumeReasonDialog : public BaseDialogWidget
+
+职责：
+
+- 解除暂停原因登记
+- 填写解除暂停理由
+
+public 方法：
+
+- explicit ResumeReasonDialog(const QString& productSn, QWidget* parent = nullptr)
+  创建解除暂停原因登记弹窗。
+
+- QString reason() const
+  获取解除暂停理由。
+
+protected 方法：
+
+- bool onConfirm() override
+  确认前校验解除暂停理由是否为空。
+
+成员变量：
+
+- QComboBox* m_productSnCombo
+- QTextEdit* m_reasonEdit
+
+从 ProcessStationLeftPanel 迁出的原职责：
+
+- NG 异常登记弹窗 UI 与校验
+- 暂停原因登记弹窗 UI 与校验
+- 解除暂停原因登记弹窗 UI 与校验
+
+
+八、拆分后的调用关系
+
+ProcessStationLeftPanel
+
+- 拥有 m_taskInfo、m_abnormalInfo、m_taskStatus 三个 ProcessStationInfoSection
+- 拥有 m_pass 一个 ProcessStationPassWidget
+- 拥有 m_passStatus 一个 ProcessStationPassStatus
+- 在 PASS / NG / 暂停流程中临时创建 ProcessStationPassDialogs 里的弹窗
+
+ProcessStationPassWidget
+
+- 只发出 executeRequested / pauseRequested / resumeRequested
+- 不判断业务规则
+- 不修改状态表业务状态
+
+ProcessStationPassStatus
+
+- 只维护状态表数据和计时
+- 不弹窗
+- 不发业务信号
+
+ProcessStationPassDialogs
+
+- 只负责弹窗输入和弹窗内校验
+- 不直接操作状态表
+- 不直接操作任务状态
+
+ProcessStationInfoSection
+
+- 只负责信息展示
+- 不参与扫码过站业务
+
+
+九、拆分前后职责对照
+
+1. 信息展示区
+
+拆分前：
+
+- ProcessStationLeftPanel 直接创建标题、展开按钮、字段网格、字段标签。
+
+拆分后：
+
+- ProcessStationInfoSection 负责 UI。
+- ProcessStationLeftPanel 只提供字段映射和 rowData。
+
+2. 扫码过站 UI
+
+拆分前：
+
+- ProcessStationLeftPanel 直接创建扫码方式、输入框、按钮、状态表。
+
+拆分后：
+
+- ProcessStationPassWidget 负责 UI 和基础信号。
+- ProcessStationLeftPanel 接收信号后执行业务。
+
+3. 状态表和计时
+
+拆分前：
+
+- ProcessStationLeftPanel 维护状态表行、状态标记、计时 Map。
+
+拆分后：
+
+- ProcessStationPassStatus 维护状态表和计时。
+- ProcessStationLeftPanel 通过包装方法调用它。
+
+4. 过站弹窗
+
+拆分前：
+
+- NgAbnormalDialog、PauseReasonDialog、ResumeReasonDialog 定义在 processstationleftpanel.cpp 匿名 namespace 中。
+
+拆分后：
+
+- 三个弹窗类移动到 ProcessStationPassDialogs 模块。
+- ProcessStationLeftPanel 只创建弹窗并读取弹窗结果。
+
+5. 业务流程
+
+拆分前：
+
+- ProcessStationLeftPanel 处理所有业务流程。
+
+拆分后：
+
+- 业务流程仍保留在 ProcessStationLeftPanel。
+- 这样可以保证当前阶段页面行为稳定。
+
+
+十、当前仍保留在 ProcessStationLeftPanel 的原因
+
+以下方法暂时仍保留在 ProcessStationLeftPanel：
+
+- onExecuteBtnClicked
+- onPauseBtnClicked
+- onResumeBtnClicked
+- handleScanInAction
+- handlePassResult
+- handleNgResult
+- handlePauseResult
+- validateProductSn
+- validateProductSnForCurrentTask
+- validateSelectedProductSn
+- validatePassCondition
+- validateProductNotPassed
+- validateProductNotNg
+- validateProductNotPaused
+- productSnForPauseAction
+- currentProductSnFromSelection
+- updateTaskStatusRealtime
+
+原因：
+
+1. 这些方法涉及页面级业务编排，不只是单纯 UI。
+2. 这些方法依赖外部信号 productSnScanned、productNgSubmitted。
+3. 这些方法依赖 DisplayMode、任务信息、异常品信息、右侧 PASS 校验器。
+4. 如果一次性拆出业务控制器，容易同时改动业务行为和 UI 结构，风险较高。
+
+
+十一、下一阶段建议拆分
+
+建议下一步新增：
+
+1. ProcessStationPassController
+
+候选文件：
+
+- ui/processstationpasscontroller.h
+- ui/processstationpasscontroller.cpp
+
+可迁移方法：
+
+- onExecuteBtnClicked
+- onPauseBtnClicked
+- onResumeBtnClicked
+- handleScanInAction
+- handlePassResult
+- handleNgResult
+- handlePauseResult
+- validateProductSn
+- validateProductSnForCurrentTask
+- validatePassCondition
+- validateProductNotPassed
+- validateProductNotNg
+- validateProductNotPaused
+
+需要设计的输入依赖：
+
+- ProcessStationPassWidget 指针或接口
+- ProcessStationPassStatus 指针或引用
+- DisplayMode
+- m_abnormalInfoData
+- PassConditionValidator
+- QWidget* parent，用于 QMessageBox 和弹窗 parent
+
+需要设计的输出信号：
+
+- productSnScanned
+- productNgSubmitted
+- taskStatusChanged 或 passCount/ngCount changed
+
+
+2. ProcessStationTaskInfoMapper
+
+候选文件：
+
+- ui/processstationtaskinfomapper.h
+- ui/processstationtaskinfomapper.cpp
+
+可迁移方法：
+
+- taskInfoFields
+- taskStatusFields
+- abnormalInfoFields
+- valuesToRowData
+
+收益：
+
+- ProcessStationLeftPanel 不再维护字段映射细节。
+- 后续字段调整集中在一个 mapper 中。
+
+
+3. ProductPassStatusModel 或 ProcessStationPassTableModel
+
+候选文件：
+
+- ui/productpassstatusmodel.h
+- ui/productpassstatusmodel.cpp
+
+可迁移内容：
+
+- 当前 QStandardItemModel 的状态表构建
+- 状态列定义
+- 状态单元格显示
+- PASS / NG / 暂停计数
+
+收益：
+
+- 进一步减少 QStandardItemModel 操作散落。
+- 后续如果状态表增加列或接入后端状态，更容易维护。
+
+
+十二、当前拆分阶段结论
+
+当前 ProcessStationLeftPanel 已从“全量 UI + 弹窗 + 状态 + 业务”收敛为“页面组合 + 业务编排”。
+
+已拆出的职责：
+
+- 信息区 UI：ProcessStationInfoSection
+- 扫码过站 UI：ProcessStationPassWidget
+- 状态表和计时：ProcessStationPassStatus
+- 过站弹窗：ProcessStationPassDialogs
+
+暂未拆出的职责：
+
+- 过站业务控制
+- 字段映射配置
+- 页面级信号转发
+- 显示模式切换
+
+建议继续按“先控制器、再字段映射、最后模型化状态表”的顺序拆分。

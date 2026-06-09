@@ -1,38 +1,10 @@
 #include "processstationleftpanel.h"
 #include "processstationinfosection.h"
-#include "processstationpassdialogs.h"
+#include "processstationpasscontroller.h"
 #include "processstationpasswidget.h"
 
-#include <QColor>
-#include <QDateTime>
 #include <QDebug>
-#include <QDialog>
-#include <QMessageBox>
-#include <QModelIndex>
-#include <QStandardItemModel>
-#include <QTableView>
 #include <QVBoxLayout>
-
-namespace
-{
-constexpr int STATUS_COL_PRODUCT_SN = ProcessStationPassStatus::ProductSnColumn;
-constexpr int STATUS_COL_PASS = ProcessStationPassStatus::PassColumn;
-constexpr int STATUS_COL_NG = ProcessStationPassStatus::NgColumn;
-constexpr int STATUS_COL_PAUSE = ProcessStationPassStatus::PauseColumn;
-
-QString formatDuration(qint64 seconds)
-{
-    const qint64 safeSeconds = qMax<qint64>(0, seconds);
-    const qint64 h = safeSeconds / 3600;
-    const qint64 m = (safeSeconds % 3600) / 60;
-    const qint64 s = safeSeconds % 60;
-    return QStringLiteral("%1:%2:%3")
-        .arg(h, 2, 10, QChar('0'))
-        .arg(m, 2, 10, QChar('0'))
-        .arg(s, 2, 10, QChar('0'));
-}
-
-}
 
 ProcessStationLeftPanel::ProcessStationLeftPanel(QWidget *parent)
     : QWidget(parent)
@@ -62,9 +34,7 @@ void ProcessStationLeftPanel::initUI()
     m_abnormalInfo = new ProcessStationInfoSection(tr("异常品信息"), this);
     m_taskStatus = new ProcessStationInfoSection(tr("任务单状态"), this);
     m_pass = new ProcessStationPassWidget(tr("扫码过站"), this);
-    m_statusTableView = m_pass->statusTableView();
-    m_statusModel = m_pass->statusModel();
-    m_passStatus.setModel(m_statusModel);
+    m_passController = new ProcessStationPassController(m_pass, this, this);
 
     mainLayout->addWidget(m_taskInfo);
     mainLayout->addWidget(m_abnormalInfo);
@@ -79,502 +49,19 @@ void ProcessStationLeftPanel::initUI()
 
 void ProcessStationLeftPanel::initConnect()
 {
-    if (!m_pass)
+    if (!m_passController)
         return;
 
-    connect(m_pass, &ProcessStationPassWidget::executeRequested,
-            this, &ProcessStationLeftPanel::onExecuteBtnClicked);
-    connect(m_pass, &ProcessStationPassWidget::pauseRequested,
-            this, &ProcessStationLeftPanel::onPauseBtnClicked);
-    connect(m_pass, &ProcessStationPassWidget::resumeRequested,
-            this, &ProcessStationLeftPanel::onResumeBtnClicked);
+    connect(m_passController, &ProcessStationPassController::productSnScanned,
+            this, &ProcessStationLeftPanel::productSnScanned);
+    connect(m_passController, &ProcessStationPassController::productNgSubmitted,
+            this, &ProcessStationLeftPanel::productNgSubmitted);
+    connect(m_passController, &ProcessStationPassController::passStatusChanged,
+            this, &ProcessStationLeftPanel::updateTaskStatusRealtime);
 }
 
-void ProcessStationLeftPanel::onExecuteBtnClicked()
+void ProcessStationLeftPanel::updateTaskStatusRealtime(int passCount, int ngCount)
 {
-    if (!m_pass)
-        return;
-
-    if (m_pass->isScanInMode())
-    {
-        const QString productSn = m_pass->scanText();
-        if (!validateProductSn(productSn))
-            return;
-
-        handleScanInAction(productSn);
-    }
-    else if (m_pass->isPassMode())
-    {
-        // PASS 针对输入框中的产品SN，再到状态信息表中查找对应行。
-        const QString productSn = m_pass->scanText();
-        if (!validateProductSn(productSn))
-            return;
-
-        handlePassResult(productSn);
-    }
-    else if (m_pass->isNgMode())
-    {
-        // NG 针对输入框中的产品SN，再到状态信息表中查找对应行。
-        const QString productSn = m_pass->scanText();
-        if (!validateProductSn(productSn))
-            return;
-
-        handleNgResult(productSn);
-    }
-}
-
-void ProcessStationLeftPanel::onPauseBtnClicked()
-{
-    const QString productSn = productSnForPauseAction();
-    if (!validateProductSn(productSn))
-        return;
-    if (!validateProductNotPassed(productSn, tr("暂停")))
-        return;
-    if (!validateProductNotNg(productSn, tr("暂停")))
-        return;
-    if (isProductPaused(productSn))
-    {
-        QMessageBox::warning(this, tr("扫码过站"), tr("该产品已暂停。"));
-        return;
-    }
-
-    PauseReasonDialog dialog(productSn, this);
-    if (dialog.exec() != QDialog::Accepted)
-    {
-        qDebug() << __FUNCTION__ << "pause canceled productSn:" << productSn;
-        return;
-    }
-
-    qDebug() << __FUNCTION__
-             << "productSn:" << productSn
-             << "type:" << dialog.pauseType()
-             << "code:" << dialog.relatedCode()
-             << "description:" << dialog.description();
-
-    handlePauseResult(true);
-}
-
-void ProcessStationLeftPanel::onResumeBtnClicked()
-{
-    const QString productSn = productSnForPauseAction();
-    if (!validateProductSn(productSn))
-        return;
-    if (!validateProductNotPassed(productSn, tr("解除暂停")))
-        return;
-    if (!validateProductNotNg(productSn, tr("解除暂停")))
-        return;
-
-    const int row = statusRowForProductSn(productSn);
-    if (row < 0)
-    {
-        QMessageBox::warning(this, tr("扫码过站"), tr("请先扫入该产品SN。"));
-        qDebug() << __FUNCTION__ << "product not scanned:" << productSn;
-        return;
-    }
-
-    if (!isProductPaused(productSn))
-    {
-        QMessageBox::warning(this, tr("扫码过站"), tr("该产品当前未暂停。"));
-        return;
-    }
-
-    ResumeReasonDialog dialog(productSn, this);
-    if (dialog.exec() != QDialog::Accepted)
-    {
-        qDebug() << __FUNCTION__ << "resume canceled productSn:" << productSn;
-        return;
-    }
-
-    qDebug() << __FUNCTION__
-             << "productSn:" << productSn
-             << "reason:" << dialog.reason();
-
-    handlePauseResult(false);
-}
-
-void ProcessStationLeftPanel::handleScanInAction(const QString& productSn)
-{
-    if (!validateProductSnForCurrentTask(productSn))
-        return;
-
-    int row = statusRowForProductSn(productSn);
-    if (row >= 0 && isProductPassed(productSn))
-    {
-        if (m_statusTableView)
-            m_statusTableView->selectRow(row);
-
-        QMessageBox::warning(this, tr("扫码过站"), tr("该产品已PASS，不能重复操作。"));
-        qDebug() << __FUNCTION__ << "product already passed:" << productSn;
-        return;
-    }
-
-    if (row >= 0 && isProductNg(productSn))
-    {
-        if (m_statusTableView)
-            m_statusTableView->selectRow(row);
-
-        QMessageBox::warning(this, tr("扫码过站"), tr("该产品已NG，已转入维修站。"));
-        qDebug() << __FUNCTION__ << "product already NG:" << productSn;
-        return;
-    }
-
-    if (row >= 0)
-    {
-        if (m_statusTableView)
-            m_statusTableView->selectRow(row);
-
-        emit productSnScanned(productSn);
-        QMessageBox::information(this, tr("扫码过站"), tr("此SN码已扫入，请确认当前状态。"));
-        qDebug() << __FUNCTION__ << "product already scanned:" << productSn << "row:" << row;
-        return;
-    }
-
-    if (row < 0)
-        row = appendStatusRow(productSn);
-
-    if (m_statusTableView)
-        m_statusTableView->selectRow(row);
-
-    startProductTiming(productSn);
-    // 扫入只表示产品进入当前工序处理队列，不直接改变 PASS/NG 汇总数量。
-    updateTaskStatusRealtime();
-    emit productSnScanned(productSn);
-    qDebug() << __FUNCTION__ << "scan in productSn:" << productSn << "row:" << row;
-}
-
-void ProcessStationLeftPanel::handlePassResult(const QString& productSn)
-{
-    const int row = statusRowForProductSn(productSn);
-    if (row < 0)
-    {
-        QMessageBox::warning(this, tr("扫码过站"), tr("请先扫入该产品SN。"));
-        qDebug() << __FUNCTION__ << "product not scanned:" << productSn;
-        return;
-    }
-
-    if (!validatePassCondition(productSn))
-        return;
-    if (!validateProductNotPassed(productSn, tr("PASS")))
-        return;
-    if (!validateProductNotNg(productSn, tr("PASS")))
-        return;
-    if (!validateProductNotPaused(productSn, tr("PASS")))
-        return;
-
-    const int ret = QMessageBox::question(
-        this,
-        tr("扫码过站"),
-        tr("确认该产品通过当前工序？"),
-        QMessageBox::Yes | QMessageBox::No,
-        QMessageBox::No);
-    if (ret != QMessageBox::Yes)
-    {
-        qDebug() << __FUNCTION__ << "PASS canceled productSn:" << productSn;
-        return;
-    }
-
-    setStatusMark(row, STATUS_COL_PASS, true, QColor(0, 150, 80));
-    setStatusMark(row, STATUS_COL_NG, false, QColor());
-    const qint64 elapsedSeconds = finishProductTiming(productSn);
-    updateTaskStatusRealtime();
-
-    qDebug() << __FUNCTION__
-             << "PASS productSn:" << productSn
-             << "row:" << row
-             << "elapsed:" << formatDuration(elapsedSeconds);
-}
-
-void ProcessStationLeftPanel::handleNgResult(const QString& productSn)
-{
-    const int row = statusRowForProductSn(productSn);
-    if (row < 0)
-    {
-        QMessageBox::warning(this, tr("扫码过站"), tr("请先扫入该产品SN。"));
-        qDebug() << __FUNCTION__ << "product not scanned:" << productSn;
-        return;
-    }
-    if (!validateProductNotPassed(productSn, tr("NG")))
-        return;
-    if (!validateProductNotNg(productSn, tr("NG")))
-        return;
-    if (!validateProductNotPaused(productSn, tr("NG")))
-        return;
-
-    NgAbnormalDialog dialog(productSn, this);
-    if (dialog.exec() != QDialog::Accepted)
-    {
-        qDebug() << __FUNCTION__ << "NG canceled productSn:" << productSn;
-        return;
-    }
-
-    setStatusMark(row, STATUS_COL_NG, true, QColor(210, 72, 72));
-    setStatusMark(row, STATUS_COL_PASS, false, QColor());
-    const qint64 elapsedSeconds = finishProductTiming(productSn);
-
-    QVariantMap abnormalData;
-    abnormalData.insert("productSN", productSn);
-    abnormalData.insert("abnormalType", dialog.abnormalType());
-    abnormalData.insert("abnormalPhenomenon", dialog.phenomenon());
-    abnormalData.insert("abnormalImage", dialog.imagePath());
-    abnormalData.insert("nextProcess", dialog.nextProcess());
-    abnormalData.insert("reportTime", QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss"));
-    abnormalData.insert("status", tr("待处理"));
-    abnormalData.insert("elapsedSeconds", elapsedSeconds);
-    // TODO(backend): NG 确认后应调用后台接口生成异常处理单，并由后台推送/刷新维修站待处理列表。
-    emit productNgSubmitted(abnormalData);
-    updateTaskStatusRealtime();
-
-    qDebug() << __FUNCTION__
-             << "NG productSn:" << productSn
-             << "abnormal:" << dialog.summary()
-             << "row:" << row
-             << "elapsed:" << formatDuration(elapsedSeconds);
-}
-
-void ProcessStationLeftPanel::handlePauseResult(bool paused)
-{
-    // 单件过站时优先使用当前选中行；没有选中行时再使用输入框 SN。
-    // TODO(backend): 批量暂停/批量解除暂停应由后台返回批量 SN 状态并统一提交暂停记录。
-    const QString productSn = productSnForPauseAction();
-    if (!validateProductSn(productSn))
-        return;
-
-    const int row = statusRowForProductSn(productSn);
-    if (row < 0)
-    {
-        QMessageBox::warning(this, tr("扫码过站"), tr("请先扫入该产品SN。"));
-        qDebug() << __FUNCTION__ << "product not scanned:" << productSn;
-        return;
-    }
-    if (!paused && !isProductPaused(productSn))
-    {
-        QMessageBox::warning(this, tr("扫码过站"), tr("该产品当前未暂停。"));
-        return;
-    }
-
-    setStatusMark(row, STATUS_COL_PAUSE, paused, QColor(230, 145, 56));
-    if (paused)
-        pauseProductTiming(productSn);
-    else
-        resumeProductTiming(productSn);
-    updateTaskStatusRealtime();
-
-    qDebug() << __FUNCTION__
-             << "productSn:" << productSn
-             << "paused:" << paused
-             << "row:" << row;
-}
-
-bool ProcessStationLeftPanel::validateProductSn(const QString& productSn) const
-{
-    if (!productSn.isEmpty())
-        return true;
-
-    QMessageBox::warning(
-        const_cast<ProcessStationLeftPanel*>(this),
-        tr("扫码过站"),
-        tr("请先扫描或输入产品SN。"));
-    qDebug() << __FUNCTION__ << "empty productSn";
-    return false;
-}
-
-bool ProcessStationLeftPanel::validateProductSnForCurrentTask(const QString& productSn) const
-{
-    if (!validateProductSn(productSn))
-        return false;
-
-    const QString reworkProductSn = m_abnormalInfoData.value("productSN").toString().trimmed();
-    if (m_displayMode == DisplayMode::ReworkTask &&
-        !reworkProductSn.isEmpty() &&
-        productSn != reworkProductSn)
-    {
-        QMessageBox::warning(
-            const_cast<ProcessStationLeftPanel*>(this),
-            tr("扫码过站"),
-            tr("当前返工任务单产品SN为%1，不能扫入%2。").arg(reworkProductSn, productSn));
-        return false;
-    }
-
-    // TODO(backend): 正常生产任务单需要后台校验 SN 是否属于当前任务单、产品型号是否匹配、
-    // 当前 SN 是否处于本工序；当前本地 JSON 数据没有任务单 SN 清单，只能先保留统一入口。
-    return true;
-}
-
-bool ProcessStationLeftPanel::validateSelectedProductSn(const QString& productSn) const
-{
-    if (!productSn.isEmpty())
-        return true;
-
-    QMessageBox::warning(
-        const_cast<ProcessStationLeftPanel*>(this),
-        tr("扫码过站"),
-        tr("请先在状态信息中选中产品SN。"));
-    qDebug() << __FUNCTION__ << "empty selected productSn";
-    return false;
-}
-
-bool ProcessStationLeftPanel::validatePassCondition(const QString& productSn) const
-{
-    if (m_passConditionValidator)
-    {
-        QString message;
-        const bool ok = m_passConditionValidator(productSn, &message);
-        if (!ok)
-        {
-            QMessageBox::warning(
-                const_cast<ProcessStationLeftPanel*>(this),
-                tr("扫码过站"),
-                message.isEmpty() ? tr("右侧工艺信息未完成，不能PASS。") : message);
-            return false;
-        }
-
-        return true;
-    }
-
-    // TODO(backend): PASS 前应由后台返回当前工序需要校验的物料、工具设备、资料上传项；
-    // 当前如果没有注入右侧校验器，则只保留入口并放行，避免单独使用左侧面板时无法过站。
-    qDebug() << __FUNCTION__ << "right-side material/upload validation not injected";
-    return true;
-}
-
-bool ProcessStationLeftPanel::isProductPassed(const QString& productSn) const
-{
-    return m_passStatus.isPassed(productSn);
-}
-
-bool ProcessStationLeftPanel::isProductNg(const QString& productSn) const
-{
-    return m_passStatus.isNg(productSn);
-}
-
-bool ProcessStationLeftPanel::isProductPaused(const QString& productSn) const
-{
-    return m_passStatus.isPaused(productSn);
-}
-
-bool ProcessStationLeftPanel::validateProductNotPassed(
-    const QString& productSn,
-    const QString& actionName) const
-{
-    if (!isProductPassed(productSn))
-        return true;
-
-    QMessageBox::warning(
-        const_cast<ProcessStationLeftPanel*>(this),
-        tr("扫码过站"),
-        tr("该产品已PASS，不能%1。").arg(actionName));
-    qDebug() << __FUNCTION__
-             << "product already passed:" << productSn
-             << "action:" << actionName;
-    return false;
-}
-
-bool ProcessStationLeftPanel::validateProductNotNg(
-    const QString& productSn,
-    const QString& actionName) const
-{
-    if (!isProductNg(productSn))
-        return true;
-
-    QMessageBox::warning(
-        const_cast<ProcessStationLeftPanel*>(this),
-        tr("扫码过站"),
-        tr("该产品已NG并转入维修站，不能%1。").arg(actionName));
-    qDebug() << __FUNCTION__
-             << "product already NG:" << productSn
-             << "action:" << actionName;
-    return false;
-}
-
-bool ProcessStationLeftPanel::validateProductNotPaused(
-    const QString& productSn,
-    const QString& actionName) const
-{
-    if (!isProductPaused(productSn))
-        return true;
-
-    QMessageBox::warning(
-        const_cast<ProcessStationLeftPanel*>(this),
-        tr("扫码过站"),
-        tr("请先解除暂停。"));
-    qDebug() << __FUNCTION__
-             << "product paused:" << productSn
-             << "action:" << actionName;
-    return false;
-}
-
-QString ProcessStationLeftPanel::productSnForPauseAction() const
-{
-    const QString selectedSn = currentProductSnFromSelection();
-    if (!selectedSn.trimmed().isEmpty())
-        return selectedSn.trimmed();
-
-    return m_pass ? m_pass->scanText() : QString();
-}
-
-QString ProcessStationLeftPanel::currentProductSnFromSelection() const
-{
-    if (!m_statusTableView || !m_statusModel)
-        return QString();
-
-    const QModelIndex currentIndex = m_statusTableView->currentIndex();
-    if (!currentIndex.isValid())
-        return QString();
-
-    return m_statusModel->index(currentIndex.row(), STATUS_COL_PRODUCT_SN)
-        .data(Qt::DisplayRole)
-        .toString();
-}
-
-int ProcessStationLeftPanel::statusRowForProductSn(const QString& productSn) const
-{
-    return m_passStatus.rowForProductSn(productSn);
-}
-
-bool ProcessStationLeftPanel::isStatusMarked(int row, int column) const
-{
-    return m_passStatus.isMarked(row, column);
-}
-
-int ProcessStationLeftPanel::appendStatusRow(const QString& productSn)
-{
-    return m_passStatus.appendRow(productSn);
-}
-
-void ProcessStationLeftPanel::setStatusMark(
-    int row,
-    int column,
-    bool checked,
-    const QColor& color)
-{
-    m_passStatus.setMark(row, column, checked, color);
-}
-
-void ProcessStationLeftPanel::startProductTiming(const QString& productSn)
-{
-    m_passStatus.startTiming(productSn);
-}
-
-void ProcessStationLeftPanel::pauseProductTiming(const QString& productSn)
-{
-    m_passStatus.pauseTiming(productSn);
-}
-
-void ProcessStationLeftPanel::resumeProductTiming(const QString& productSn)
-{
-    m_passStatus.resumeTiming(productSn);
-}
-
-qint64 ProcessStationLeftPanel::finishProductTiming(const QString& productSn)
-{
-    return m_passStatus.finishTiming(productSn);
-}
-
-void ProcessStationLeftPanel::updateTaskStatusRealtime()
-{
-    const int passCount = m_passStatus.passCount();
-    const int ngCount = m_passStatus.ngCount();
-
     m_taskStatusData.insert("finishedCount", passCount);
     m_taskStatusData.insert("ngCount", ngCount);
 
@@ -703,6 +190,8 @@ void ProcessStationLeftPanel::setTaskStatusData(const QVariantMap &rowData)
 void ProcessStationLeftPanel::setAbnormalInfoData(const QVariantMap &rowData)
 {
     m_abnormalInfoData = rowData;
+    if (m_passController)
+        m_passController->setAbnormalInfoData(rowData);
     setTaskData(m_abnormalInfo, abnormalInfoFields(), rowData);
 }
 
@@ -718,6 +207,8 @@ void ProcessStationLeftPanel::setDisplayMode(DisplayMode mode)
     m_displayMode = mode;
 
     const bool isReworkTask = (mode == DisplayMode::ReworkTask);
+    if (m_passController)
+        m_passController->setReworkMode(isReworkTask);
 
     if (m_taskInfo)
         m_taskInfo->setVisible(!isReworkTask);
@@ -740,20 +231,12 @@ void ProcessStationLeftPanel::setDisplayMode(DisplayMode mode)
 
 void ProcessStationLeftPanel::setPassConditionValidator(PassConditionValidator validator)
 {
-    m_passConditionValidator = validator;
+    if (m_passController)
+        m_passController->setPassConditionValidator(validator);
 }
 
 void ProcessStationLeftPanel::clearPassStatus()
 {
-    // 切换任务或侧边栏直接进入时，清空当前工序的产品实时过站表。
-    // 任务单状态中的完成数/NG数也同步归零，避免沿用上一个产品的实时状态。
-    m_passStatus.clear();
-
-    m_taskStatusData.insert("finishedCount", 0);
-    m_taskStatusData.insert("ngCount", 0);
-
-    if (m_displayMode == DisplayMode::NormalTask)
-        setTaskData(m_taskStatus, taskStatusFields(), m_taskStatusData);
-
-    qDebug() << __FUNCTION__ << "pass status cleared";
+    if (m_passController)
+        m_passController->clearPassStatus();
 }
