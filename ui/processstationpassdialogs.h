@@ -34,6 +34,7 @@ private:
     QLineEdit* m_imageEdit{nullptr};
     QTextEdit* m_phenomenonEdit{nullptr};
     QLabel* m_nextProcessLabel{nullptr};
+    bool m_photoLongPressed{false};
 };
 
 class PauseReasonDialog : public BaseDialogWidget

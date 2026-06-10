@@ -1,5 +1,7 @@
 #include "processstationpassdialogs.h"
 
+#include "camera.h"
+
 #include <QButtonGroup>
 #include <QCheckBox>
 #include <QComboBox>
@@ -10,7 +12,9 @@
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QStyle>
 #include <QTextEdit>
+#include <QTimer>
 #include <QWidget>
 
 NgAbnormalDialog::NgAbnormalDialog(const QString& productSn, QWidget* parent)
@@ -48,9 +52,48 @@ NgAbnormalDialog::NgAbnormalDialog(const QString& productSn, QWidget* parent)
     imageRow->addWidget(new QLabel(tr("图片上传："), this));
     m_imageEdit = new QLineEdit(this);
     m_imageEdit->setReadOnly(true);
-    m_imageEdit->setPlaceholderText(tr("请选择异常图片"));
-    auto browseBtn = new QPushButton(tr("上传图片"), this);
-    connect(browseBtn, &QPushButton::clicked, this, [this]() {
+    m_imageEdit->setPlaceholderText(tr("长按选择照片打开相机"));
+    auto browseBtn = new QPushButton(tr("选择照片"), this);
+    browseBtn->setProperty("buttonRole", "photoSelect");
+    browseBtn->setProperty("cameraActive", false);
+    auto longPressTimer = new QTimer(browseBtn);
+    longPressTimer->setSingleShot(true);
+    longPressTimer->setInterval(800);
+
+    auto refreshPhotoButton = [browseBtn](bool cameraActive) {
+        browseBtn->setProperty("cameraActive", cameraActive);
+        browseBtn->setText(cameraActive
+                               ? NgAbnormalDialog::tr("打开相机")
+                               : NgAbnormalDialog::tr("选择照片"));
+        browseBtn->style()->unpolish(browseBtn);
+        browseBtn->style()->polish(browseBtn);
+        browseBtn->update();
+    };
+
+    connect(longPressTimer, &QTimer::timeout, this, [this, refreshPhotoButton]() {
+        m_photoLongPressed = true;
+        refreshPhotoButton(true);
+    });
+
+    connect(browseBtn, &QPushButton::pressed, this, [this, longPressTimer, refreshPhotoButton]() {
+        m_photoLongPressed = false;
+        refreshPhotoButton(false);
+        longPressTimer->start();
+    });
+
+    connect(browseBtn, &QPushButton::released, this, [this, longPressTimer, refreshPhotoButton]() {
+        if (longPressTimer->isActive())
+            longPressTimer->stop();
+
+        if (m_photoLongPressed)
+        {
+            const QString filePath = Camera::capture(this);
+            if (!filePath.isEmpty() && m_imageEdit)
+                m_imageEdit->setText(filePath);
+            refreshPhotoButton(false);
+            return;
+        }
+
         const QString filePath = QFileDialog::getOpenFileName(
             this,
             tr("选择异常图片"),

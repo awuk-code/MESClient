@@ -1,6 +1,8 @@
 #include "datauploadwidget.h"
 #include "ui_datauploadwidget.h"
 
+#include "camera.h"
+
 #include <QDebug>
 #include <QFileDialog>
 #include <QFileInfo>
@@ -195,7 +197,25 @@ void DataUPloadWidget::removeItem(QTreeWidgetItem* item)
 
 void DataUPloadWidget::openCamera()
 {
-    QMessageBox::information(this, tr("打开相机"), tr("相机功能待接入。"));
+    QTreeWidgetItem* photoRoot = rootItem(PhotoRootIndex);
+    if (!photoRoot)
+        return;
+
+    const QString filePath = QFileInfo(Camera::capture(this)).absoluteFilePath();
+    if (filePath.isEmpty())
+        return;
+
+    for (int i = 0; i < photoRoot->childCount(); ++i)
+    {
+        if (photoRoot->child(i)->text(0) == filePath)
+        {
+            photoRoot->setExpanded(true);
+            return;
+        }
+    }
+
+    photoRoot->addChild(new QTreeWidgetItem(QStringList() << filePath));
+    photoRoot->setExpanded(true);
 }
 
 bool DataUPloadWidget::hasChildren(QTreeWidgetItem* parentItem) const

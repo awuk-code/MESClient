@@ -211,6 +211,7 @@ QDialog#BaseDialogWidget QWidget#DialogButtonBar {
 
 QPushButton[buttonRole="save"],
 QPushButton[buttonRole="export"],
+QPushButton[buttonRole="photoSelect"],
 QPushButton[buttonRole="primary"] {
     background-color: #880088;
     color: #ffffff;
@@ -220,15 +221,28 @@ QPushButton[buttonRole="primary"] {
 
 QPushButton[buttonRole="save"]:hover,
 QPushButton[buttonRole="export"]:hover,
+QPushButton[buttonRole="photoSelect"]:hover,
 QPushButton[buttonRole="primary"]:hover {
     background-color: #a64ca6;
 }
 
 QPushButton[buttonRole="save"]:disabled,
 QPushButton[buttonRole="export"]:disabled,
+QPushButton[buttonRole="photoSelect"]:disabled,
 QPushButton[buttonRole="primary"]:disabled {
     background-color: #c0c4cc;
     color: #ffffff;
+}
+
+QPushButton[buttonRole="photoSelect"][cameraActive="true"] {
+    background-color: #1f7a5a;
+    color: #ffffff;
+    border: 1px solid #166246;
+}
+
+QPushButton[buttonRole="photoSelect"][cameraActive="true"]:hover,
+QPushButton[buttonRole="photoSelect"][cameraActive="true"]:pressed {
+    background-color: #24966d;
 }
 
 QPushButton[buttonRole="secondary"] {

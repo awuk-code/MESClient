@@ -1,0 +1,794 @@
+20260610 今晚全部修改位置和函数说明
+===================================
+
+一、说明范围
+------------
+
+本文档汇总 2026-06-10 晚上围绕工序站点、工具类、客户端信息、高拍仪入口和异常图片按钮样式所做的修改。
+
+主要包含：
+
+1. 工序站点一对多物料数据适配工具 MatAdapter。
+2. JsonDataLoader 从 core 移动到 tool。
+3. BaseTableModel 增加 rows() 接口。
+4. ClientInfo 获取真实客户端 IP 和 MAC。
+5. ConfigManager 增加 clientIP / clientMAC。
+6. 登录请求增加客户端 IP / MAC。
+7. Camera 高拍仪工具空壳和模拟拍照入口。
+8. 资料上传页签接入 Camera。
+9. NG 异常登记图片按钮接入 Camera、长按状态和 QSS。
+
+
+二、tool/matadapter.h
+--------------------
+
+文件位置：
+
+tool/matadapter.h
+
+新增类：
+
+class MatAdapter
+
+对外函数：
+
+static bool isCompound(const QJsonArray& data);
+static bool isCompound(const QVector<QVariantMap>& data);
+
+作用：
+判断数据是否为复合数据，即是否包含 materials 数组结构。
+主要用于上传前校验处理后的数据结构。
+
+
+static QVector<QVariantMap> split(const QJsonArray& compoundData);
+static QVector<QVariantMap> split(const QVector<QVariantMap>& compoundData);
+
+作用：
+把后台复合数据拆成表格分离行数据。
+用于工序站点表格显示前处理后台返回数据。
+
+
+static QJsonArray combine(const QVector<QVariantMap>& splitRows);
+
+作用：
+在没有后台原始数据时，把表格行直接组合为后台需要的复合 JSON。
+
+
+static QJsonArray combine(const QJsonArray& originalData,
+                          const QVector<QVariantMap>& splitRows);
+
+作用：
+真实上传时优先使用。
+以后台原始数据为基础，把表格修改、补充的数据合并回去，避免丢失后台原有 ID、状态、时间、工序字段、物料字段。
+
+
+私有函数：
+
+static Opt opt();
+static bool hasItems(const QVariantMap& row, const Opt& opt);
+static QVector<QVariantMap> expandNestedRows(...);
+static QVector<QVariantMap> expandFlatRows(...);
+static void appendGroup(...);
+static QVariantMap itemFromRow(...);
+static QVariantMap stripMeta(...);
+
+作用：
+这些函数只服务于内部拆分、分组、聚合和清理元数据，对外不暴露。
+
+
+三、tool/matadapter.cpp
+----------------------
+
+文件位置：
+
+tool/matadapter.cpp
+
+主要函数：
+
+MatAdapter::isCompound(...)
+
+判断是否存在 materials 数组字段。
+
+
+MatAdapter::split(...)
+
+如果是复合数据，调用 expandNestedRows 展开 materials。
+如果是平铺数据，调用 expandFlatRows 按 productSN 分组。
+
+
+MatAdapter::combine(const QVector<QVariantMap>& splitRows)
+
+按 productSN 或 _groupKey 将表格行聚合成：
+
+[
+  {
+    "productSN": "...",
+    "materials": [...]
+  }
+]
+
+
+MatAdapter::combine(const QJsonArray& originalData,
+                    const QVector<QVariantMap>& splitRows)
+
+以 originalData 为底合并表格修改。
+父级已有字段会从表格首行补回父级。
+物料字段会合并回 materials。
+内部字段 _groupKey、_groupIndex、_groupFirst、_groupRowCount、_itemIndex 不上传。
+
+
+MatAdapter::expandNestedRows(...)
+
+把后台一对多复合结构展开为多行表格数据。
+
+
+MatAdapter::expandFlatRows(...)
+
+把后台一对一或平铺结构按产品 SN 分组，补充序号和分组元数据。
+
+
+MatAdapter::appendGroup(...)
+
+给表格行补充 rowNumber、_groupKey、_groupIndex、_groupFirst、_groupRowCount、_itemIndex。
+
+
+MatAdapter::itemFromRow(...)
+
+从表格行中提取物料字段，排除产品 SN、序号、materials 和内部元数据。
+
+
+MatAdapter::stripMeta(...)
+
+上传前清理内部元数据。
+
+
+四、tool/jsondataloader.h / tool/jsondataloader.cpp
+--------------------------------------------------
+
+文件位置：
+
+tool/jsondataloader.h
+tool/jsondataloader.cpp
+
+修改说明：
+
+JsonDataLoader 从 core 目录移动到 tool 目录。
+
+原因：
+
+JsonDataLoader 是 JSON 文件读取工具，不属于 core 业务模型。
+移动到 tool 后，目录职责更清晰。
+
+关联工程文件：
+
+core/core.pri 移除 jsondataloader.h / jsondataloader.cpp。
+tool/tool.pri 增加 jsondataloader.h / jsondataloader.cpp。
+
+
+五、core/basetablemodel.h
+------------------------
+
+文件位置：
+
+core/basetablemodel.h
+
+新增函数：
+
+QVector<QVariantMap> rows() const;
+
+作用：
+
+获取当前表格模型中的完整行数据。
+后续上传时可以配合 MatAdapter 使用：
+
+QJsonArray uploadData =
+    MatAdapter::combine(originalBackendData, model->rows());
+
+
+六、core/basetablemodel.cpp
+--------------------------
+
+文件位置：
+
+core/basetablemodel.cpp
+
+新增函数实现：
+
+QVector<QVariantMap> BaseTableModel::rows() const
+
+作用：
+
+返回 m_rows。
+用于提交前读取表格当前编辑后的完整数据。
+
+
+七、tool/clientinfo.h
+--------------------
+
+文件位置：
+
+tool/clientinfo.h
+
+新增类：
+
+class ClientInfo
+
+对外函数：
+
+static QString ip();
+static QString mac();
+static QVariantMap info();
+
+作用：
+
+获取客户端真实 IP、真实 MAC 和主机名。
+
+info() 返回字段：
+
+clientIP
+clientMAC
+hostName
+
+私有函数：
+
+static NetCard primaryNetCard();
+static bool isRealNetCard(const NetCard& card);
+static bool isFallbackNetCard(const NetCard& card);
+
+
+八、tool/clientinfo.cpp
+----------------------
+
+文件位置：
+
+tool/clientinfo.cpp
+
+主要函数：
+
+ClientInfo::ip()
+
+返回真实网卡 IPv4。
+
+
+ClientInfo::mac()
+
+返回真实网卡 MAC。
+
+
+ClientInfo::info()
+
+返回 clientIP、clientMAC、hostName。
+
+
+ClientInfo::primaryNetCard()
+
+遍历本机网卡，选择真实物理网卡。
+
+
+ClientInfo::isRealNetCard(...)
+
+判断是否是真实网卡。
+要求：
+
+1. 网卡启用。
+2. 网卡正在运行。
+3. 非回环。
+4. 非点对点。
+5. MAC 有效。
+6. 有 IPv4。
+7. 名称不是虚拟网卡、VPN、Docker、WSL、蓝牙等干扰项。
+
+
+ClientInfo::isFallbackNetCard(...)
+
+兜底判断可用网卡。
+当前也会过滤虚拟网卡，避免误上传干扰项。
+
+
+匿名命名空间辅助函数：
+
+isInvalidMac(...)
+
+过滤空 MAC、00:00:00:00:00:00、FF:FF:FF:FF:FF:FF。
+
+
+isInvalidIPv4(...)
+
+过滤：
+
+127.*
+0.0.0.0
+169.254.*
+224.* 及以上
+回环地址
+空地址
+
+
+isVirtualInterfaceName(...)
+
+过滤常见干扰网卡名称：
+
+virtual
+vmware
+virtualbox
+vbox
+hyper-v
+vethernet
+docker
+wsl
+tap
+tun
+vpn
+loopback
+bluetooth
+teredo
+isatap
+6to4
+npcap
+
+
+九、config/configmanager.h
+-------------------------
+
+文件位置：
+
+config/configmanager.h
+
+新增对外函数：
+
+QString clientIP() const;
+QString clientMAC() const;
+
+新增私有函数：
+
+void refreshClientInfo();
+
+新增成员变量：
+
+QString m_clientIP;
+QString m_clientMAC;
+
+说明：
+
+clientIP / clientMAC 是运行时环境信息，不写入 config.ini。
+原因是 IP 可能变化，写入配置文件可能导致使用旧值。
+
+
+十、config/configmanager.cpp
+---------------------------
+
+文件位置：
+
+config/configmanager.cpp
+
+新增 include：
+
+#include "clientinfo.h"
+
+修改函数：
+
+ConfigManager::loadConfig(...)
+
+新增 refreshClientInfo()。
+加载配置后刷新客户端 IP 和 MAC。
+调试输出中增加 clientIP、clientMAC。
+
+
+新增函数：
+
+QString ConfigManager::clientIP() const
+
+作用：
+返回当前客户端 IP。
+如果为空，则重新调用 refreshClientInfo()。
+
+
+QString ConfigManager::clientMAC() const
+
+作用：
+返回当前客户端 MAC。
+如果为空，则重新调用 refreshClientInfo()。
+
+
+void ConfigManager::refreshClientInfo()
+
+作用：
+通过 ClientInfo::ip() 和 ClientInfo::mac() 刷新 m_clientIP、m_clientMAC。
+
+
+十一、network/apiservice.cpp
+----------------------------
+
+文件位置：
+
+network/apiservice.cpp
+
+修改函数：
+
+void ApiService::login(const QString& userName, const QString& password)
+
+新增登录请求字段：
+
+body.insert("clientIP", ConfigManager::instance().clientIP());
+body.insert("clientMAC", ConfigManager::instance().clientMAC());
+
+作用：
+
+登录时把客户端真实 IP、MAC 上传给后台。
+后续后台可用于登录日志、设备校验、账号登录控制等。
+
+
+十二、tool/camera.h
+-------------------
+
+文件位置：
+
+tool/camera.h
+
+新增类：
+
+class Camera
+
+对外函数：
+
+static QString capture(QWidget* parent = nullptr);
+
+作用：
+打开高拍仪并拍照，返回拍摄照片路径。
+当前没有高拍仪 SDK，先使用本地图片选择模拟拍照结果。
+
+
+static bool openApp(QWidget* parent = nullptr);
+
+作用：
+预留启动高拍仪厂家软件的接口。
+当前为空实现，后续确认厂家软件 exe 路径和启动参数后补实现。
+
+
+static QString latestPhoto();
+
+作用：
+预留获取高拍仪保存目录下最新照片路径的接口。
+后续确认保存目录、图片格式、命名规则后补实现。
+
+
+static bool isSdkReady();
+
+作用：
+表示是否已接入真实高拍仪 SDK。
+当前返回 false。
+
+
+static QString modeText();
+
+作用：
+返回当前相机工具的实现模式说明。
+当前为“本地图片模拟高拍仪拍照”。
+
+
+十三、tool/camera.cpp
+--------------------
+
+文件位置：
+
+tool/camera.cpp
+
+主要函数：
+
+Camera::capture(QWidget* parent)
+
+当前实现：
+
+1. 提示“高拍仪 SDK 尚未接入，请先选择一张本地图片作为拍照结果。”
+2. 打开 QFileDialog 选择图片。
+3. 返回图片路径。
+
+后续接入方向：
+
+如果使用厂家软件：
+capture() 可以改为 openApp() + latestPhoto() 的组合。
+
+如果使用厂家 SDK：
+capture() 可以改为初始化设备、拍照、保存图片、返回路径。
+
+
+Camera::openApp(QWidget* parent)
+
+当前为空实现，返回 false。
+TODO：
+启动高拍仪厂家软件。
+
+
+Camera::latestPhoto()
+
+当前为空实现，返回空字符串。
+TODO：
+读取高拍仪保存目录下最新照片。
+
+
+Camera::isSdkReady()
+
+当前返回 false。
+
+
+Camera::modeText()
+
+当前返回“本地图片模拟高拍仪拍照”。
+
+
+十四、tool/tool.pri
+------------------
+
+文件位置：
+
+tool/tool.pri
+
+新增 HEADERS：
+
+camera.h
+clientinfo.h
+jsondataloader.h
+matadapter.h
+
+新增 SOURCES：
+
+camera.cpp
+clientinfo.cpp
+jsondataloader.cpp
+matadapter.cpp
+
+作用：
+
+保证新增工具类参与 qmake 工程编译。
+
+
+十五、ui/datauploadwidget.cpp
+----------------------------
+
+文件位置：
+
+ui/datauploadwidget.cpp
+
+新增 include：
+
+#include "camera.h"
+
+修改函数：
+
+void DataUPloadWidget::openCamera()
+
+原逻辑：
+
+只弹出“相机功能待接入”的提示。
+
+现逻辑：
+
+1. 获取“图片”根节点。
+2. 调用 Camera::capture(this) 获取图片路径。
+3. 如果路径为空，直接返回。
+4. 如果图片已经存在于列表中，不重复添加。
+5. 如果是新图片，加入“图片”节点并展开。
+
+作用：
+
+右侧“资料上传”页签中的“打开相机”已接入 Camera 工具。
+
+
+十六、ui/processstationpassdialogs.h
+-----------------------------------
+
+文件位置：
+
+ui/processstationpassdialogs.h
+
+修改类：
+
+class NgAbnormalDialog
+
+新增成员变量：
+
+bool m_photoLongPressed{false};
+
+作用：
+
+记录“选择照片”按钮是否已经触发长按。
+用于区分普通点击选择本地图片，还是长按打开相机。
+
+
+十七、ui/processstationpassdialogs.cpp
+-------------------------------------
+
+文件位置：
+
+ui/processstationpassdialogs.cpp
+
+新增 include：
+
+#include "camera.h"
+#include <QStyle>
+#include <QTimer>
+
+
+修改位置：
+
+NgAbnormalDialog::NgAbnormalDialog(...)
+
+修改内容：
+
+1. 图片输入框占位提示改为：
+
+长按选择照片打开相机
+
+2. 按钮文案改为：
+
+选择照片
+
+3. 按钮设置动态属性：
+
+browseBtn->setProperty("buttonRole", "photoSelect");
+browseBtn->setProperty("cameraActive", false);
+
+4. 新增长按计时器：
+
+QTimer
+interval = 800ms
+singleShot = true
+
+5. 新增内部 lambda：
+
+refreshPhotoButton(bool cameraActive)
+
+作用：
+切换按钮状态。
+cameraActive = false：
+按钮文字为“选择照片”。
+cameraActive = true：
+按钮文字为“打开相机”。
+同时刷新 QSS，使按钮颜色变化立即生效。
+
+6. pressed 信号：
+
+重置 m_photoLongPressed。
+按钮恢复“选择照片”状态。
+启动长按计时器。
+
+7. QTimer::timeout：
+
+长按时间达到后：
+m_photoLongPressed = true。
+按钮切换为“打开相机”状态。
+
+8. released 信号：
+
+如果未达到长按时间：
+停止计时器，打开本地图片选择。
+
+如果已经达到长按时间：
+调用 Camera::capture(this)。
+拿到图片路径后写入 m_imageEdit。
+按钮恢复“选择照片”状态。
+
+作用：
+
+NG 异常登记弹窗中的图片上传区域支持：
+
+普通点击：选择照片。
+长按达到 800ms：按钮变色并显示“打开相机”，松手后走 Camera。
+
+
+十八、res/style/style.qss
+------------------------
+
+文件位置：
+
+res/style/style.qss
+
+新增或修改选择器：
+
+QPushButton[buttonRole="photoSelect"]
+
+作用：
+让“选择照片”按钮默认样式和 save / export / primary 一致。
+也就是和“导出报表”“保存”等外部按钮保持一致的紫色主按钮样式。
+
+
+QPushButton[buttonRole="photoSelect"]:hover
+
+作用：
+默认状态 hover 时使用主按钮 hover 色。
+
+
+QPushButton[buttonRole="photoSelect"]:disabled
+
+作用：
+禁用时使用统一灰色。
+
+
+QPushButton[buttonRole="photoSelect"][cameraActive="true"]
+
+作用：
+长按时间达到后切换为相机激活状态。
+当前颜色为绿色：
+
+background-color: #1f7a5a;
+border: 1px solid #166246;
+
+
+QPushButton[buttonRole="photoSelect"][cameraActive="true"]:hover
+QPushButton[buttonRole="photoSelect"][cameraActive="true"]:pressed
+
+作用：
+相机激活状态下 hover / pressed 使用更亮的绿色。
+
+
+十九、modefiy_text/20260610_MatAdapter使用说明.txt
+------------------------------------------------
+
+文件位置：
+
+modefiy_text/20260610_MatAdapter使用说明.txt
+
+新增内容：
+
+1. MatAdapter 工具定位。
+2. 后台复合数据示例。
+3. 前台表格分离数据示例。
+4. isCompound、split、combine 的使用方法。
+5. 推荐显示流程和上传流程。
+6. 上传合并规则。
+7. 字段约定和内部元数据说明。
+
+
+二十、modefiy_text/20260610_今晚修改说明.txt
+-------------------------------------------
+
+文件位置：
+
+modefiy_text/20260610_今晚修改说明.txt
+
+新增内容：
+
+对今晚 MatAdapter、ClientInfo、ConfigManager、ApiService 等主要改动做了概览说明。
+
+
+二十一、当前设计结论
+--------------------
+
+1. 一对多物料数据不建议直接在表格上传时重新造 JSON。
+   更合适的做法是以后台原始数据为底，把表格修改和状态数据补回去。
+
+2. MatAdapter 当前已经提供：
+   判断复合数据、拆分显示数据、组合上传数据、基于原始后台数据合并上传数据。
+
+3. ClientInfo 当前尽量获取真实物理网卡 IP/MAC。
+   如果现场电脑有特殊网卡环境，上线前需要在真实设备上验证。
+
+4. Camera 当前只是工具接口和占位实现。
+   没有高拍仪 SDK 的阶段，可以先使用本地图片选择模拟拍照。
+   后续可接厂家软件或 SDK。
+
+5. NG 异常登记的“选择照片”按钮已经支持普通点击选择照片、长按切换为打开相机。
+
+
+二十二、后续建议
+----------------
+
+1. 确认高拍仪厂家软件 exe 路径。
+2. 确认高拍仪软件是否支持命令行启动。
+3. 确认高拍仪拍照保存目录。
+4. 确认高拍仪照片命名规则。
+5. 后续在 Camera::openApp() 和 Camera::latestPhoto() 中补真实实现。
+6. 真正上传时，把 PASS、NG、完成时间、工时等状态合并进 MatAdapter 上传数据。
+7. 在真实现场电脑上验证 ClientInfo 获取到的 IP 和 MAC 是否符合预期。
+
+
+二十三、检查情况
+----------------
+
+已执行 git diff --check。
+
+当前只看到 CRLF 换行提示，没有发现代码格式错误。
+
+说明：
+
+本地环境之前存在 VS/CRT 头文件 stddef.h 缺失问题，因此没有进行可靠的全量编译验证。
