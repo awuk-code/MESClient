@@ -4,6 +4,7 @@
 
 
 #include "processstationmodel.h"
+#include "searchconfig.h"
 
 
 #include <QComboBox>
@@ -114,7 +115,7 @@ QString ProcessStationRightPanel::pageTitle() const
 QString ProcessStationRightPanel::searchInfo() const
 {
     return m_currentSearchInfo.isEmpty()
-    ? tr("请输入物料信息")
+    ? SearchConfig::placeholder(SearchConfig::processStationModule())
     : m_currentSearchInfo;;
 }
 
@@ -143,11 +144,7 @@ FieldFilterProxyModel *ProcessStationRightPanel::createProxy(const QVariant &dat
         return nullptr;
 
     auto proxy = new FieldFilterProxyModel(this);
-    proxy->addSearchFields("materialCode");
-    proxy->addSearchFields("materialName");
-    proxy->addSearchFields("processName");
-    proxy->addSearchFields("productSNCode");
-    proxy->addSearchFields("materialSN");
+    SearchConfig::apply(proxy, SearchConfig::processStationModule());
 
     // 使用 BasePageWidget 中创建的源模型
     proxy->setSourceModel(m_model);

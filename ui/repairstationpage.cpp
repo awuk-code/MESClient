@@ -3,6 +3,7 @@
 #include "repairstationmodel.h"
 #include "fieldfilterproxymodel.h"
 #include "navigationmanager.h"
+#include "searchconfig.h"
 
 #include <QDebug>
 #include <QHBoxLayout>
@@ -92,12 +93,7 @@ TabConfigs RepairStationPage::Tabs() const
 FieldFilterProxyModel *RepairStationPage::createProxy(const QVariant &data)
 {
     auto proxy = new FieldFilterProxyModel(this);
-    proxy->addSearchFields("taskNo");
-    proxy->addSearchFields("reworkTaskNo");
-    proxy->addSearchFields("exceptionHandleNo");
-    proxy->addSearchFields("exceptionHandleNoLink");
-    proxy->addSearchFields("productModel");
-    proxy->addSearchFields("productSN");
+    SearchConfig::apply(proxy, SearchConfig::repairStationModule());
     proxy->setStatus(data); // 👉 Tab控制状态
 
     return proxy;
@@ -110,7 +106,7 @@ QString RepairStationPage::pageTitle() const
 
 QString RepairStationPage::searchInfo() const
 {
-    return tr("请输入表单号");
+    return SearchConfig::placeholder(SearchConfig::repairStationModule());
 }
 
 void RepairStationPage::addWidgetToTitle(QHBoxLayout *layout)

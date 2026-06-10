@@ -21,6 +21,7 @@ HEADERS +=  \
     $$PWD/productiontaskpage.h \
     $$PWD/repairjudgepage.h \
     $$PWD/repairstationpage.h \
+    $$PWD/settingspage.h \
     $$PWD/sidebarwidget.h \
     $$PWD/subheaderwidget.h \
     $$PWD/toggleswitchwidget.h
@@ -47,6 +48,7 @@ SOURCES +=      \
     $$PWD/productiontaskpage.cpp \
     $$PWD/repairjudgepage.cpp \
     $$PWD/repairstationpage.cpp \
+    $$PWD/settingspage.cpp \
     $$PWD/sidebarwidget.cpp \
     $$PWD/subheaderwidget.cpp \
     $$PWD/toggleswitchwidget.cpp

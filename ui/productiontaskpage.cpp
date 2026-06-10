@@ -2,6 +2,7 @@
 #include "productiontaskmodel.h"
 #include "fieldfilterproxymodel.h"
 #include "navigationmanager.h"
+#include "searchconfig.h"
 #include "toggleswitchwidget.h"
 
 #include <QHBoxLayout>
@@ -42,10 +43,7 @@ TabConfigs ProductionTaskPage::Tabs() const
 FieldFilterProxyModel* ProductionTaskPage::createProxy(const QVariant& data)
 {
     auto proxy = new FieldFilterProxyModel(this);
-    proxy->addSearchFields("taskNo");
-    proxy->addSearchFields("productModel");
-    proxy->addSearchFields("erpCode");
-    proxy->addSearchFields("productName");
+    SearchConfig::apply(proxy, SearchConfig::productionTaskModule());
 
     //已经在FieldFilterProxyModel设置了关键字过滤
    // proxy->setFilterColumn(0);  // 👉 按“任务单号”过滤
@@ -61,7 +59,7 @@ QString ProductionTaskPage::pageTitle() const
 
 QString ProductionTaskPage::searchInfo() const
 {
-    return tr("请输入表单号");
+    return SearchConfig::placeholder(SearchConfig::productionTaskModule());
 }
 
 void ProductionTaskPage::addWidgetToTitle(QHBoxLayout *layout)

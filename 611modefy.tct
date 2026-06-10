@@ -1,0 +1,448 @@
+2026-06-11 修改说明
+
+一、工序站点左侧页面拆分
+
+1. 拆分 ProcessStationLeftPanel 相关代码
+   将原本集中在一个大文件里的工序站点左侧逻辑拆分为多个职责更清晰的文件。
+
+2. 主要拆分文件
+   ui/processstationinfosection.h
+   ui/processstationinfosection.cpp
+   ui/processstationpasswidget.h
+   ui/processstationpasswidget.cpp
+   ui/processstationpassstatus.h
+   ui/processstationpassstatus.cpp
+   ui/processstationpassdialogs.h
+   ui/processstationpassdialogs.cpp
+   ui/processstationpasscontroller.h
+   ui/processstationpasscontroller.cpp
+
+3. 职责说明
+   ProcessStationInfoSection：负责工序站点左侧基础信息区域显示。
+   ProcessStationPassWidget：负责放行、暂停、继续、异常等操作区 UI。
+   ProcessStationPassStatus：负责工序站点放行状态、按钮状态相关判断。
+   ProcessStationPassDialogs：负责异常、暂停、继续等弹窗。
+   ProcessStationPassController：负责按钮点击后的业务调度，减少 UI 文件内的业务逻辑。
+
+4. 工程文件
+   ui/ui.pri 已加入拆分后的新文件。
+
+
+二、工序站点一对多物料数据处理工具
+
+1. 新增 MatAdapter
+   文件位置：
+   tool/matadapter.h
+   tool/matadapter.cpp
+
+2. 工具用途
+   用于处理后台 JSON 数据中“一个产品 SN 对应多个物料”的情况。
+   显示时可以将复合数据拆分为表格行。
+   上传时可以将表格行重新组合为后台需要的复合结构。
+
+3. 主要接口
+   MatAdapter::isCompound(const QJsonArray& data)
+   MatAdapter::isCompound(const QVector<QVariantMap>& rows)
+   MatAdapter::split(const QJsonArray& data)
+   MatAdapter::split(const QVector<QVariantMap>& data)
+   MatAdapter::combine(const QVector<QVariantMap>& rows)
+   MatAdapter::combine(const QJsonArray& originalData, const QVector<QVariantMap>& rows)
+
+4. 内部辅助字段
+   _groupKey：分组标识。
+   _groupIndex：组序号。
+   _groupFirst：是否为组内第一行。
+   _groupRowCount：组内行数。
+   _itemIndex：物料明细序号。
+
+5. 使用场景
+   工序站点开工后，后台下发数据，前端使用 MatAdapter 拆分后显示到表格。
+   编码、状态、异常等信息录入完成后，上传前使用 MatAdapter 聚合数据。
+   任务页面和维修站页面暂时不使用该工具。
+
+6. 说明文档
+   modefiy_text/20260610_MatAdapter使用说明.txt
+   modefiy_text/20260610_今晚全部修改位置和函数说明.txt
+
+
+三、JsonDataLoader 移动到 tool
+
+1. 调整内容
+   JsonDataLoader 从 core 目录移动到 tool 目录。
+
+2. 当前文件位置
+   tool/jsondataloader.h
+   tool/jsondataloader.cpp
+
+3. 工程文件
+   tool/tool.pri 加入 jsondataloader。
+   core/core.pri 移除 jsondataloader。
+
+4. 原因
+   JsonDataLoader 更接近通用工具能力，不属于核心业务模型。
+
+
+四、BaseTableModel 增加数据读取接口
+
+1. 修改文件
+   core/basetablemodel.h
+   core/basetablemodel.cpp
+
+2. 新增接口
+   QVector<QVariantMap> rows() const
+
+3. 用途
+   方便从表格模型中取出当前行数据，用于后续数据聚合、上传、状态处理。
+
+
+五、客户端真实 IP 和 MAC 工具
+
+1. 新增 ClientInfo
+   文件位置：
+   tool/clientinfo.h
+   tool/clientinfo.cpp
+
+2. 主要接口
+   ClientInfo::ip()
+   ClientInfo::mac()
+   ClientInfo::info()
+
+3. 处理逻辑
+   尽量获取真实网卡的 IPv4 和 MAC。
+   过滤回环地址、169.254 地址、0.0.0.0。
+   过滤 VMware、VirtualBox、Hyper-V、Docker、WSL、VPN、TAP、TUN、Bluetooth、Teredo、Npcap 等干扰网卡。
+   过滤无效 MAC。
+
+4. ConfigManager 修改
+   文件位置：
+   config/configmanager.h
+   config/configmanager.cpp
+
+5. 新增属性和接口
+   clientIP()
+   clientMAC()
+   refreshClientInfo()
+   m_clientIP
+   m_clientMAC
+
+6. 登录接口修改
+   文件位置：
+   network/apiservice.cpp
+
+7. 修改内容
+   login 请求中增加 clientIP 和 clientMAC。
+
+
+六、高拍仪 Camera 工具
+
+1. 新增 Camera
+   文件位置：
+   tool/camera.h
+   tool/camera.cpp
+
+2. 当前定位
+   由于暂时没有高拍仪 SDK，目前先写成占位工具。
+   打开相机时先使用本地图片选择模拟高拍仪拍照。
+
+3. 主要接口
+   Camera::capture(QWidget* parent)
+   Camera::openApp(QWidget* parent)
+   Camera::latestPhoto()
+   Camera::isSdkReady()
+   Camera::modeText()
+
+4. 当前行为
+   capture 会提示当前是“本地图片模拟高拍仪拍照”，然后弹出图片选择框。
+   openApp 暂时返回 false。
+   latestPhoto 暂时返回空。
+   isSdkReady 暂时返回 false。
+
+5. 后续扩展
+   后续拿到高拍仪 SDK 或确定外部拍照软件调用方式后，可以在 Camera 内部统一替换实现，业务页面不用大改。
+
+
+七、异常说明上传图片按钮调整
+
+1. 修改文件
+   ui/processstationpassdialogs.h
+   ui/processstationpassdialogs.cpp
+
+2. 修改内容
+   “上传图片”按钮改为“选择照片”。
+   图片路径输入框增加占位提示：“长按选择照片打开相机”。
+   短按按钮：选择本地图片。
+   长按按钮：触发 Camera::capture，模拟打开相机拍照。
+
+3. 新增状态
+   m_photoLongPressed
+
+4. 长按逻辑
+   使用 QTimer 判断长按。
+   长按时间到达后按钮文字变为“打开相机”。
+   释放按钮后调用 Camera 工具。
+
+5. QSS 修改
+   文件位置：
+   res/style/style.qss
+
+6. 样式内容
+   新增 QPushButton[buttonRole="photoSelect"] 样式。
+   默认样式参考导出报表等外部按钮。
+   长按激活后使用 cameraActive="true" 切换为另一种颜色。
+
+
+八、搜索配置功能
+
+1. 新增 SearchConfig
+   文件位置：
+   config/searchconfig.h
+   config/searchconfig.cpp
+
+2. 放置位置
+   SearchConfig 已从 tool 调整到 config 目录。
+   原因是它属于配置管理，不属于普通工具类。
+
+3. 工程文件
+   config/config.pri 加入 searchconfig。
+
+4. 配置文件
+   程序运行目录下生成：
+   config/search_fields.json
+
+5. 主要接口
+   SearchConfig::productionTaskModule()
+   SearchConfig::processStationModule()
+   SearchConfig::repairStationModule()
+   SearchConfig::availableFields(const QString& module)
+   SearchConfig::selectedFields(const QString& module)
+   SearchConfig::setSelectedFields(const QString& module, const QStringList& fields)
+   SearchConfig::placeholder(const QString& module)
+   SearchConfig::apply(FieldFilterProxyModel* proxy, const QString& module)
+
+6. 搜索配置作用
+   页面顶部关键字搜索框不再把字段写死在页面里。
+   各模块可通过配置决定哪些字段加入关键字过滤范围。
+
+7. 三个模块
+   生产任务
+   工序站点
+   维修站
+
+8. 排除字段
+   序号列、勾选列、操作列、筛选列、查看图片类字段不加入搜索配置。
+
+9. 工序站点特别处理
+   工序站点只有前两个表格有搜索框。
+   后面使用 ComboBox 的页面字段不加入关键字搜索配置。
+
+10. 工序站点当前搜索字段
+   materialCode
+   materialName
+   materialLabelCode
+   EPR
+   batchNo
+   processCode
+   processName
+
+11. 工序站点默认搜索字段
+   materialCode
+   materialName
+   processCode
+   processName
+
+12. 已接入页面
+   ui/productiontaskpage.cpp
+   ui/processstationrightpanel.cpp
+   ui/repairstationpage.cpp
+
+
+九、设置入口调整
+
+1. 用户要求
+   设置不放在主页面导航中。
+   设置按钮使用右键菜单形式。
+   每个设置项打开一个独立页面。
+
+2. 修改文件
+   ui/sidebarwidget.h
+   ui/sidebarwidget.cpp
+
+3. 修改内容
+   设置按钮左键和右键均弹出菜单。
+   菜单当前包含“搜索配置”。
+   点击“搜索配置”后打开 SettingsPage。
+   设置按钮不再作为主页面切换按钮。
+   设置按钮不影响当前页面选中状态。
+
+4. 导航枚举调整
+   文件位置：
+   commFunc/NavPageType.h
+
+5. 修改内容
+   移除 PageType::Settings。
+
+6. MainWindow 调整
+   文件位置：
+   ui/mainwindow.h
+   ui/mainwindow.cpp
+
+7. 修改内容
+   不再注册 Settings 主页面。
+   不再保存 m_pageSettings。
+
+
+十、SettingsPage 当前状态
+
+1. 新增文件
+   ui/settingspage.h
+   ui/settingspage.cpp
+
+2. 当前继承关系
+   SettingsPage 当前继承 QDialog。
+
+3. 说明
+   曾临时改为继承 BaseDialogWidget。
+   因出现卡顿和闪退风险，已按要求取消继承 BaseDialogWidget，恢复为普通独立窗口。
+
+4. 当前页面功能
+   显示生产任务、工序站点、维修站三个模块的可搜索字段。
+   使用复选框控制字段是否加入搜索。
+   点击保存后写入 SearchConfig。
+   保存后提示重新打开页面或重启客户端后生效。
+
+5. 主要函数
+   SettingsPage::SettingsPage(QWidget* parent)
+   SettingsPage::initUI()
+   SettingsPage::createSearchConfigPage()
+   SettingsPage::createModuleGroup(const QString& title, const QString& module)
+   SettingsPage::saveSettings()
+
+
+十一、BaseDialogWidget 使用范围说明
+
+1. 保留文件
+   ui/basedialogwidget.h
+   ui/basedialogwidget.cpp
+
+2. 当前状态
+   BaseDialogWidget 仍保留。
+   工序站点异常、暂停、继续等弹窗仍可继续使用 BaseDialogWidget。
+   SettingsPage 已取消继承 BaseDialogWidget。
+
+3. 注意
+   后续如果继续推进“所有弹窗统一继承 BaseDialogWidget”，需要先确认 BaseDialogWidget 的生命周期、窗口父子关系、模态方式、关闭方式是否稳定，再逐个迁移。
+
+
+十二、编译验证
+
+1. qmake
+   已执行 qmake，工程文件更新正常。
+
+2. 编译命令
+   使用 VS2017 编译环境执行：
+   jom -f Makefile.Debug
+
+3. 编译结果
+   Debug 编译通过。
+
+4. 注意
+   直接在普通 PowerShell 中运行 jom 可能出现 MSVC 标准库头文件找不到的问题。
+   需要先加载 Visual Studio 2017 vcvars64.bat 环境。
+
+5. 已知非致命警告
+   ui/headeroverlaywidget.cpp 中有未使用局部变量警告。
+   core/fieldfilterproxymodel.cpp 中有未使用参数警告。
+   这些警告不是本次功能修改导致的阻塞问题，暂不影响运行。
+
+
+十三、当前需要重点关注的风险
+
+1. 搜索配置生效时机
+   当前 SearchConfig::apply 在代理模型创建时调用。
+   保存搜索配置后，需要重新打开页面或重启客户端后生效。
+
+2. SettingsPage 生命周期
+   当前由侧边栏菜单创建，设置 WA_DeleteOnClose。
+   已避免继承 BaseDialogWidget，降低卡顿和闪退风险。
+
+3. 高拍仪功能
+   当前 Camera 只是占位实现。
+   后续接入真实设备时，需要明确 SDK、外部软件启动方式、照片保存目录和拍照完成回调方式。
+
+4. 工序站点一对多数据
+   MatAdapter 已提供过渡方案。
+   真正上传前还需要结合后台最终 JSON 字段格式做一次对齐测试。
+
+5. 工序站点搜索字段
+   当前只保留前两个搜索表格字段。
+   后面 ComboBox 筛选页面不纳入关键字搜索配置。
+
+
+十四、今晚主要修改文件清单
+
+1. config
+   config/config.pri
+   config/configmanager.h
+   config/configmanager.cpp
+   config/searchconfig.h
+   config/searchconfig.cpp
+
+2. core
+   core/basetablemodel.h
+   core/basetablemodel.cpp
+
+3. tool
+   tool/tool.pri
+   tool/matadapter.h
+   tool/matadapter.cpp
+   tool/jsondataloader.h
+   tool/jsondataloader.cpp
+   tool/clientinfo.h
+   tool/clientinfo.cpp
+   tool/camera.h
+   tool/camera.cpp
+
+4. network
+   network/apiservice.cpp
+   network/apiservice.h
+
+5. ui
+   ui/ui.pri
+   ui/sidebarwidget.h
+   ui/sidebarwidget.cpp
+   ui/settingspage.h
+   ui/settingspage.cpp
+   ui/mainwindow.h
+   ui/mainwindow.cpp
+   ui/productiontaskpage.cpp
+   ui/processstationrightpanel.cpp
+   ui/repairstationpage.cpp
+   ui/processstationpassdialogs.h
+   ui/processstationpassdialogs.cpp
+   ui/processstationinfosection.h
+   ui/processstationinfosection.cpp
+   ui/processstationpasswidget.h
+   ui/processstationpasswidget.cpp
+   ui/processstationpassstatus.h
+   ui/processstationpassstatus.cpp
+   ui/processstationpasscontroller.h
+   ui/processstationpasscontroller.cpp
+
+6. commFunc
+   commFunc/NavPageType.h
+
+7. res
+   res/style/style.qss
+
+8. modefiy_text
+   modefiy_text/20260610_MatAdapter使用说明.txt
+   modefiy_text/20260610_今晚全部修改位置和函数说明.txt
+
+
+十五、下一步建议
+
+1. 先运行客户端，重点验证设置按钮左键、右键是否都能正常打开搜索配置。
+2. 验证保存搜索配置后，重新打开页面是否按新字段搜索。
+3. 验证工序站点后面 ComboBox 页面没有被关键字搜索影响。
+4. 验证异常说明中选择照片、长按打开相机占位逻辑是否稳定。
+5. 等后台 JSON 格式明确后，再对 MatAdapter 的聚合上传格式做联调。

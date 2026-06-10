@@ -11,6 +11,7 @@
 #include <QStyle>
 
 class QAbstractButton;
+class QToolButton;
 
 class SideBarWidget : public QWidget
 {
@@ -26,6 +27,7 @@ private:
     void initUI();
     void initConnect();
     void onMenuButtonClicked(QAbstractButton* clickedBtn);
+    void showSettingsMenu(QWidget* anchor);
     QWidget* createMenuItem(const QString &icon_normal,
                             const QString &icon_checked,
                             const QString &text,

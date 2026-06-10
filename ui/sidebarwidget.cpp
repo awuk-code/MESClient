@@ -1,6 +1,8 @@
 ﻿#include "sidebarwidget.h"
 #include <QDebug>
 #include "configmanager.h"
+#include "settingspage.h"
+#include <QMenu>
 SideBarWidget::SideBarWidget(QWidget *parent)
     : QWidget{parent}
 {
@@ -56,7 +58,11 @@ void SideBarWidget::onMenuButtonClicked(QAbstractButton* clickedBtn)
 {
     int id =m_group->id(clickedBtn);
 
-    if(id != 0 && id <= maxMenuCnt-2){
+    if(id == 19){
+        showSettingsMenu(clickedBtn);
+        return;
+    }
+    else if(id != 0 && id <= maxMenuCnt-2){
         qDebug() << __FUNCTION__"id===="<<id;
         emit sigPageChanged(id);
     }
@@ -64,6 +70,7 @@ void SideBarWidget::onMenuButtonClicked(QAbstractButton* clickedBtn)
          ConfigManager::instance().saveConfig();
         if(window())
             window()->close();
+        return;
     }
     qDebug() << __FUNCTION__ << tr("点击菜单：") << m_group->id(clickedBtn);
 
@@ -95,13 +102,31 @@ void SideBarWidget::setCurrentPageIndex(int index)
     qDebug() << __FUNCTION__ << tr("同步侧边栏选中菜单:") << index;
 }
 
+void SideBarWidget::showSettingsMenu(QWidget* anchor)
+{
+    if (!anchor)
+        return;
+
+    QMenu menu(this);
+    menu.addAction(tr("搜索配置"), this, [this]() {
+        auto dialog = new SettingsPage(this);
+        dialog->setAttribute(Qt::WA_DeleteOnClose);
+        dialog->show();
+        dialog->raise();
+        dialog->activateWindow();
+    });
+
+    menu.exec(anchor->mapToGlobal(QPoint(anchor->width(), 0)));
+}
+
 QWidget *SideBarWidget::createMenuItem(const QString &icon_normal, const QString &icon_checked, const QString &text, const QString &hoverText, int id)
 {
     qDebug() << __FUNCTION__"current Btn id = "<<id;
     QToolButton* btn = new QToolButton(this);
     btn->setObjectName("menuBtn");
-    btn->setCheckable(true);
+    btn->setCheckable(id > 0 && id <= maxMenuCnt - 2);
     btn->setToolTip(hoverText);
+    btn->setContextMenuPolicy(Qt::CustomContextMenu);
 
     btn->setProperty("icon_normal", icon_normal);
     btn->setProperty("icon_checked", icon_checked);
@@ -126,6 +151,11 @@ QWidget *SideBarWidget::createMenuItem(const QString &icon_normal, const QString
     }
     m_group->addButton(btn, id);
 
+    if (id == 19)
+    {
+        connect(btn, &QToolButton::customContextMenuRequested,
+                this, [this, btn]() { showSettingsMenu(btn); });
+    }
 
     return btn;
 }
