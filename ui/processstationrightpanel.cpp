@@ -1,6 +1,7 @@
 ﻿#include "processstationrightpanel.h"
 
 #include "fieldfilterproxymodel.h"
+#include "paginationproxymodel.h"
 
 
 #include "processstationmodel.h"
@@ -196,11 +197,16 @@ void ProcessStationRightPanel::setupSearchLayout(QHBoxLayout *layout)
     layout->addWidget(m_productSnLabel);
     layout->addWidget(m_productSnCombo);
     layout->addStretch();
+    setupPaginationLayout(layout);
     layout->addWidget(m_exportBtn);
 }
 
 void ProcessStationRightPanel::onSaveBtnClicked()
 {
+    // TODO(backend-request): request backend to save right-side process information.
+    // Suggested API: /api/process-station/process-info/save
+    // Suggested request: taskNo, processCode, productSN, material rows, tool rows, upload file ids.
+    // For compound material data, combine edited rows with MatAdapter::combine(...).
     // TODO: 保存按钮逻辑待定，后续接口或本地保存规则确定后在这里补充。
     qDebug() << "ProcessStationRightPanel save clicked, wait implementation";
 }
@@ -395,7 +401,10 @@ void ProcessStationRightPanel::applyCurrentProductSn()
     if (!table)
         return;
 
-    auto proxy = qobject_cast<FieldFilterProxyModel*>(table->model());
+    auto pageProxy = currentPaginationProxy();
+    auto proxy = pageProxy
+        ? qobject_cast<FieldFilterProxyModel*>(pageProxy->sourceModel())
+        : qobject_cast<FieldFilterProxyModel*>(table->model());
     if (!proxy)
         return;
 
@@ -405,6 +414,9 @@ void ProcessStationRightPanel::applyCurrentProductSn()
     const QString field = productSnFieldForTab(tabBar() ? tabBar()->currentIndex() : -1);
     if (!field.isEmpty() && !m_currentProductSn.isEmpty())
         proxy->setFieldFilter(field, m_currentProductSn);
+
+    if (pageProxy)
+        pageProxy->firstPage();
 
     qDebug() << __FUNCTION__
              << "tab:" << (tabBar() ? tabBar()->currentIndex() : -1)

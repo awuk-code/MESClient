@@ -89,6 +89,10 @@ void ProductionTaskPage::startProcessByRowData(const QVariantMap &rowData)
              << "productModel =" << rowData.value("productModel").toString();
 
     // 开工按钮点击后进入工序站点页面；后续如果需要调用开工接口，可在跳转前补充接口请求。
+    // TODO(backend-request): request backend before opening process station.
+    // Suggested API: /api/production/tasks/start
+    // Suggested request: taskNo, productModel, routeName, stationNo, operatorId.
+    // Suggested response: currentProcess, processCode, taskStatus, processStationDetail.
     NavigationManager::instance()->openPage(
         PageType::ProcessStation,
         rowData);

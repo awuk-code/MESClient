@@ -85,8 +85,9 @@ bool OperationDelegate::updateRowData(QAbstractItemModel *model, const QModelInd
     QModelIndex sourceIndex = index;
     QAbstractItemModel* sourceModel = model;
     // 如果是代理模型，则映射到源模型
-    if(auto proxy = qobject_cast<QAbstractProxyModel*>(model)){
-        sourceIndex = proxy->mapToSource(index);
+    while (auto proxy = qobject_cast<QAbstractProxyModel*>(sourceModel))
+    {
+        sourceIndex = proxy->mapToSource(sourceIndex);
         sourceModel = proxy->sourceModel();
     }
 

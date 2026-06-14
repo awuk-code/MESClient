@@ -5,6 +5,7 @@
 #include "imageviewwidget.h"
 #include "lineeditdelegate.h"
 #include "operationdelegate.h"
+#include "paginationproxymodel.h"
 #include "reportexporter.h"
 
 #include <QAbstractItemView>
@@ -127,10 +128,34 @@ void BasePageWidget::setupSearchLayout(QHBoxLayout* layout)
     layout->addWidget(m_searchEdit);
 
     layout->addStretch();
+    setupPaginationLayout(layout);
 
     m_exportBtn = new QPushButton(tr("导出报表"), this);
     m_exportBtn->setProperty("buttonRole", "export");
     layout->addWidget(m_exportBtn);
+}
+
+void BasePageWidget::setupPaginationLayout(QHBoxLayout* layout)
+{
+    if (!layout)
+        return;
+
+    m_prevPageBtn = new QPushButton(tr("上一页"), this);
+    m_prevPageBtn->setProperty("buttonRole", "pageNav");
+    layout->addWidget(m_prevPageBtn);
+
+    for (int i = 0; i < 3; ++i)
+    {
+        auto button = new QPushButton(QString::number(i + 1), this);
+        button->setProperty("buttonRole", "pageNumber");
+        button->setFixedWidth(34);
+        m_pageBtns.append(button);
+        layout->addWidget(button);
+    }
+
+    m_nextPageBtn = new QPushButton(tr("下一页"), this);
+    m_nextPageBtn->setProperty("buttonRole", "pageNav");
+    layout->addWidget(m_nextPageBtn);
 }
 
 void BasePageWidget::initUI()
@@ -233,6 +258,8 @@ void BasePageWidget::initTabs()
         m_tabBar->setCurrentIndex(0);
     }
 
+    refreshPaginationControls();
+
 }
 
 void BasePageWidget::initConnect()
@@ -245,9 +272,35 @@ void BasePageWidget::initConnect()
                 {
                     proxy->setKeyword(text);
                 }
+
+                resetPaginationToFirstPage();
             });
     //绑定页面切换
     connect(m_tabBar, &QTabBar::currentChanged, m_stack, &QStackedWidget::setCurrentIndex);
+    connect(m_tabBar, &QTabBar::currentChanged, this,
+            [=]() { refreshPaginationControls(); });
+
+    if (m_prevPageBtn)
+    {
+        connect(m_prevPageBtn, &QPushButton::clicked, this, [=]() {
+            if (auto pageProxy = currentPaginationProxy())
+                pageProxy->previousPage();
+        });
+    }
+
+    if (m_nextPageBtn)
+    {
+        connect(m_nextPageBtn, &QPushButton::clicked, this, [=]() {
+            if (auto pageProxy = currentPaginationProxy())
+                pageProxy->nextPage();
+        });
+    }
+
+    for (auto button : qAsConst(m_pageBtns))
+    {
+        connect(button, &QPushButton::clicked, this,
+                [=]() { goToPaginationButtonPage(button); });
+    }
 
     //点击搜索
     if (m_searchBtn)
@@ -275,6 +328,8 @@ void BasePageWidget::onSearchBtnClicked()
     {
         proxy->setKeyword(text);
     }
+
+    resetPaginationToFirstPage();
 }
 
 void BasePageWidget::onExportBtnClicked()
@@ -337,8 +392,12 @@ QTableView *BasePageWidget::createTable(FieldFilterProxyModel *proxy, const QVar
     QTableView* table = new QTableView(this);
     table->setProperty("tabData", tabData);
 
-    // 2. 设置模型
-    table->setModel(proxy);
+    // 2. 设置模型：先按状态/搜索过滤，再按当前页截取固定数量数据。
+    auto pageProxy = new PaginationProxyModel(table);
+    pageProxy->setPageSize(m_pageSize);
+    pageProxy->setSourceModel(proxy);
+    table->setModel(pageProxy);
+    m_pageProxies.append(pageProxy);
 
     // 3. 创建表头
     auto header = new QHeaderView(Qt::Horizontal, table);
@@ -358,24 +417,30 @@ QTableView *BasePageWidget::createTable(FieldFilterProxyModel *proxy, const QVar
     setupTableAppearance(table);
 
     table->installEventFilter(this);
-    connect(proxy, &QAbstractItemModel::modelReset, this, [=]() {
-        QTimer::singleShot(0, this, [=]() { applyAdaptiveColumnWidths(table); });
-    });
-    connect(proxy, &QAbstractItemModel::layoutChanged, this, [=]() {
-        QTimer::singleShot(0, this, [=]() { applyAdaptiveColumnWidths(table); });
-    });
-    connect(proxy, &QAbstractItemModel::rowsInserted, this, [=]() {
-        QTimer::singleShot(0, this, [=]() { applyAdaptiveColumnWidths(table); });
-    });
-    connect(proxy, &QAbstractItemModel::rowsRemoved, this, [=]() {
-        QTimer::singleShot(0, this, [=]() { applyAdaptiveColumnWidths(table); });
-    });
-    connect(proxy, &QAbstractItemModel::dataChanged, this, [=]() {
-        QTimer::singleShot(0, this, [=]() { applyAdaptiveColumnWidths(table); });
-    });
+    connect(proxy, &QAbstractItemModel::modelReset, pageProxy,
+            &PaginationProxyModel::firstPage);
+    connect(proxy, &QAbstractItemModel::layoutChanged, pageProxy,
+            &PaginationProxyModel::firstPage);
+
+    connect(pageProxy, &PaginationProxyModel::pageInfoChanged, this,
+            [=]() {
+                refreshPaginationControls();
+                scheduleColumnResize(table);
+            });
+
+    auto refreshTable = [=]() {
+        refreshPaginationControls();
+        scheduleColumnResize(table);
+    };
+    connect(pageProxy, &QAbstractItemModel::modelReset, this, refreshTable);
+    connect(pageProxy, &QAbstractItemModel::layoutChanged, this, refreshTable);
+    connect(pageProxy, &QAbstractItemModel::rowsInserted, this, refreshTable);
+    connect(pageProxy, &QAbstractItemModel::rowsRemoved, this, refreshTable);
+    connect(pageProxy, &QAbstractItemModel::dataChanged, this,
+            [=]() { scheduleColumnResize(table); });
 
     // 8. 按内容自适应列宽；空间足够时自动铺满表格区域。
-    QTimer::singleShot(0, this, [=]() { applyAdaptiveColumnWidths(table); });
+    scheduleColumnResize(table);
     return table;
 }
 
@@ -586,6 +651,91 @@ void BasePageWidget::setupTableAppearance(QTableView *table)
     table->horizontalHeader()->setDefaultAlignment(Qt::AlignCenter);
     table->setWordWrap(false);
     table->setTextElideMode(Qt::ElideNone);
+}
+
+PaginationProxyModel* BasePageWidget::currentPaginationProxy() const
+{
+    auto table =
+        qobject_cast<QTableView*>(m_stack ? m_stack->currentWidget() : nullptr);
+    if (!table)
+        return nullptr;
+
+    return qobject_cast<PaginationProxyModel*>(table->model());
+}
+
+void BasePageWidget::refreshPaginationControls()
+{
+    auto pageProxy = currentPaginationProxy();
+    const bool hasPagination = pageProxy != nullptr;
+
+    if (m_prevPageBtn)
+        m_prevPageBtn->setVisible(hasPagination);
+    if (m_nextPageBtn)
+        m_nextPageBtn->setVisible(hasPagination);
+    for (auto button : qAsConst(m_pageBtns))
+        button->setVisible(hasPagination);
+
+    if (!pageProxy)
+        return;
+
+    const int currentPage = pageProxy->currentPage();
+    const int pageCount = pageProxy->pageCount();
+
+    if (m_prevPageBtn)
+        m_prevPageBtn->setEnabled(currentPage > 1);
+    if (m_nextPageBtn)
+        m_nextPageBtn->setEnabled(currentPage < pageCount);
+
+    int startPage = qMax(1, currentPage - 1);
+    if (startPage + m_pageBtns.size() - 1 > pageCount)
+        startPage = qMax(1, pageCount - m_pageBtns.size() + 1);
+
+    for (int i = 0; i < m_pageBtns.size(); ++i)
+    {
+        QPushButton* button = m_pageBtns[i];
+        const int page = startPage + i;
+        const bool validPage = page <= pageCount;
+
+        button->setVisible(validPage);
+        if (!validPage)
+            continue;
+
+        button->setText(QString::number(page));
+        button->setProperty("page", page);
+        button->setEnabled(page != currentPage);
+    }
+}
+
+void BasePageWidget::resetPaginationToFirstPage()
+{
+    for (auto pageProxy : qAsConst(m_pageProxies))
+    {
+        if (pageProxy)
+            pageProxy->firstPage();
+    }
+}
+
+void BasePageWidget::goToPaginationButtonPage(QPushButton* button)
+{
+    if (!button)
+        return;
+
+    auto pageProxy = currentPaginationProxy();
+    if (!pageProxy)
+        return;
+
+    bool ok = false;
+    const int page = button->property("page").toInt(&ok);
+    if (ok)
+        pageProxy->setCurrentPage(page);
+}
+
+void BasePageWidget::scheduleColumnResize(QTableView* table)
+{
+    if (!table)
+        return;
+
+    QTimer::singleShot(0, this, [=]() { applyAdaptiveColumnWidths(table); });
 }
 
 void BasePageWidget::setupCheckBoxSelection(QTableView* table, const QVariant& tabData)

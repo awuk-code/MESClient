@@ -1,20 +1,302 @@
 [
     {
-        "productSN": "SN202605270001",
-        "equipmentName": "扭力枪",
-        "equipmentCode": "EQ001",
-        "specModel": "TQ-20"
+        "productSN":  "SN202606001",
+        "equipmentName":  "???",
+        "equipmentCode":  "EQ001",
+        "specModel":  "SPEC-001"
     },
     {
-        "productSN": "SN202605270001",
-        "equipmentName": "条码枪",
-        "equipmentCode": "EQ002",
-        "specModel": "SCAN-2D"
+        "productSN":  "SN202606002",
+        "equipmentName":  "???",
+        "equipmentCode":  "EQ002",
+        "specModel":  "SPEC-002"
     },
     {
-        "productSN": "SN202605270002",
-        "equipmentName": "测试工装",
-        "equipmentCode": "EQ003",
-        "specModel": "TEST-JIG-01"
+        "productSN":  "SN202606003",
+        "equipmentName":  "????",
+        "equipmentCode":  "EQ003",
+        "specModel":  "SPEC-003"
+    },
+    {
+        "productSN":  "SN202606004",
+        "equipmentName":  "???",
+        "equipmentCode":  "EQ004",
+        "specModel":  "SPEC-004"
+    },
+    {
+        "productSN":  "SN202606005",
+        "equipmentName":  "??",
+        "equipmentCode":  "EQ005",
+        "specModel":  "SPEC-005"
+    },
+    {
+        "productSN":  "SN202606006",
+        "equipmentName":  "???",
+        "equipmentCode":  "EQ006",
+        "specModel":  "SPEC-006"
+    },
+    {
+        "productSN":  "SN202606007",
+        "equipmentName":  "???",
+        "equipmentCode":  "EQ007",
+        "specModel":  "SPEC-007"
+    },
+    {
+        "productSN":  "SN202606008",
+        "equipmentName":  "????",
+        "equipmentCode":  "EQ008",
+        "specModel":  "SPEC-008"
+    },
+    {
+        "productSN":  "SN202606009",
+        "equipmentName":  "???",
+        "equipmentCode":  "EQ009",
+        "specModel":  "SPEC-009"
+    },
+    {
+        "productSN":  "SN202606010",
+        "equipmentName":  "??",
+        "equipmentCode":  "EQ010",
+        "specModel":  "SPEC-010"
+    },
+    {
+        "productSN":  "SN202606001",
+        "equipmentName":  "???",
+        "equipmentCode":  "EQ011",
+        "specModel":  "SPEC-011"
+    },
+    {
+        "productSN":  "SN202606002",
+        "equipmentName":  "???",
+        "equipmentCode":  "EQ012",
+        "specModel":  "SPEC-012"
+    },
+    {
+        "productSN":  "SN202606003",
+        "equipmentName":  "????",
+        "equipmentCode":  "EQ013",
+        "specModel":  "SPEC-013"
+    },
+    {
+        "productSN":  "SN202606004",
+        "equipmentName":  "???",
+        "equipmentCode":  "EQ014",
+        "specModel":  "SPEC-014"
+    },
+    {
+        "productSN":  "SN202606005",
+        "equipmentName":  "??",
+        "equipmentCode":  "EQ015",
+        "specModel":  "SPEC-015"
+    },
+    {
+        "productSN":  "SN202606006",
+        "equipmentName":  "???",
+        "equipmentCode":  "EQ016",
+        "specModel":  "SPEC-016"
+    },
+    {
+        "productSN":  "SN202606007",
+        "equipmentName":  "???",
+        "equipmentCode":  "EQ017",
+        "specModel":  "SPEC-017"
+    },
+    {
+        "productSN":  "SN202606008",
+        "equipmentName":  "????",
+        "equipmentCode":  "EQ018",
+        "specModel":  "SPEC-018"
+    },
+    {
+        "productSN":  "SN202606009",
+        "equipmentName":  "???",
+        "equipmentCode":  "EQ019",
+        "specModel":  "SPEC-019"
+    },
+    {
+        "productSN":  "SN202606010",
+        "equipmentName":  "??",
+        "equipmentCode":  "EQ020",
+        "specModel":  "SPEC-020"
+    },
+    {
+        "productSN":  "SN202606001",
+        "equipmentName":  "???",
+        "equipmentCode":  "EQ021",
+        "specModel":  "SPEC-021"
+    },
+    {
+        "productSN":  "SN202606002",
+        "equipmentName":  "???",
+        "equipmentCode":  "EQ022",
+        "specModel":  "SPEC-022"
+    },
+    {
+        "productSN":  "SN202606003",
+        "equipmentName":  "????",
+        "equipmentCode":  "EQ023",
+        "specModel":  "SPEC-023"
+    },
+    {
+        "productSN":  "SN202606004",
+        "equipmentName":  "???",
+        "equipmentCode":  "EQ024",
+        "specModel":  "SPEC-024"
+    },
+    {
+        "productSN":  "SN202606005",
+        "equipmentName":  "??",
+        "equipmentCode":  "EQ025",
+        "specModel":  "SPEC-025"
+    },
+    {
+        "productSN":  "SN202606006",
+        "equipmentName":  "???",
+        "equipmentCode":  "EQ026",
+        "specModel":  "SPEC-026"
+    },
+    {
+        "productSN":  "SN202606007",
+        "equipmentName":  "???",
+        "equipmentCode":  "EQ027",
+        "specModel":  "SPEC-027"
+    },
+    {
+        "productSN":  "SN202606008",
+        "equipmentName":  "????",
+        "equipmentCode":  "EQ028",
+        "specModel":  "SPEC-028"
+    },
+    {
+        "productSN":  "SN202606009",
+        "equipmentName":  "???",
+        "equipmentCode":  "EQ029",
+        "specModel":  "SPEC-029"
+    },
+    {
+        "productSN":  "SN202606010",
+        "equipmentName":  "??",
+        "equipmentCode":  "EQ030",
+        "specModel":  "SPEC-030"
+    },
+    {
+        "productSN":  "SN202606001",
+        "equipmentName":  "???",
+        "equipmentCode":  "EQ031",
+        "specModel":  "SPEC-031"
+    },
+    {
+        "productSN":  "SN202606002",
+        "equipmentName":  "???",
+        "equipmentCode":  "EQ032",
+        "specModel":  "SPEC-032"
+    },
+    {
+        "productSN":  "SN202606003",
+        "equipmentName":  "????",
+        "equipmentCode":  "EQ033",
+        "specModel":  "SPEC-033"
+    },
+    {
+        "productSN":  "SN202606004",
+        "equipmentName":  "???",
+        "equipmentCode":  "EQ034",
+        "specModel":  "SPEC-034"
+    },
+    {
+        "productSN":  "SN202606005",
+        "equipmentName":  "??",
+        "equipmentCode":  "EQ035",
+        "specModel":  "SPEC-035"
+    },
+    {
+        "productSN":  "SN202606006",
+        "equipmentName":  "???",
+        "equipmentCode":  "EQ036",
+        "specModel":  "SPEC-036"
+    },
+    {
+        "productSN":  "SN202606007",
+        "equipmentName":  "???",
+        "equipmentCode":  "EQ037",
+        "specModel":  "SPEC-037"
+    },
+    {
+        "productSN":  "SN202606008",
+        "equipmentName":  "????",
+        "equipmentCode":  "EQ038",
+        "specModel":  "SPEC-038"
+    },
+    {
+        "productSN":  "SN202606009",
+        "equipmentName":  "???",
+        "equipmentCode":  "EQ039",
+        "specModel":  "SPEC-039"
+    },
+    {
+        "productSN":  "SN202606010",
+        "equipmentName":  "??",
+        "equipmentCode":  "EQ040",
+        "specModel":  "SPEC-040"
+    },
+    {
+        "productSN":  "SN202606001",
+        "equipmentName":  "???",
+        "equipmentCode":  "EQ041",
+        "specModel":  "SPEC-041"
+    },
+    {
+        "productSN":  "SN202606002",
+        "equipmentName":  "???",
+        "equipmentCode":  "EQ042",
+        "specModel":  "SPEC-042"
+    },
+    {
+        "productSN":  "SN202606003",
+        "equipmentName":  "????",
+        "equipmentCode":  "EQ043",
+        "specModel":  "SPEC-043"
+    },
+    {
+        "productSN":  "SN202606004",
+        "equipmentName":  "???",
+        "equipmentCode":  "EQ044",
+        "specModel":  "SPEC-044"
+    },
+    {
+        "productSN":  "SN202606005",
+        "equipmentName":  "??",
+        "equipmentCode":  "EQ045",
+        "specModel":  "SPEC-045"
+    },
+    {
+        "productSN":  "SN202606006",
+        "equipmentName":  "???",
+        "equipmentCode":  "EQ046",
+        "specModel":  "SPEC-046"
+    },
+    {
+        "productSN":  "SN202606007",
+        "equipmentName":  "???",
+        "equipmentCode":  "EQ047",
+        "specModel":  "SPEC-047"
+    },
+    {
+        "productSN":  "SN202606008",
+        "equipmentName":  "????",
+        "equipmentCode":  "EQ048",
+        "specModel":  "SPEC-048"
+    },
+    {
+        "productSN":  "SN202606009",
+        "equipmentName":  "???",
+        "equipmentCode":  "EQ049",
+        "specModel":  "SPEC-049"
+    },
+    {
+        "productSN":  "SN202606010",
+        "equipmentName":  "??",
+        "equipmentCode":  "EQ050",
+        "specModel":  "SPEC-050"
     }
 ]

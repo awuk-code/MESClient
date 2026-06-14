@@ -281,6 +281,9 @@ void RepairJudgePage::onSaveBtnClicked()
     file.close();
 
     // 当前先保存到本地临时文件；后续如果改为接口草稿保存，只需要替换这里的写文件逻辑。
+    // TODO(backend-request): request backend to save repair-judge draft.
+    // Suggested API: /api/repair/judge/draft/save
+    // Suggested request: exceptionHandleNo, judgeMethod, judgeContent, reworkRoute, reworkFile.
     qDebug() << __FUNCTION__ << "draft saved:" << filePath;
     showInfoDialog(tr("保存"), tr("维修判定内容已临时保存。"));
 }
@@ -321,6 +324,11 @@ void RepairJudgePage::submitJudge(const QString& reworkType)
     }
 
     // TODO: 提交按钮后续在这里调用上传接口，将 judgeMethod 和 judgeContent 一并提交给后端。
+    // TODO(backend-request): request backend to submit repair judge result.
+    // Suggested API: /api/repair/judge/submit
+    // Suggested request: exceptionHandleNo, judgeMethod, judgeContent, reworkRoute,
+    // reworkFile, reworkType, operatorId.
+    // Suggested response: status, reworkTaskNo, nextAuditNode.
     qDebug() << __FUNCTION__
              << "wait upload, exceptionHandleNo ="
              << data.value("exceptionHandleNo").toString()

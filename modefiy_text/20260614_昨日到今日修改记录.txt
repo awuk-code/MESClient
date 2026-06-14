@@ -1,0 +1,243 @@
+20260614 昨日到今日修改记录
+========================
+
+说明
+----
+
+本文只记录本次对话期间已经修改或新增的内容，重点说明“改了什么地方”，不展开完整实现原理。
+
+
+一、表格分页功能
+----------------
+
+1. 新增分页代理模型
+
+新增文件：
+core/paginationproxymodel.h
+core/paginationproxymodel.cpp
+
+修改内容：
+新增 PaginationProxyModel，用于控制表格当前页、每页数量、总页数、上一页、下一页和指定页跳转。
+
+当前默认每页数量：
+50 条。
+
+
+2. 工程文件加入分页代理
+
+修改文件：
+core/core.pri
+
+修改内容：
+把 paginationproxymodel.h 和 paginationproxymodel.cpp 加入 qmake 工程文件。
+
+
+3. BasePageWidget 增加通用分页栏
+
+修改文件：
+ui/basepagewidget.h
+ui/basepagewidget.cpp
+
+修改内容：
+在搜索区增加通用分页按钮：
+上一页 1 2 3 下一页
+
+新增或调整的主要逻辑：
+- setupPaginationLayout()
+- currentPaginationProxy()
+- refreshPaginationControls()
+- resetPaginationToFirstPage()
+- goToPaginationButtonPage()
+- scheduleColumnResize()
+
+表格模型链路调整为：
+BaseTableModel -> FieldFilterProxyModel -> PaginationProxyModel -> QTableView
+
+当前效果：
+- 表格先按 Tab、搜索框、表头筛选过滤。
+- 再按当前页显示固定数量数据。
+- 搜索后自动回到第 1 页。
+- 第一页禁用“上一页”。
+- 最后一页禁用“下一页”。
+- 当前页数字按钮禁用。
+
+
+4. 维修站搜索区补充分页
+
+修改文件：
+ui/repairstationpage.cpp
+
+修改内容：
+维修站页面原本重写了 setupSearchLayout()，因此单独补充 setupPaginationLayout(layout)。
+
+同时调整了维修站行数据映射：
+新增 mapToSourceIndex()，用于从分页代理、筛选代理映射回真实模型行。
+
+修复点：
+- 点击异常处理单号能正确取到源数据。
+- 点击返工任务单号能正确取到源数据。
+- 点击“维修判定”按钮时能正确取到当前选中行数据。
+
+
+5. 工序站点右侧搜索区补充分页
+
+修改文件：
+ui/processstationrightpanel.cpp
+
+修改内容：
+工序站点右侧页面原本重写了 setupSearchLayout()，因此单独补充 setupPaginationLayout(layout)。
+
+同时调整产品 SN 筛选逻辑：
+- 从 PaginationProxyModel 取 sourceModel()，再拿到 FieldFilterProxyModel。
+- 产品 SN 下拉筛选后自动回到第 1 页。
+
+
+6. 操作按钮回写兼容多层代理
+
+修改文件：
+core/operationdelegate.cpp
+
+修改内容：
+原来只支持一层代理模型映射。
+现在改为循环穿透多层代理模型。
+
+修复点：
+OperationDelegate 点击打印、开工等按钮后，仍然能正确回写真实 BaseTableModel 行数据。
+
+
+二、mock 数据扩展到 50 条
+----------------------
+
+修改文件：
+etc/production_tasks.json
+etc/repair_station_rows.json
+etc/process_station_material_check.json
+etc/process_station_route.json
+etc/process_station_materials.json
+etc/process_station_tool_equipment.json
+etc/process_station_replacement_materials.json
+
+修改内容：
+把以上 mock 数据文件全部扩展到 50 条。
+
+用途：
+用于检查分页功能。
+
+当前每页 50 条，因此 50 条 mock 数据正常情况下显示为 1 页。
+
+验证情况：
+以上 7 个 JSON 文件都已经验证为合法 JSON，并且每个文件都是 50 条数据。
+
+
+三、后台请求位置标记
+------------------
+
+统一标记：
+TODO(backend-request)
+
+修改文件：
+core/productiontaskmodel.cpp
+core/repairstationmodel.cpp
+core/processstationmodel.cpp
+ui/productiontaskpage.cpp
+ui/processstationpage.cpp
+ui/processstationrightpanel.cpp
+ui/repairjudgepage.cpp
+
+修改内容：
+在需要请求后台或提交后台的位置增加注释。
+
+已标记的位置包括：
+- 生产任务列表请求后台。
+- 维修站列表请求后台。
+- 工序站点物料核对请求后台。
+- 工序站点工艺路线请求后台。
+- 工序站点工序物料请求后台。
+- 工序站点工具设备请求后台。
+- 工序站点更换物料请求后台。
+- 扫入物料标签码后请求后台解析。
+- 扫入物料 SN 后请求后台解析。
+- 点击生产任务开工前请求后台开工接口。
+- NG 异常上报请求后台。
+- 右侧工艺信息保存请求后台。
+- 维修判定草稿保存请求后台。
+- 维修判定提交请求后台。
+
+
+四、后台对接说明文档
+------------------
+
+新增文件：
+modefiy_text/20260614_backend_request_guide.md
+
+修改内容：
+新增中文后台对接说明。
+
+文档内容包括：
+- 当前需要请求后台的位置。
+- 如何通过 TODO(backend-request) 搜索接口接入点。
+- 如何在 ApiDefinition 中增加接口地址。
+- 如何在 ApiService 中增加请求方法和返回信号。
+- 推荐分页请求参数。
+- 推荐后台返回结构。
+- 页面如何调用 setRows(rows) 刷新表格。
+- 本地分页和后台分页的区别。
+- 建议后台接口清单。
+- 字段约定。
+- 生产任务列表接口接入示例。
+- 后台分页注意事项。
+
+
+五、当前注意事项
+---------------
+
+1. 当前分页仍然是本地分页
+
+当前流程是：
+一次读取全部 mock JSON -> 本地筛选 -> 本地分页
+
+后续真正接后台后，应改为：
+点击页码 -> 请求后台 page/pageSize -> 后台返回当前页 rows -> setRows(rows)
+
+
+2. 当前 mock 数据用于测试分页
+
+mock 数据扩展到 50 条只是为了检查翻页功能。
+后续接后台后，不建议一次性请求全部数据。
+
+
+3. 当前未完成编译验证
+
+本次修改做了 git diff --check 检查，只有 CRLF 换行提示。
+当前环境 PATH 中没有可用的 msbuild、cl、qmake，因此没有完成本地编译验证。
+
+
+六、本次涉及文件汇总
+------------------
+
+新增：
+core/paginationproxymodel.h
+core/paginationproxymodel.cpp
+modefiy_text/20260614_backend_request_guide.md
+modefiy_text/20260614_昨日到今日修改记录.txt
+
+修改：
+core/core.pri
+core/operationdelegate.cpp
+core/processstationmodel.cpp
+core/productiontaskmodel.cpp
+core/repairstationmodel.cpp
+ui/basepagewidget.h
+ui/basepagewidget.cpp
+ui/processstationpage.cpp
+ui/processstationrightpanel.cpp
+ui/productiontaskpage.cpp
+ui/repairjudgepage.cpp
+ui/repairstationpage.cpp
+etc/production_tasks.json
+etc/repair_station_rows.json
+etc/process_station_material_check.json
+etc/process_station_route.json
+etc/process_station_materials.json
+etc/process_station_tool_equipment.json
+etc/process_station_replacement_materials.json

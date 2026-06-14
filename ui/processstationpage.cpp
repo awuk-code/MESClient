@@ -54,6 +54,11 @@ void ProcessStationPage::initConnect()
             this, [](const QVariantMap& abnormalData) {
                 // TODO(backend): 这里应调用“提交NG异常/创建异常处理单”接口，
                 // 成功后由后台刷新维修站待处理列表；当前阶段先保留本地事件和日志。
+                // TODO(backend-request): request backend to submit NG and create repair exception.
+                // Suggested API: /api/process-station/ng
+                // Suggested request: taskNo, productSN, processCode, abnormalType,
+                // abnormalPhenomenon, abnormalImage/fileId, reportTime, stationNo.
+                // Suggested response: exceptionHandleNo, status, repairStationRow.
                 qDebug() << "ProcessStationPage receive NG abnormal data:" << abnormalData;
             });
 }

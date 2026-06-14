@@ -10,6 +10,7 @@
 
 class BaseTableModel;
 class FieldFilterProxyModel;
+class PaginationProxyModel;
 class QAbstractItemModel;
 class QHBoxLayout;
 class QLineEdit;
@@ -60,6 +61,7 @@ protected:
     virtual QHBoxLayout* createTitleLayout();
     virtual void addWidgetToTitle(QHBoxLayout* layout) = 0;
     virtual void setupSearchLayout(QHBoxLayout* layout);
+    void setupPaginationLayout(QHBoxLayout* layout);
 
 protected:
     // 创建界面控件和布局。
@@ -93,6 +95,9 @@ protected:
 
     // 设置表格通用属性
     void setupTableAppearance(QTableView* table);
+    PaginationProxyModel* currentPaginationProxy() const;
+    void refreshPaginationControls();
+    void resetPaginationToFirstPage();
 
 
     // 绑定复选框点击时的整行选中逻辑
@@ -102,6 +107,8 @@ protected:
         const BaseTableModel* model,
         int column) const;
     void exportCurrentTableToExcel();
+    void goToPaginationButtonPage(QPushButton* button);
+    void scheduleColumnResize(QTableView* table);
     //--------------------------------
 protected:
     QTabBar* tabBar()const{return m_tabBar;};
@@ -110,6 +117,9 @@ protected:
     QLineEdit* m_searchEdit{nullptr};
     QPushButton* m_searchBtn{nullptr};
     QPushButton* m_exportBtn{nullptr};
+    QPushButton* m_prevPageBtn{nullptr};
+    QPushButton* m_nextPageBtn{nullptr};
+    QVector<QPushButton*> m_pageBtns;
     QWidget* m_searchWidget{nullptr};
     QHBoxLayout* m_searchLayout{nullptr};
 
@@ -123,6 +133,8 @@ protected:
     QAbstractItemModel* m_model;    //基础模型
     //每个tab对于的代理模型
     QVector<FieldFilterProxyModel*> m_proxies;
+    QVector<PaginationProxyModel*> m_pageProxies;
+    int m_pageSize{50};
     QString m_pageTitle, m_searchInfo;
 };
 

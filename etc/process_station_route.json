@@ -1,26 +1,402 @@
 [
     {
-        "processCode": "OP001",
-        "processName": "装配",
-        "parallelStep": "否",
-        "remainingQty": 0,
-        "stationNo": "A01",
-        "status": "已完成"
+        "processCode":  "OP001",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  49,
+        "stationNo":  "ST-01",
+        "status":  "???"
     },
     {
-        "processCode": "OP002",
-        "processName": "测试",
-        "parallelStep": "否",
-        "remainingQty": 12,
-        "stationNo": "T01",
-        "status": "进行中"
+        "processCode":  "OP002",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  48,
+        "stationNo":  "ST-02",
+        "status":  "???"
     },
     {
-        "processCode": "OP003",
-        "processName": "包装",
-        "parallelStep": "否",
-        "remainingQty": 100,
-        "stationNo": "P01",
-        "status": "未开始"
+        "processCode":  "OP003",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  47,
+        "stationNo":  "ST-03",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP004",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  46,
+        "stationNo":  "ST-04",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP005",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  45,
+        "stationNo":  "ST-05",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP006",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  44,
+        "stationNo":  "ST-06",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP007",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  43,
+        "stationNo":  "ST-07",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP008",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  42,
+        "stationNo":  "ST-08",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP009",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  41,
+        "stationNo":  "ST-09",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP010",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  40,
+        "stationNo":  "ST-10",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP011",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  39,
+        "stationNo":  "ST-01",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP012",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  38,
+        "stationNo":  "ST-02",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP013",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  37,
+        "stationNo":  "ST-03",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP014",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  36,
+        "stationNo":  "ST-04",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP015",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  35,
+        "stationNo":  "ST-05",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP016",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  34,
+        "stationNo":  "ST-06",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP017",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  33,
+        "stationNo":  "ST-07",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP018",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  32,
+        "stationNo":  "ST-08",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP019",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  31,
+        "stationNo":  "ST-09",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP020",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  30,
+        "stationNo":  "ST-10",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP021",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  29,
+        "stationNo":  "ST-01",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP022",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  28,
+        "stationNo":  "ST-02",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP023",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  27,
+        "stationNo":  "ST-03",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP024",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  26,
+        "stationNo":  "ST-04",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP025",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  25,
+        "stationNo":  "ST-05",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP026",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  24,
+        "stationNo":  "ST-06",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP027",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  23,
+        "stationNo":  "ST-07",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP028",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  22,
+        "stationNo":  "ST-08",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP029",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  21,
+        "stationNo":  "ST-09",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP030",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  20,
+        "stationNo":  "ST-10",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP031",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  19,
+        "stationNo":  "ST-01",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP032",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  18,
+        "stationNo":  "ST-02",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP033",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  17,
+        "stationNo":  "ST-03",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP034",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  16,
+        "stationNo":  "ST-04",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP035",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  15,
+        "stationNo":  "ST-05",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP036",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  14,
+        "stationNo":  "ST-06",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP037",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  13,
+        "stationNo":  "ST-07",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP038",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  12,
+        "stationNo":  "ST-08",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP039",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  11,
+        "stationNo":  "ST-09",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP040",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  10,
+        "stationNo":  "ST-10",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP041",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  9,
+        "stationNo":  "ST-01",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP042",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  8,
+        "stationNo":  "ST-02",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP043",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  7,
+        "stationNo":  "ST-03",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP044",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  6,
+        "stationNo":  "ST-04",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP045",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  5,
+        "stationNo":  "ST-05",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP046",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  4,
+        "stationNo":  "ST-06",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP047",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  3,
+        "stationNo":  "ST-07",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP048",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  2,
+        "stationNo":  "ST-08",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP049",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  1,
+        "stationNo":  "ST-09",
+        "status":  "???"
+    },
+    {
+        "processCode":  "OP050",
+        "processName":  "??",
+        "parallelStep":  "?",
+        "remainingQty":  0,
+        "stationNo":  "ST-10",
+        "status":  "???"
     }
 ]

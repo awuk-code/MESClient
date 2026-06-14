@@ -184,5 +184,9 @@ void ProductionTaskModel::setColumnData()
 {
     // 当前阶段的列表数据从 etc/production_tasks.json 读取；
     // 后续对接后台时，只需要把这里的数据来源替换成接口返回。
+    // TODO(backend-request): replace this mock load with backend paged production-task API.
+    // Suggested request: page, pageSize, status, keyword, startDate, endDate.
+    // Suggested response: { total, page, pageSize, rows }. rows keeps current field names.
+    // Add ApiDefinition::productionTasksUrl() and ApiService::loadProductionTasks(...).
     setRows(JsonDataLoader::loadRows("production_tasks.json"));
 }

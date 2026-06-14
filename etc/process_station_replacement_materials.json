@@ -1,38 +1,452 @@
 [
     {
-        "productSNCode": "12345345678",
-        "materialType": "被更换物料",
-        "materialSN": "ZX701-2-2034012524005",
-        "EPR": "ZX701-2-2034",
-        "materialBatch": "012524",
-        "materialName": "微波控制板",
-        "materialModel": "ZXCP6H4_RF_K7FCTRL_V03_I02"
+        "productSNCode":  "SN202606001",
+        "materialType":  "original",
+        "materialSN":  "ZX701-2-2034000001",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT001",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I02"
     },
     {
-        "productSNCode": "12345345678",
-        "materialType": "更换物料",
-        "materialSN": "ZX701-2-2034012524008",
-        "EPR": "ZX701-2-2034",
-        "materialBatch": "012524",
-        "materialName": "微波控制板",
-        "materialModel": "ZXCP6H4_RF_K7FCTRL_V03_I03"
+        "productSNCode":  "SN202606002",
+        "materialType":  "replacement",
+        "materialSN":  "ZX701-2-2034000002",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT002",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I03"
     },
     {
-        "productSNCode": "12345345677",
-        "materialType": "被更换物料",
-        "materialSN": "ZX701-2-2034012524001",
-        "EPR": "ZX701-2-2034",
-        "materialBatch": "012524",
-        "materialName": "微波控制板",
-        "materialModel": "ZXCP6H4_RF_K7FCTRL_V03_I02"
+        "productSNCode":  "SN202606003",
+        "materialType":  "original",
+        "materialSN":  "ZX701-2-2034000003",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT003",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I04"
     },
     {
-        "productSNCode": "12345345677",
-        "materialType": "更换物料",
-        "materialSN": "ZX701-2-2034012524007",
-        "EPR": "ZX701-2-2034",
-        "materialBatch": "012524",
-        "materialName": "微波控制板",
-        "materialModel": "ZXCP6H4_RF_K7FCTRL_V03_I03"
+        "productSNCode":  "SN202606004",
+        "materialType":  "replacement",
+        "materialSN":  "ZX701-2-2034000004",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT004",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I05"
+    },
+    {
+        "productSNCode":  "SN202606005",
+        "materialType":  "original",
+        "materialSN":  "ZX701-2-2034000005",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT005",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I01"
+    },
+    {
+        "productSNCode":  "SN202606006",
+        "materialType":  "replacement",
+        "materialSN":  "ZX701-2-2034000006",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT006",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I02"
+    },
+    {
+        "productSNCode":  "SN202606007",
+        "materialType":  "original",
+        "materialSN":  "ZX701-2-2034000007",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT007",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I03"
+    },
+    {
+        "productSNCode":  "SN202606008",
+        "materialType":  "replacement",
+        "materialSN":  "ZX701-2-2034000008",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT008",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I04"
+    },
+    {
+        "productSNCode":  "SN202606009",
+        "materialType":  "original",
+        "materialSN":  "ZX701-2-2034000009",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT009",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I05"
+    },
+    {
+        "productSNCode":  "SN202606010",
+        "materialType":  "replacement",
+        "materialSN":  "ZX701-2-2034000010",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT010",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I01"
+    },
+    {
+        "productSNCode":  "SN202606001",
+        "materialType":  "original",
+        "materialSN":  "ZX701-2-2034000011",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT011",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I02"
+    },
+    {
+        "productSNCode":  "SN202606002",
+        "materialType":  "replacement",
+        "materialSN":  "ZX701-2-2034000012",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT012",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I03"
+    },
+    {
+        "productSNCode":  "SN202606003",
+        "materialType":  "original",
+        "materialSN":  "ZX701-2-2034000013",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT013",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I04"
+    },
+    {
+        "productSNCode":  "SN202606004",
+        "materialType":  "replacement",
+        "materialSN":  "ZX701-2-2034000014",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT014",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I05"
+    },
+    {
+        "productSNCode":  "SN202606005",
+        "materialType":  "original",
+        "materialSN":  "ZX701-2-2034000015",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT015",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I01"
+    },
+    {
+        "productSNCode":  "SN202606006",
+        "materialType":  "replacement",
+        "materialSN":  "ZX701-2-2034000016",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT016",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I02"
+    },
+    {
+        "productSNCode":  "SN202606007",
+        "materialType":  "original",
+        "materialSN":  "ZX701-2-2034000017",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT017",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I03"
+    },
+    {
+        "productSNCode":  "SN202606008",
+        "materialType":  "replacement",
+        "materialSN":  "ZX701-2-2034000018",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT018",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I04"
+    },
+    {
+        "productSNCode":  "SN202606009",
+        "materialType":  "original",
+        "materialSN":  "ZX701-2-2034000019",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT019",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I05"
+    },
+    {
+        "productSNCode":  "SN202606010",
+        "materialType":  "replacement",
+        "materialSN":  "ZX701-2-2034000020",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT020",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I01"
+    },
+    {
+        "productSNCode":  "SN202606001",
+        "materialType":  "original",
+        "materialSN":  "ZX701-2-2034000021",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT021",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I02"
+    },
+    {
+        "productSNCode":  "SN202606002",
+        "materialType":  "replacement",
+        "materialSN":  "ZX701-2-2034000022",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT022",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I03"
+    },
+    {
+        "productSNCode":  "SN202606003",
+        "materialType":  "original",
+        "materialSN":  "ZX701-2-2034000023",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT023",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I04"
+    },
+    {
+        "productSNCode":  "SN202606004",
+        "materialType":  "replacement",
+        "materialSN":  "ZX701-2-2034000024",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT024",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I05"
+    },
+    {
+        "productSNCode":  "SN202606005",
+        "materialType":  "original",
+        "materialSN":  "ZX701-2-2034000025",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT025",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I01"
+    },
+    {
+        "productSNCode":  "SN202606006",
+        "materialType":  "replacement",
+        "materialSN":  "ZX701-2-2034000026",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT026",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I02"
+    },
+    {
+        "productSNCode":  "SN202606007",
+        "materialType":  "original",
+        "materialSN":  "ZX701-2-2034000027",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT027",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I03"
+    },
+    {
+        "productSNCode":  "SN202606008",
+        "materialType":  "replacement",
+        "materialSN":  "ZX701-2-2034000028",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT028",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I04"
+    },
+    {
+        "productSNCode":  "SN202606009",
+        "materialType":  "original",
+        "materialSN":  "ZX701-2-2034000029",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT029",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I05"
+    },
+    {
+        "productSNCode":  "SN202606010",
+        "materialType":  "replacement",
+        "materialSN":  "ZX701-2-2034000030",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT030",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I01"
+    },
+    {
+        "productSNCode":  "SN202606001",
+        "materialType":  "original",
+        "materialSN":  "ZX701-2-2034000031",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT031",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I02"
+    },
+    {
+        "productSNCode":  "SN202606002",
+        "materialType":  "replacement",
+        "materialSN":  "ZX701-2-2034000032",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT032",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I03"
+    },
+    {
+        "productSNCode":  "SN202606003",
+        "materialType":  "original",
+        "materialSN":  "ZX701-2-2034000033",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT033",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I04"
+    },
+    {
+        "productSNCode":  "SN202606004",
+        "materialType":  "replacement",
+        "materialSN":  "ZX701-2-2034000034",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT034",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I05"
+    },
+    {
+        "productSNCode":  "SN202606005",
+        "materialType":  "original",
+        "materialSN":  "ZX701-2-2034000035",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT035",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I01"
+    },
+    {
+        "productSNCode":  "SN202606006",
+        "materialType":  "replacement",
+        "materialSN":  "ZX701-2-2034000036",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT036",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I02"
+    },
+    {
+        "productSNCode":  "SN202606007",
+        "materialType":  "original",
+        "materialSN":  "ZX701-2-2034000037",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT037",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I03"
+    },
+    {
+        "productSNCode":  "SN202606008",
+        "materialType":  "replacement",
+        "materialSN":  "ZX701-2-2034000038",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT038",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I04"
+    },
+    {
+        "productSNCode":  "SN202606009",
+        "materialType":  "original",
+        "materialSN":  "ZX701-2-2034000039",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT039",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I05"
+    },
+    {
+        "productSNCode":  "SN202606010",
+        "materialType":  "replacement",
+        "materialSN":  "ZX701-2-2034000040",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT040",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I01"
+    },
+    {
+        "productSNCode":  "SN202606001",
+        "materialType":  "original",
+        "materialSN":  "ZX701-2-2034000041",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT041",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I02"
+    },
+    {
+        "productSNCode":  "SN202606002",
+        "materialType":  "replacement",
+        "materialSN":  "ZX701-2-2034000042",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT042",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I03"
+    },
+    {
+        "productSNCode":  "SN202606003",
+        "materialType":  "original",
+        "materialSN":  "ZX701-2-2034000043",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT043",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I04"
+    },
+    {
+        "productSNCode":  "SN202606004",
+        "materialType":  "replacement",
+        "materialSN":  "ZX701-2-2034000044",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT044",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I05"
+    },
+    {
+        "productSNCode":  "SN202606005",
+        "materialType":  "original",
+        "materialSN":  "ZX701-2-2034000045",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT045",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I01"
+    },
+    {
+        "productSNCode":  "SN202606006",
+        "materialType":  "replacement",
+        "materialSN":  "ZX701-2-2034000046",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT046",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I02"
+    },
+    {
+        "productSNCode":  "SN202606007",
+        "materialType":  "original",
+        "materialSN":  "ZX701-2-2034000047",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT047",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I03"
+    },
+    {
+        "productSNCode":  "SN202606008",
+        "materialType":  "replacement",
+        "materialSN":  "ZX701-2-2034000048",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT048",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I04"
+    },
+    {
+        "productSNCode":  "SN202606009",
+        "materialType":  "original",
+        "materialSN":  "ZX701-2-2034000049",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT049",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I05"
+    },
+    {
+        "productSNCode":  "SN202606010",
+        "materialType":  "replacement",
+        "materialSN":  "ZX701-2-2034000050",
+        "EPR":  "ZX701-2-2034",
+        "materialBatch":  "BT050",
+        "materialName":  "microwave-control-board",
+        "materialModel":  "ZXCP6H4_RF_K7FCTRL_V03_I01"
     }
 ]

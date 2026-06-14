@@ -1,42 +1,502 @@
 [
     {
-        "productSN": "SN202605270001",
-        "materialCode": "RM001",
-        "materialName": "螺丝",
-        "materialModel": "M2.5-6",
-        "quantity": 4,
-        "materialSN": "",
-        "materialBatch": "BATCH-RM001",
-        "serialNumber": ""
+        "productSN":  "SN202606001",
+        "materialCode":  "RM001",
+        "materialName":  "??",
+        "materialModel":  "MODEL-001",
+        "quantity":  1,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM001",
+        "serialNumber":  ""
     },
     {
-        "productSN": "SN202605270001",
-        "materialCode": "RM002",
-        "materialName": "标签",
-        "materialModel": "LBL-001",
-        "quantity": 1,
-        "materialSN": "",
-        "materialBatch": "BATCH-RM002",
-        "serialNumber": ""
+        "productSN":  "SN202606002",
+        "materialCode":  "RM002",
+        "materialName":  "??",
+        "materialModel":  "MODEL-002",
+        "quantity":  2,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM002",
+        "serialNumber":  ""
     },
     {
-        "productSN": "SN202605270002",
-        "materialCode": "RM003",
-        "materialName": "线束",
-        "materialModel": "WH-300",
-        "quantity": 2,
-        "materialSN": "",
-        "materialBatch": "BATCH-RM003",
-        "serialNumber": ""
+        "productSN":  "SN202606003",
+        "materialCode":  "RM003",
+        "materialName":  "??",
+        "materialModel":  "MODEL-003",
+        "quantity":  3,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM003",
+        "serialNumber":  ""
     },
     {
-        "productSN": "SN202605270002",
-        "materialCode": "RM004",
-        "materialName": "电源模块",
-        "materialModel": "PWR-24V",
-        "quantity": 1,
-        "materialSN": "",
-        "materialBatch": "BATCH-RM004",
-        "serialNumber": ""
+        "productSN":  "SN202606004",
+        "materialCode":  "RM004",
+        "materialName":  "????",
+        "materialModel":  "MODEL-004",
+        "quantity":  4,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM004",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606005",
+        "materialCode":  "RM005",
+        "materialName":  "???",
+        "materialModel":  "MODEL-005",
+        "quantity":  5,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM005",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606006",
+        "materialCode":  "RM006",
+        "materialName":  "??",
+        "materialModel":  "MODEL-006",
+        "quantity":  1,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM006",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606007",
+        "materialCode":  "RM007",
+        "materialName":  "??",
+        "materialModel":  "MODEL-007",
+        "quantity":  2,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM007",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606008",
+        "materialCode":  "RM008",
+        "materialName":  "??",
+        "materialModel":  "MODEL-008",
+        "quantity":  3,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM008",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606009",
+        "materialCode":  "RM009",
+        "materialName":  "????",
+        "materialModel":  "MODEL-009",
+        "quantity":  4,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM009",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606010",
+        "materialCode":  "RM010",
+        "materialName":  "???",
+        "materialModel":  "MODEL-010",
+        "quantity":  5,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM010",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606001",
+        "materialCode":  "RM011",
+        "materialName":  "??",
+        "materialModel":  "MODEL-011",
+        "quantity":  1,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM011",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606002",
+        "materialCode":  "RM012",
+        "materialName":  "??",
+        "materialModel":  "MODEL-012",
+        "quantity":  2,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM012",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606003",
+        "materialCode":  "RM013",
+        "materialName":  "??",
+        "materialModel":  "MODEL-013",
+        "quantity":  3,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM013",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606004",
+        "materialCode":  "RM014",
+        "materialName":  "????",
+        "materialModel":  "MODEL-014",
+        "quantity":  4,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM014",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606005",
+        "materialCode":  "RM015",
+        "materialName":  "???",
+        "materialModel":  "MODEL-015",
+        "quantity":  5,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM015",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606006",
+        "materialCode":  "RM016",
+        "materialName":  "??",
+        "materialModel":  "MODEL-016",
+        "quantity":  1,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM016",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606007",
+        "materialCode":  "RM017",
+        "materialName":  "??",
+        "materialModel":  "MODEL-017",
+        "quantity":  2,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM017",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606008",
+        "materialCode":  "RM018",
+        "materialName":  "??",
+        "materialModel":  "MODEL-018",
+        "quantity":  3,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM018",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606009",
+        "materialCode":  "RM019",
+        "materialName":  "????",
+        "materialModel":  "MODEL-019",
+        "quantity":  4,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM019",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606010",
+        "materialCode":  "RM020",
+        "materialName":  "???",
+        "materialModel":  "MODEL-020",
+        "quantity":  5,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM020",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606001",
+        "materialCode":  "RM021",
+        "materialName":  "??",
+        "materialModel":  "MODEL-021",
+        "quantity":  1,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM021",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606002",
+        "materialCode":  "RM022",
+        "materialName":  "??",
+        "materialModel":  "MODEL-022",
+        "quantity":  2,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM022",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606003",
+        "materialCode":  "RM023",
+        "materialName":  "??",
+        "materialModel":  "MODEL-023",
+        "quantity":  3,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM023",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606004",
+        "materialCode":  "RM024",
+        "materialName":  "????",
+        "materialModel":  "MODEL-024",
+        "quantity":  4,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM024",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606005",
+        "materialCode":  "RM025",
+        "materialName":  "???",
+        "materialModel":  "MODEL-025",
+        "quantity":  5,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM025",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606006",
+        "materialCode":  "RM026",
+        "materialName":  "??",
+        "materialModel":  "MODEL-026",
+        "quantity":  1,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM026",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606007",
+        "materialCode":  "RM027",
+        "materialName":  "??",
+        "materialModel":  "MODEL-027",
+        "quantity":  2,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM027",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606008",
+        "materialCode":  "RM028",
+        "materialName":  "??",
+        "materialModel":  "MODEL-028",
+        "quantity":  3,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM028",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606009",
+        "materialCode":  "RM029",
+        "materialName":  "????",
+        "materialModel":  "MODEL-029",
+        "quantity":  4,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM029",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606010",
+        "materialCode":  "RM030",
+        "materialName":  "???",
+        "materialModel":  "MODEL-030",
+        "quantity":  5,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM030",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606001",
+        "materialCode":  "RM031",
+        "materialName":  "??",
+        "materialModel":  "MODEL-031",
+        "quantity":  1,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM031",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606002",
+        "materialCode":  "RM032",
+        "materialName":  "??",
+        "materialModel":  "MODEL-032",
+        "quantity":  2,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM032",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606003",
+        "materialCode":  "RM033",
+        "materialName":  "??",
+        "materialModel":  "MODEL-033",
+        "quantity":  3,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM033",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606004",
+        "materialCode":  "RM034",
+        "materialName":  "????",
+        "materialModel":  "MODEL-034",
+        "quantity":  4,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM034",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606005",
+        "materialCode":  "RM035",
+        "materialName":  "???",
+        "materialModel":  "MODEL-035",
+        "quantity":  5,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM035",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606006",
+        "materialCode":  "RM036",
+        "materialName":  "??",
+        "materialModel":  "MODEL-036",
+        "quantity":  1,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM036",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606007",
+        "materialCode":  "RM037",
+        "materialName":  "??",
+        "materialModel":  "MODEL-037",
+        "quantity":  2,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM037",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606008",
+        "materialCode":  "RM038",
+        "materialName":  "??",
+        "materialModel":  "MODEL-038",
+        "quantity":  3,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM038",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606009",
+        "materialCode":  "RM039",
+        "materialName":  "????",
+        "materialModel":  "MODEL-039",
+        "quantity":  4,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM039",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606010",
+        "materialCode":  "RM040",
+        "materialName":  "???",
+        "materialModel":  "MODEL-040",
+        "quantity":  5,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM040",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606001",
+        "materialCode":  "RM041",
+        "materialName":  "??",
+        "materialModel":  "MODEL-041",
+        "quantity":  1,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM041",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606002",
+        "materialCode":  "RM042",
+        "materialName":  "??",
+        "materialModel":  "MODEL-042",
+        "quantity":  2,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM042",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606003",
+        "materialCode":  "RM043",
+        "materialName":  "??",
+        "materialModel":  "MODEL-043",
+        "quantity":  3,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM043",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606004",
+        "materialCode":  "RM044",
+        "materialName":  "????",
+        "materialModel":  "MODEL-044",
+        "quantity":  4,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM044",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606005",
+        "materialCode":  "RM045",
+        "materialName":  "???",
+        "materialModel":  "MODEL-045",
+        "quantity":  5,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM045",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606006",
+        "materialCode":  "RM046",
+        "materialName":  "??",
+        "materialModel":  "MODEL-046",
+        "quantity":  1,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM046",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606007",
+        "materialCode":  "RM047",
+        "materialName":  "??",
+        "materialModel":  "MODEL-047",
+        "quantity":  2,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM047",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606008",
+        "materialCode":  "RM048",
+        "materialName":  "??",
+        "materialModel":  "MODEL-048",
+        "quantity":  3,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM048",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606009",
+        "materialCode":  "RM049",
+        "materialName":  "????",
+        "materialModel":  "MODEL-049",
+        "quantity":  4,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM049",
+        "serialNumber":  ""
+    },
+    {
+        "productSN":  "SN202606010",
+        "materialCode":  "RM050",
+        "materialName":  "???",
+        "materialModel":  "MODEL-050",
+        "quantity":  5,
+        "materialSN":  "",
+        "materialBatch":  "BATCH-RM050",
+        "serialNumber":  ""
     }
 ]

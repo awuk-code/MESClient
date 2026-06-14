@@ -6,6 +6,7 @@
 #include "searchconfig.h"
 
 #include <QDebug>
+#include <QAbstractProxyModel>
 #include <QHBoxLayout>
 #include <QIcon>
 #include <QLabel>
@@ -14,6 +15,23 @@
 #include <QStackedWidget>
 #include <QTableView>
 #include <QVBoxLayout>
+
+namespace
+{
+QModelIndex mapToSourceIndex(const QModelIndex& index)
+{
+    QModelIndex sourceIndex = index;
+    const QAbstractItemModel* currentModel = index.model();
+
+    while (auto proxy = qobject_cast<const QAbstractProxyModel*>(currentModel))
+    {
+        sourceIndex = proxy->mapToSource(sourceIndex);
+        currentModel = proxy->sourceModel();
+    }
+
+    return sourceIndex;
+}
+}
 
 RepairStationPage::RepairStationPage(QWidget *parent)
     : BasePageWidget(parent)
@@ -34,15 +52,8 @@ RepairStationPage::RepairStationPage(QWidget *parent)
                     this, [=](const QPersistentModelIndex& proxyIndex, const QString &text){
                         Q_UNUSED(text);
 
-                        auto proxy =
-                            qobject_cast<const FieldFilterProxyModel*>(
-                                proxyIndex.model());
-
-                        if (!proxy)
-                            return;
-                        // 映射回 source model
-                        QModelIndex sourceIndex =
-                            proxy->mapToSource(proxyIndex);
+                        const QModelIndex sourceIndex =
+                            mapToSourceIndex(proxyIndex);
                         if (!sourceIndex.isValid())
                             return;
 
@@ -134,6 +145,7 @@ void RepairStationPage::setupSearchLayout(QHBoxLayout *layout)
 
     layout->addWidget(m_searchEdit);
     layout->addStretch();
+    setupPaginationLayout(layout);
     layout->addWidget(m_repairJudgeBtn);
     layout->addWidget(m_exportBtn);
 }
@@ -197,17 +209,13 @@ void RepairStationPage::showSelectRowDialog()
 QVariantMap RepairStationPage::rowDataFromProxyIndex(
     const QModelIndex& proxyIndex) const
 {
-    auto proxy =
-        qobject_cast<const FieldFilterProxyModel*>(
-            proxyIndex.model());
     auto model =
         qobject_cast<RepairStationModel*>(m_model);
 
-    if (!proxy || !model)
+    if (!model)
         return {};
 
-    QModelIndex sourceIndex =
-        proxy->mapToSource(proxyIndex);
+    const QModelIndex sourceIndex = mapToSourceIndex(proxyIndex);
     if (!sourceIndex.isValid())
         return {};
 

@@ -8,6 +8,7 @@ HEADERS += \
     $$PWD/lineeditdelegate.h \
     $$PWD/navigationmanager.h \
     $$PWD/operationdelegate.h \
+    $$PWD/paginationproxymodel.h \
     $$PWD/processstationmodel.h \
     $$PWD/productiontaskmodel.h \
     $$PWD/repairstationmodel.h \
@@ -21,6 +22,7 @@ SOURCES += \
     $$PWD/lineeditdelegate.cpp \
     $$PWD/navigationmanager.cpp \
     $$PWD/operationdelegate.cpp \
+    $$PWD/paginationproxymodel.cpp \
     $$PWD/processstationmodel.cpp \
     $$PWD/productiontaskmodel.cpp \
     $$PWD/repairstationmodel.cpp \

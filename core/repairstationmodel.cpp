@@ -140,5 +140,9 @@ void RepairStationModel::setColumnData()
 {
     // 当前阶段的维修站列表数据从 etc/repair_station_rows.json 读取；
     // 后续对接后台时，只需要把这里的数据来源替换成接口返回。
+    // TODO(backend-request): replace this mock load with backend paged repair-station API.
+    // Suggested request: page, pageSize, status, keyword, productSN, exceptionHandleNo.
+    // Suggested response: { total, page, pageSize, rows }. rows keeps current field names.
+    // Add ApiDefinition::repairStationRowsUrl() and ApiService::loadRepairStationRows(...).
     setRows(JsonDataLoader::loadRows("repair_station_rows.json"));
 }

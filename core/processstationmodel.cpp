@@ -75,6 +75,9 @@ void ProcessStationModel::setMaterialCheckHeader()
 void ProcessStationModel::setMaterialCheckData()
 {
     // 当前阶段的物料核对数据从 JSON 读取；后续对接后台时替换为接口返回即可。
+    // TODO(backend-request): replace this mock load with backend material-check API.
+    // Suggested request: taskNo, processCode, stationNo, page, pageSize.
+    // Suggested response rows keep current fields: materialCode, materialName, actualQty, EPR, batchNo...
     setRows(JsonDataLoader::loadRows("process_station_material_check.json"));
 }
 
@@ -93,6 +96,8 @@ void ProcessStationModel::setProcessRouteHeader()
 void ProcessStationModel::setProcessRouteData()
 {
     // 当前阶段的工艺路线数据从 JSON 读取；工艺路线标题和列结构仍保留在代码中。
+    // TODO(backend-request): replace this mock load with backend process-route API.
+    // Suggested request: taskNo, reworkTaskNo, productModel, routeId.
     setRows(JsonDataLoader::loadRows("process_station_route.json"));
 }
 void ProcessStationModel::setProcessMaterialHeader()
@@ -125,6 +130,9 @@ void ProcessStationModel::setProcessMaterialHeader()
 void ProcessStationModel::setProcessMaterialData()
 {
     // 当前阶段的工序物料信息从 JSON 读取；物料SN仍保留为空，方便显示输入提示。
+    // TODO(backend-request): replace this mock load with backend process-materials API.
+    // Suggested request: taskNo, processCode, productSN, page, pageSize.
+    // If backend returns compound data, use MatAdapter::split(...) before setRows(...).
     setRows(JsonDataLoader::loadRows("process_station_materials.json"));
 }
 
@@ -144,6 +152,8 @@ void ProcessStationModel::setToolEquipmentHeader()
 void ProcessStationModel::setToolEquipmentData()
 {
     // 当前阶段的工具设备数据从 JSON 读取；后续按当前工序调用后台接口替换。
+    // TODO(backend-request): replace this mock load with backend tool-equipment API.
+    // Suggested request: taskNo, processCode, productSN, page, pageSize.
     setRows(JsonDataLoader::loadRows("process_station_tool_equipment.json"));
 }
 
@@ -166,6 +176,8 @@ void ProcessStationModel::setReplacementMaterialHeader()
 void ProcessStationModel::setReplacementMaterialData()
 {
     // 当前阶段的更换物料信息从 JSON 读取；返工权限接入后可按任务单号重新拉取。
+    // TODO(backend-request): replace this mock load with backend replacement-materials API.
+    // Suggested request: reworkTaskNo, exceptionHandleNo, productSN, page, pageSize.
     const QVector<QVariantMap> rows =
         JsonDataLoader::loadRows("process_station_replacement_materials.json");
     setRows(rows);
@@ -181,6 +193,10 @@ void ProcessStationModel::requestMaterialCheckInfo(int row, const QString &label
     // 这里未来替换成 HTTP 请求
     // ====================================================
 
+    // TODO(backend-request): request backend to resolve/validate material label.
+    // Suggested API: /api/process-station/material-label/resolve
+    // Suggested request: taskNo, processCode, stationNo, labelCode.
+    // Suggested response: EPR, batchNo, valid, message.
     QVariantMap response;
 
     response["EPR"] =
@@ -209,6 +225,10 @@ void ProcessStationModel::requestProcessMaterialInfo(int row, const QString &mat
     // 2. 未来这里替换成 HTTP 接口
     // 3. 当前阶段：模拟接口返回
 
+    // TODO(backend-request): request backend to resolve/validate material SN.
+    // Suggested API: /api/process-station/material-sn/resolve
+    // Suggested request: taskNo, processCode, productSN, materialSN.
+    // Suggested response: materialBatch, serialNumber, valid, message.
     QVariantMap response;
 
 
